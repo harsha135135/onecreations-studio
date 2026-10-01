@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "diagnostic_temple",
+  "title": "Diagnostic temple parry (fixture)",
+  "default_fps": {
+    "num": 24,
+    "den": 1
+  },
+  "assets": [
+    {
+      "id": "hero_v4",
+      "kind": "character",
+      "version": "4.0.0",
+      "manifest": "assets/hero_v4.character.json"
+    },
+    {
+      "id": "asura_v3",
+      "kind": "character",
+      "version": "3.0.0"
+    },
+    {
+      "id": "temple_v2",
+      "kind": "environment",
+      "version": "2.0.0"
+    },
+    {
+      "id": "sword_pair_v2",
+      "kind": "weapon",
+      "version": "2.0.0"
+    }
+  ],
+  "camera_motions": [
+    "camera/temple_dive_to_parry_v1.json"
+  ],
+  "choreographies": [
+    "action/parry_counter_v5.json"
+  ],
+  "timewarps": [
+    "time/impact_hold_v2.json"
+  ],
+  "events": [
+    "events/parry_001.json",
+    "events/wall_impact_002.json"
+  ],
+  "backend_profiles": [
+    "backends/fixture_depth_backend.json"
+  ],
+  "shots": [
+    "shots/temple_parry_004.json"
+  ],
+  "scene_states": [
+    "temple_after_charge_v3"
+  ],
+  "lighting": [
+    "storm_blue_v1"
+  ],
+  "references": [
+    "approved_start",
+    "approved_contact",
+    "approved_end"
+  ],
+  "mask_layers": [
+    "distant_environment",
+    "atmosphere",
+    "heroes",
+    "hands",
+    "weapons",
+    "foreground_architecture"
+  ]
+}

@@ -40,9 +40,15 @@ cd D:\onecreations\upstream   # or wherever you keep code
 git clone https://github.com/harsha135135/onecreations-studio.git
 cd onecreations-studio
 uv sync
-uv run pytest -q
+uv run pytest -q                       # includes 11 headless-Blender tests when Blender 4.5 is found
+uv run onecreations blender info       # should report the pinned 4.5 series
 powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1 -DataRoot D:\onecreations
 ```
+
+If Blender isn't in the default location (`C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`), set
+`$env:ONECREATIONS_BLENDER = "X:\path\to\blender.exe"` before running the tests. The Blender tests check the export
+contract against Blender's own projection and the diagnostic scene's known geometry; compare the numbers with the
+Mac measurements in `docs/contracts.md` and note any difference in `STATUS.md`.
 
 `git config user.name "Harshavardhan M"` and the user's email must be set on the desktop (no AI co-author lines; see `CLAUDE.md`).
 
@@ -70,6 +76,6 @@ powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1 -TorchPytho
 - `check_env.ps1` exits 0 with no FAIL; WARNs reviewed.
 - Idle VRAM ≈ a few hundred MB with display on the iGPU.
 - Sysmem-fallback policy set for each env's `python.exe`.
-- `uv run pytest -q` passes on the desktop.
+- `uv run pytest -q` passes on the desktop, **including the Blender tests** (not skipped).
 
 Record the `check_env.ps1` output summary in the `STATUS.md` session log.

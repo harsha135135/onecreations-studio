@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "EffectSpec": {
+      "additionalProperties": true,
+      "description": "One effect of an event. Known fields are typed; preset-specific parameters are allowed as extras.",
+      "properties": {
+        "asset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset"
+        },
+        "duration_seconds": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Seconds"
+        },
+        "offset_seconds": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Offset Seconds"
+        },
+        "preset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preset"
+        }
+      },
+      "title": "EffectSpec",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/vfx_event.schema.json",
+  "additionalProperties": false,
+  "description": "A deterministic, authored event in source time: the video model may add appearance, never timing.",
+  "properties": {
+    "attachment": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attachment"
+    },
+    "cache_key_inputs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Cache Key Inputs",
+      "type": "array"
+    },
+    "effects": {
+      "additionalProperties": {
+        "$ref": "#/$defs/EffectSpec"
+      },
+      "default": {},
+      "title": "Effects",
+      "type": "object"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "participants": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Participants",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "seed": {
+      "default": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "source_time_seconds": {
+      "anyOf": [
+        {
+          "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+      "title": "Source Time Seconds"
+    },
+    "type": {
+      "description": "e.g. SwordCollision, WallImpact",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "source_time_seconds"
+  ],
+  "title": "VFXEvent",
+  "type": "object"
+}

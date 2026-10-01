@@ -1,0 +1,313 @@
+{
+  "$defs": {
+    "AssetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "character",
+            "prop",
+            "weapon",
+            "environment",
+            "fx_preset",
+            "audio",
+            "reference"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "manifest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Manifest"
+        },
+        "rights": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RightsRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "version"
+      ],
+      "title": "AssetRef",
+      "type": "object"
+    },
+    "FrameRateModel": {
+      "additionalProperties": false,
+      "properties": {
+        "den": {
+          "default": 1,
+          "exclusiveMinimum": 0,
+          "title": "Den",
+          "type": "integer"
+        },
+        "num": {
+          "exclusiveMinimum": 0,
+          "title": "Num",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "num"
+      ],
+      "title": "FrameRateModel",
+      "type": "object"
+    },
+    "RightsRecord": {
+      "additionalProperties": false,
+      "description": "Who owns an asset and what it may be used for (v1 §14). `ai_training_allowed` must be explicit.",
+      "properties": {
+        "ai_training_allowed": {
+          "title": "Ai Training Allowed",
+          "type": "boolean"
+        },
+        "allowed_uses": {
+          "items": {
+            "enum": [
+              "render",
+              "training",
+              "evaluation",
+              "distribution",
+              "reference"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Uses",
+          "type": "array"
+        },
+        "consent_record": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consent Record"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "license_snapshot_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License Snapshot Sha256"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        }
+      },
+      "required": [
+        "owner",
+        "license",
+        "allowed_uses",
+        "ai_training_allowed"
+      ],
+      "title": "RightsRecord",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/project.schema.json",
+  "additionalProperties": false,
+  "description": "Top-level project index. Paths are relative to the project directory.",
+  "properties": {
+    "assets": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AssetRef"
+      },
+      "title": "Assets",
+      "type": "array"
+    },
+    "backend_profiles": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Backend Profiles",
+      "type": "array"
+    },
+    "camera_motions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Camera Motions",
+      "type": "array"
+    },
+    "choreographies": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Choreographies",
+      "type": "array"
+    },
+    "coordinate_system": {
+      "const": "blender_z_up",
+      "default": "blender_z_up",
+      "title": "Coordinate System",
+      "type": "string"
+    },
+    "default_fps": {
+      "$ref": "#/$defs/FrameRateModel"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "lighting": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "Lighting",
+      "type": "array"
+    },
+    "mask_layers": {
+      "default": [],
+      "description": "Region names usable in allowed/protected regions",
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "Mask Layers",
+      "type": "array"
+    },
+    "references": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "References",
+      "type": "array"
+    },
+    "scene_states": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "Scene States",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "shots": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Shots",
+      "type": "array"
+    },
+    "timewarps": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Timewarps",
+      "type": "array"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "units": {
+      "const": "meters",
+      "default": "meters",
+      "title": "Units",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "default_fps"
+  ],
+  "title": "Project",
+  "type": "object"
+}

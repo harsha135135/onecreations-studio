@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "hero_v4",
+  "version": "4.0.0",
+  "display_name": "Hero (diagnostic stand-in)",
+  "height_m": 1.85,
+  "measurements_m": {
+    "shoulder_width": 0.48,
+    "arm_length": 0.74
+  },
+  "handedness": "right",
+  "skeleton": {
+    "rig_id": "oc_biped_v1",
+    "bone_map": {
+      "hand_r": "DEF-hand.R",
+      "hand_l": "DEF-hand.L",
+      "chest": "DEF-spine.003"
+    }
+  },
+  "weapon_sockets": [
+    {
+      "name": "grip_r",
+      "bone": "DEF-hand.R",
+      "transform": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0.04
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ]
+    }
+  ],
+  "material_ids": {
+    "skin": 1,
+    "armor": 2,
+    "cloth": 3
+  },
+  "symbols": [
+    {
+      "name": "chest_emblem",
+      "description": "trident emblem, prongs up",
+      "location": "chest plate"
+    }
+  ],
+  "detail_inventory": [
+    "trident emblem",
+    "left arm band",
+    "three-strand necklace"
+  ],
+  "expressions": [
+    "neutral",
+    "battle_focus"
+  ],
+  "allowed_variations": [
+    "battle_damage_light"
+  ],
+  "state_variants": [
+    {
+      "id": "damaged_v1",
+      "description": "after wall impact",
+      "changes": [
+        "left arm band removed"
+      ]
+    }
+  ],
+  "rights": {
+    "owner": "Harshavardhan M",
+    "license": "proprietary",
+    "allowed_uses": [
+      "render",
+      "training",
+      "evaluation"
+    ],
+    "ai_training_allowed": true
+  }
+}

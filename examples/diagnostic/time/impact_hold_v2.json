@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "impact_hold_v2",
+  "description": "0.4x approach, 1 s hold on the parry contact, then ~0.51x through the wall impact",
+  "keys": [
+    [
+      "0",
+      "0"
+    ],
+    [
+      "9/4",
+      "9/10"
+    ],
+    [
+      "13/4",
+      "9/10"
+    ],
+    [
+      "6",
+      "23/10"
+    ]
+  ]
+}

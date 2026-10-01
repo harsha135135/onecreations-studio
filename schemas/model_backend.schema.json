@@ -1,0 +1,262 @@
+{
+  "$defs": {
+    "BackendAdmission": {
+      "additionalProperties": false,
+      "properties": {
+        "envelope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Envelope"
+        },
+        "records": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Records",
+          "type": "array"
+        },
+        "status": {
+          "default": "not_run",
+          "enum": [
+            "not_run",
+            "A_admitted",
+            "B_preview_only",
+            "C_not_admitted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "title": "BackendAdmission",
+      "type": "object"
+    },
+    "FrameCountRule": {
+      "additionalProperties": false,
+      "description": "Allowed frame counts: count = multiple·n + remainder (n ≥ 1), within [min_frames, max_frames].",
+      "properties": {
+        "max_frames": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Frames"
+        },
+        "min_frames": {
+          "default": 1,
+          "exclusiveMinimum": 0,
+          "title": "Min Frames",
+          "type": "integer"
+        },
+        "multiple": {
+          "default": 1,
+          "exclusiveMinimum": 0,
+          "title": "Multiple",
+          "type": "integer"
+        },
+        "remainder": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Remainder",
+          "type": "integer"
+        }
+      },
+      "title": "FrameCountRule",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/model_backend.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "accepts_camera_matrices": {
+      "default": false,
+      "title": "Accepts Camera Matrices",
+      "type": "boolean"
+    },
+    "adapter_compat": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Adapter Compat",
+      "type": "array"
+    },
+    "admission": {
+      "$ref": "#/$defs/BackendAdmission",
+      "default": {
+        "envelope": null,
+        "records": [],
+        "status": "not_run"
+      }
+    },
+    "audio": {
+      "default": "none",
+      "enum": [
+        "none",
+        "generates",
+        "conditions"
+      ],
+      "title": "Audio",
+      "type": "string"
+    },
+    "control_modalities": {
+      "default": [],
+      "items": {
+        "enum": [
+          "depth",
+          "pose",
+          "edges",
+          "normal",
+          "mask",
+          "first_frame",
+          "last_frame",
+          "keyframes",
+          "reference_image",
+          "camera_matrices",
+          "plucker_rays",
+          "optical_flow"
+        ],
+        "type": "string"
+      },
+      "title": "Control Modalities",
+      "type": "array"
+    },
+    "frame_count": {
+      "$ref": "#/$defs/FrameCountRule",
+      "default": {
+        "max_frames": null,
+        "min_frames": 1,
+        "multiple": 1,
+        "remainder": 0
+      }
+    },
+    "height_multiple": {
+      "default": 1,
+      "exclusiveMinimum": 0,
+      "title": "Height Multiple",
+      "type": "integer"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "mask_behavior": {
+      "default": "none",
+      "enum": [
+        "none",
+        "soft",
+        "hard"
+      ],
+      "title": "Mask Behavior",
+      "type": "string"
+    },
+    "max_height": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Height"
+    },
+    "max_reference_images": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Max Reference Images",
+      "type": "integer"
+    },
+    "max_width": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Width"
+    },
+    "model_id": {
+      "description": "model_registry id",
+      "title": "Model Id",
+      "type": "string"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "runtime": {
+      "description": "e.g. comfyui@<sha> + workflow name",
+      "title": "Runtime",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tasks": {
+      "items": {
+        "enum": [
+          "t2v",
+          "i2v",
+          "v2v_control",
+          "inpaint",
+          "outpaint",
+          "reference_edit",
+          "keyframe_interp",
+          "t2i",
+          "image_edit"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Tasks",
+      "type": "array"
+    },
+    "width_multiple": {
+      "default": 1,
+      "exclusiveMinimum": 0,
+      "title": "Width Multiple",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "model_id",
+    "runtime",
+    "tasks"
+  ],
+  "title": "ModelBackend",
+  "type": "object"
+}

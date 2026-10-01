@@ -6,11 +6,11 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-10-02 — Mac session (scaffolding) |
-| **Current phase** | **M0 complete → M1 next (desktop setup)**. Handoff from Mac to Windows desktop. |
+| **Last updated** | 2026-10-02 — Mac session A (hardware-independent core) |
+| **Current phase** | **M0 + M0.5 (Mac core, Session A) complete → M1 next (desktop setup)**. Session B is **not** started (owner decides when). |
 | **Who acts next** | The Windows desktop (RTX 4070 12 GB · i7-14700K · 32 GB RAM · Windows 11) |
 | **External spend** | **₹0 of ₹15,000** · active gate: **Gate A (≤ ₹5,000)** · Gate B: locked |
-| **Measured results** | **None yet.** Every number in the docs is published, arithmetic, or proposed — not measured on this machine. |
+| **Measured results** | **No GPU/model measurements yet.** Mac-only data-contract checks on Blender 4.5.14 (CPU): Cycles depth is planar, projection matches Blender to ≈ 0.0005 px — see `docs/contracts.md`. Not 4070 results. |
 | **Primary model** | LTX-2.5 22B distilled + Union IC-LoRA (candidate; confirm/replace via T0 benchmark) |
 
 ---
@@ -51,8 +51,9 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 | # | Milestone | Where | Exit / gate | Status |
 |---|---|---|---|---|
 | M0 | Research snapshot, ADR, runbooks, tooling, registry, budget ledger, tests | Mac | Repo pushed; tests pass on Mac | ✅ **Done** 2026-10-02 |
-| M1 | Desktop setup: clone, `uv sync`, iGPU display, sysmem-fallback off, pagefile, Blender 4.5 LTS, pinned ComfyUI | Desktop | **G0:** `tools/windows/check_env.ps1` clean, idle VRAM ≈ 0 | ⬜ Next |
-| M2 | Diagnostic scene + control export (depth/pose/mask/camera, time map) with convention tests | Desktop | **G1:** all channel-convention checks pass | ⬜ |
+| M0.5 | Session A (Mac): contracts + schemas, exact time base/TimeWarp, camera geometry, trajectory library (stats, normalize, retarget + clearance, CSV, minimal COLMAP), shot validator, cache keys, Blender exporter/importer/visualizer + diagnostic scene, CLI, 107 tests | Mac | `uv run pytest -q` passes incl. 11 headless-Blender tests | ✅ **Done** 2026-10-02 |
+| M1 | Desktop setup: clone, `uv sync`, iGPU display, sysmem-fallback off, pagefile, Blender 4.5 LTS, pinned ComfyUI | Desktop | **G0:** `tools/windows/check_env.ps1` clean, idle VRAM ≈ 0, `uv run pytest -q` passes (incl. `-m blender` on Windows Blender 4.5) | ⬜ Next |
+| M2 | Use the Session A exporter on the first real scene (V0 rigs + environment); extend the diagnostic checks only where the real scene needs it (pose visibility, Cryptomatte if compositing requires it) | Desktop | **G1:** Windows Blender tests pass + a real-scene export bundle validates | ⬜ |
 | M3 | Admission ladders: LTX-2.5 (INT8 ConvRot + offload), FLUX.2-klein-4B, Wan2.1-VACE-1.3B | Desktop | **G2:** outcome A/B/C recorded for each in `admission_records/` + `model_registry/models.yaml` | ⬜ |
 | M4 | V0 shot in Blender only: two rigs, one environment, one parry, one dive/orbit, one timed effect | Desktop | Deterministic preview correct (parallel with M3) | ⬜ |
 | M5 | T0 pretrained baseline on the 12-shot benchmark (staged) | Desktop | **G3:** primary confirmed/replaced; a named, learnable defect (or "no training needed") | ⬜ |
@@ -80,8 +81,26 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 | `tools/budget/ledger.py` + `budget/` | Spend ledger with gate enforcement | Tested on Mac |
 | `model_registry/models.yaml` | Candidate models, roles, licenses, admission status, `hash: TODO` | Hashes/commits TODO on desktop |
 | `training/**/experiment-card*.yaml` | Experiment cards for T1, VACE-1.3B, LTX T2 (not trainer-native configs) | Proposed; trainer configs to be derived from pinned upstream examples |
+| `docs/contracts.md` | Conventions, contracts, issue codes, cache-key graph, export bundle format, Mac measurements, deferred list | Reference |
+| `src/onecreations/contracts/` + `schemas/` | Pydantic contracts: Project, CharacterAsset, CameraMotion, ActionTimeline, TimeWarp, VFXEvent, Shot, ModelBackend, ExperimentRecord, AdmissionRecord, ExportManifest; generated JSON Schemas | Tested on Mac |
+| `src/onecreations/timebase.py` | Exact rational time, frame rates (incl. 24000/1001), TimeWarp with holds | Tested; shared with Blender scripts |
+| `src/onecreations/geometry/` | Quaternions, Blender↔OpenCV conventions, rigid validation, Blender intrinsics → K, projection | Tested; verified against Blender 4.5 |
+| `src/onecreations/camera/` | Trajectories (spline/slerp), stats, normalize (up/scale/provenance), retarget + clearance report, CSV, minimal COLMAP import | Tested on Mac |
+| `src/onecreations/shotpkg/` | Project loader + shot cross-reference validator + event schedule | Tested on Mac |
+| `src/onecreations/cachekeys.py`, `hashing.py` | Canonical JSON, content/array digests, artifact dependency graph | Tested on Mac |
+| `src/onecreations/blender_bridge.py`, `blender_bundle.py` | Find/run Blender headless; load + verify export bundles | Tested on Mac (Blender 4.5.14) |
+| `integrations/blender/` | `build_diagnostic_scene.py`, `oc_export.py`, `oc_import_camera.py`, `oc_visualize_trajectory.py` | Tested on Mac — **re-run on Windows in M1** |
+| `examples/diagnostic/` | Fixture project from v1's own numbers (contact 0.90 s, 6 s shot, impact hold); backend profile is a labelled test fixture | Validates (2 expected warnings) |
 
-**Not started (by design, desktop work):** Blender integration/exporters, contracts/schemas package, ComfyUI workflow templates, evaluation metrics, studio UI, job queue. v1 §28 lists the target layout; create folders as work starts — not before.
+**Not started:** Session B (VFX event system, dataset/provenance pipeline, 12-shot evaluation framework), ComfyUI workflow templates, studio UI, job queue. Deferred Session A items are listed in `docs/contracts.md` (Cryptomatte decoding, beauty renders, motion vectors, joint visibility, sub-frame pass rendering, auto path adjustment, COLMAP distortion/gyro, visualizer preview renders).
+
+### M1 checklist for the desktop (in order)
+
+1. Follow `docs/runbooks/windows-desktop-setup.md` (iGPU display, sysmem fallback off, pagefile, Blender 4.5 LTS, uv).
+2. `uv sync` then `uv run pytest -q`. The 11 Blender tests run if Blender 4.5 is found (default install path or `$env:ONECREATIONS_BLENDER`); they must pass on Windows too — record any numeric differences from `docs/contracts.md`.
+3. `uv run onecreations blender info` (should report the pinned 4.5 series) and `uv run onecreations validate-shot examples/diagnostic`.
+4. `powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1` → G0.
+5. Update this file and push; then M2/M3.
 
 ---
 
@@ -90,6 +109,7 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 1. If LTX-2.5 admission is **outcome C**: approve a ≤ 2 h H100 cloud T0 comparison (≤ ₹710)? Or promote the best admitted challenger? (Decide when M3 finishes.)
 2. Gate B unlock after the pilot (M8).
 3. Where the desktop keeps big data: assumed `D:\onecreations\` (models/, datasets/, caches/, renders/). Change in `docs/runbooks/windows-desktop-setup.md` if different.
+4. When to run Session B (VFX events, dataset/provenance, evaluation framework): on the Mac before M1, or after the first GPU measurements. Not started automatically.
 
 ---
 
@@ -104,4 +124,5 @@ At the end of every session on any machine:
 
 ## Session log
 
+- **2026-10-02 · Mac (Session A)** — Built the hardware-independent core: contracts + JSON Schemas, exact time base/TimeWarp, camera geometry, trajectory library (stats, normalization, retarget + clearance, CSV, minimal COLMAP), shot validator with event schedule, cache-key graph, Blender exporter/importer/trajectory visualizer + diagnostic scene, CLI. Installed Blender 4.5.14 LTS on the Mac (checksum verified; 4.3 kept). 107 tests pass (96 pure, 11 headless Blender). Mac/Blender measurements: Cycles depth is planar (1.4 µm median error vs 0.29 m Euclidean); projection matches `world_to_camera_view` to ≈ 0.0005 px; depth unprojection recovers floor/wall planes to ≈ 6 µm; repeated exports have identical canonical manifests. No GPU work, no spend. Session B not started.
 - **2026-10-02 · Mac** — Repo created. Archived v1 research doc. ADR-0001 adopted: 4070-first → H100 only after admission; ₹15,000 hard ceiling (Gate A ₹5,000); LTX-2.5 stays primary candidate; VACE-1.3B is a local experiment; 32 GB RAM stays; LTX inference on 32 GB to be measured, not assumed. Built tooling (env check, monitor, safetensors inspector, hasher, budget ledger) and unit tests (Mac). Nothing installed or measured on the desktop yet. ₹0 spent.

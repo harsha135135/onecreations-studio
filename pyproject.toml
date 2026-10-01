@@ -1,20 +1,35 @@
 [project]
 name = "onecreations-studio"
-version = "0.0.1"
-description = "OneCreations controlled-cinematics production system: tooling, contracts and experiment records"
+version = "0.1.0"
+description = "OneCreations controlled-cinematics production system: contracts, camera/action timeline, Blender integration and experiment records"
 authors = [{ name = "Harshavardhan M" }]
 requires-python = ">=3.11"
 dependencies = [
+    "numpy>=1.26",
     "psutil>=5.9",
+    "pydantic>=2.7",
     "pyyaml>=6.0",
 ]
+
+[project.scripts]
+onecreations = "onecreations.__main__:main"
 
 [dependency-groups]
 dev = ["pytest>=8"]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/onecreations"]
+
 [tool.uv]
-package = false
+package = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "src"]
+markers = [
+    "blender: runs headless Blender (set ONECREATIONS_BLENDER or install Blender 4.5 LTS); skipped when Blender is missing",
+]

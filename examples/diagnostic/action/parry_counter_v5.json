@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "id": "parry_counter_v5",
+  "version": "5.0.0",
+  "duration": "12/5",
+  "actors": {
+    "fighter_A": "hero_v4",
+    "fighter_B": "asura_v3"
+  },
+  "phases": [
+    {
+      "id": "advance",
+      "kind": "advance",
+      "actor": "fighter_A",
+      "start": "0",
+      "end": "9/20"
+    },
+    {
+      "id": "strike",
+      "kind": "strike",
+      "actor": "fighter_B",
+      "start": "9/20",
+      "end": "18/25"
+    },
+    {
+      "id": "defense",
+      "kind": "defense",
+      "actor": "fighter_A",
+      "start": "18/25",
+      "end": "9/10"
+    },
+    {
+      "id": "recoil",
+      "kind": "recoil",
+      "actor": "fighter_B",
+      "start": "6/5",
+      "end": "9/5"
+    },
+    {
+      "id": "counterattack",
+      "kind": "counterattack",
+      "actor": "fighter_A",
+      "start": "9/5",
+      "end": "43/20"
+    },
+    {
+      "id": "dodge",
+      "kind": "dodge",
+      "actor": "fighter_B",
+      "start": "43/20",
+      "end": "12/5"
+    }
+  ],
+  "contacts": [
+    {
+      "id": "parry_contact",
+      "participants": [
+        "fighter_A.sword",
+        "fighter_B.sword"
+      ],
+      "start": "0.88",
+      "end": "0.92",
+      "contact_points": [
+        "fighter_A.sword.mid",
+        "fighter_B.sword.tip"
+      ],
+      "required": true,
+      "event": "parry_001"
+    },
+    {
+      "id": "wall_hit",
+      "participants": [
+        "fighter_B.body",
+        "fighter_B.back"
+      ],
+      "start": "1.98",
+      "end": "2.05",
+      "required": true,
+      "event": "wall_impact_002"
+    }
+  ]
+}

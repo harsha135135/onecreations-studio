@@ -1,0 +1,234 @@
+{
+  "$defs": {
+    "AdmissionSummary": {
+      "additionalProperties": true,
+      "properties": {
+        "auto_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Auto Flags",
+          "type": "array"
+        },
+        "baseline_gpu_mem_used_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Gpu Mem Used Mb"
+        },
+        "baseline_swap_used_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Swap Used Mb"
+        },
+        "min_ram_available_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Ram Available Mb"
+        },
+        "peak_gpu_mem_used_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Gpu Mem Used Mb"
+        },
+        "peak_proc_tree_rss_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Proc Tree Rss Mb"
+        },
+        "peak_ram_used_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Ram Used Mb"
+        },
+        "peak_swap_used_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Swap Used Mb"
+        },
+        "samples": {
+          "title": "Samples",
+          "type": "integer"
+        },
+        "swap_growth_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Swap Growth Mb"
+        }
+      },
+      "required": [
+        "samples"
+      ],
+      "title": "AdmissionSummary",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/admission_record.schema.json",
+  "additionalProperties": false,
+  "description": "One line of `admission_records/records.jsonl` written by tools/admission/monitor.py.",
+  "properties": {
+    "command": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Command",
+      "type": "array"
+    },
+    "exit_code": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Exit Code"
+    },
+    "host": {
+      "additionalProperties": true,
+      "title": "Host",
+      "type": "object"
+    },
+    "interrupted": {
+      "title": "Interrupted",
+      "type": "boolean"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "command",
+        "attach"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "pattern": "^(pass|partial|fail)\\b",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcome"
+    },
+    "provenance": {
+      "const": "measured",
+      "title": "Provenance",
+      "type": "string"
+    },
+    "samples_csv": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Samples Csv"
+    },
+    "settings": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "title": "Settings",
+      "type": "object"
+    },
+    "started_at": {
+      "title": "Started At",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/AdmissionSummary"
+    },
+    "wall_seconds": {
+      "title": "Wall Seconds",
+      "type": "number"
+    }
+  },
+  "required": [
+    "label",
+    "started_at",
+    "wall_seconds",
+    "mode",
+    "command",
+    "exit_code",
+    "interrupted",
+    "host",
+    "summary",
+    "samples_csv",
+    "provenance"
+  ],
+  "title": "AdmissionRecord",
+  "type": "object"
+}

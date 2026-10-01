@@ -1,0 +1,129 @@
+{
+  "$id": "onecreations/experiment_record.schema.json",
+  "additionalProperties": false,
+  "description": "Matches `training/**/experiment-card*.yaml`. Free-form sections stay dicts until the trainer is pinned.",
+  "properties": {
+    "base_model": {
+      "title": "Base Model",
+      "type": "string"
+    },
+    "baseline_failure": {
+      "title": "Baseline Failure",
+      "type": "string"
+    },
+    "compute": {
+      "additionalProperties": true,
+      "title": "Compute",
+      "type": "object"
+    },
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decision"
+    },
+    "deployment_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Deployment Model"
+    },
+    "evaluation": {
+      "additionalProperties": true,
+      "title": "Evaluation",
+      "type": "object"
+    },
+    "hypothesis": {
+      "title": "Hypothesis",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "init_adapter": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Init Adapter"
+    },
+    "method": {
+      "additionalProperties": true,
+      "title": "Method",
+      "type": "object"
+    },
+    "purpose": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Purpose"
+    },
+    "results": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Results",
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "ready",
+        "running",
+        "done",
+        "rejected"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "stop_rules": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Stop Rules",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "status",
+    "hypothesis",
+    "baseline_failure",
+    "base_model",
+    "data",
+    "method",
+    "compute",
+    "evaluation"
+  ],
+  "title": "ExperimentRecord",
+  "type": "object"
+}

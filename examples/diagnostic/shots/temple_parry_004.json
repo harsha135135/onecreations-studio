@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "temple_parry_004",
+  "scene_state_in": "temple_after_charge_v3",
+  "duration_seconds": 6,
+  "output_fps": {
+    "num": 24,
+    "den": 1
+  },
+  "assets": [
+    "hero_v4",
+    "asura_v3",
+    "temple_v2",
+    "sword_pair_v2"
+  ],
+  "choreography": "parry_counter_v5",
+  "camera": "temple_dive_to_parry_v1",
+  "timewarp": "impact_hold_v2",
+  "lighting": "storm_blue_v1",
+  "references": [
+    "approved_start",
+    "approved_contact",
+    "approved_end"
+  ],
+  "generation": {
+    "backend_profile": "fixture_depth_backend",
+    "allowed_regions": [
+      "distant_environment",
+      "atmosphere"
+    ],
+    "protected_regions": [
+      "heroes",
+      "hands",
+      "weapons",
+      "foreground_architecture"
+    ],
+    "controls": [
+      "depth",
+      "first_frame"
+    ],
+    "reference_count": 1,
+    "width": 640,
+    "height": 384
+  },
+  "events": [
+    "parry_001",
+    "wall_impact_002"
+  ],
+  "continuity_out": "temple_broken_pillar_v4",
+  "acceptance": "action_benchmark_v1"
+}

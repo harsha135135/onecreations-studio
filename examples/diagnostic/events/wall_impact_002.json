@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "wall_impact_002",
+  "type": "WallImpact",
+  "source_time_seconds": "2.0",
+  "attachment": "fighter_B.back",
+  "participants": [
+    "fighter_B.body",
+    "temple_v2.wall_north"
+  ],
+  "seed": 112,
+  "effects": {
+    "debris": {
+      "preset": "stone_chunks_medium"
+    },
+    "dust": {
+      "preset": "temple_dust"
+    },
+    "audio": {
+      "asset": "foley/stone_impact_03",
+      "offset_seconds": 0.0
+    }
+  }
+}

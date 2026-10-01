@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "temple_dive_to_parry_v1",
+  "units": "meters",
+  "coordinate_system": "blender_z_up",
+  "pose_convention": "camera_to_world",
+  "rotation_format": "quaternion_wxyz",
+  "trajectory": "temple_dive_to_parry_v1.csv",
+  "intrinsics": {
+    "lens_mm": 28,
+    "sensor_width_mm": 36,
+    "resolution_x": 1920,
+    "resolution_y": 1080
+  },
+  "target_bindings": [
+    "fighter_A.chest",
+    "blade_contact"
+  ],
+  "constraints": {
+    "minimum_clearance_m": 0.15,
+    "preserve_roll": true,
+    "max_angular_acceleration": "artist_defined"
+  },
+  "provenance": {
+    "source": "authored",
+    "confidence": "verified_in_scene",
+    "scale": "metric_verified"
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "$defs": {
+    "CameraConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "max_angular_acceleration": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "artist_defined",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Angular Acceleration"
+        },
+        "minimum_clearance_m": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Minimum Clearance M",
+          "type": "number"
+        },
+        "preserve_roll": {
+          "default": true,
+          "title": "Preserve Roll",
+          "type": "boolean"
+        }
+      },
+      "title": "CameraConstraints",
+      "type": "object"
+    },
+    "CameraIntrinsicsModel": {
+      "additionalProperties": false,
+      "description": "Blender perspective camera parameters (static over the motion; lens may additionally vary per sample).",
+      "properties": {
+        "K": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Derived 3x3 intrinsics (pixels, top-left origin)",
+          "title": "K"
+        },
+        "clip_end": {
+          "default": 1000.0,
+          "exclusiveMinimum": 0,
+          "title": "Clip End",
+          "type": "number"
+        },
+        "clip_start": {
+          "default": 0.1,
+          "exclusiveMinimum": 0,
+          "title": "Clip Start",
+          "type": "number"
+        },
+        "lens_mm": {
+          "exclusiveMinimum": 0,
+          "title": "Lens Mm",
+          "type": "number"
+        },
+        "pixel_aspect_x": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Pixel Aspect X",
+          "type": "number"
+        },
+        "pixel_aspect_y": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Pixel Aspect Y",
+          "type": "number"
+        },
+        "resolution_percentage": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Resolution Percentage",
+          "type": "integer"
+        },
+        "resolution_x": {
+          "default": 1920,
+          "exclusiveMinimum": 0,
+          "title": "Resolution X",
+          "type": "integer"
+        },
+        "resolution_y": {
+          "default": 1080,
+          "exclusiveMinimum": 0,
+          "title": "Resolution Y",
+          "type": "integer"
+        },
+        "sensor_fit": {
+          "default": "AUTO",
+          "enum": [
+            "AUTO",
+            "HORIZONTAL",
+            "VERTICAL"
+          ],
+          "title": "Sensor Fit",
+          "type": "string"
+        },
+        "sensor_height_mm": {
+          "default": 24.0,
+          "exclusiveMinimum": 0,
+          "title": "Sensor Height Mm",
+          "type": "number"
+        },
+        "sensor_width_mm": {
+          "default": 36.0,
+          "exclusiveMinimum": 0,
+          "title": "Sensor Width Mm",
+          "type": "number"
+        },
+        "shift_x": {
+          "default": 0.0,
+          "title": "Shift X",
+          "type": "number"
+        },
+        "shift_y": {
+          "default": 0.0,
+          "title": "Shift Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lens_mm"
+      ],
+      "title": "CameraIntrinsicsModel",
+      "type": "object"
+    },
+    "CameraProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "default": "unknown",
+          "enum": [
+            "verified_in_scene",
+            "estimated",
+            "inspired_by",
+            "unknown"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "scale": {
+          "default": "unknown",
+          "enum": [
+            "metric_verified",
+            "metric_estimated",
+            "unknown"
+          ],
+          "title": "Scale",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "authored",
+            "blender_export",
+            "colmap",
+            "gyro",
+            "csv",
+            "retargeted",
+            "procedural",
+            "mocap",
+            "reference_footage"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "up_axis": {
+          "default": "aligned",
+          "enum": [
+            "aligned",
+            "unaligned"
+          ],
+          "title": "Up Axis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "CameraProvenance",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/camera_motion.schema.json",
+  "additionalProperties": false,
+  "description": "Reusable camera move. Position and rotation are canonical; speed derives from path + time map.",
+  "properties": {
+    "constraints": {
+      "$ref": "#/$defs/CameraConstraints",
+      "default": {
+        "max_angular_acceleration": null,
+        "minimum_clearance_m": 0.0,
+        "preserve_roll": true
+      }
+    },
+    "coordinate_system": {
+      "const": "blender_z_up",
+      "default": "blender_z_up",
+      "title": "Coordinate System",
+      "type": "string"
+    },
+    "duration": {
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Source-time span; derived from samples if absent",
+      "title": "Duration"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "intrinsics": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CameraIntrinsicsModel"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Inline intrinsics or a relative JSON path",
+      "title": "Intrinsics"
+    },
+    "pose_convention": {
+      "const": "camera_to_world",
+      "default": "camera_to_world",
+      "title": "Pose Convention",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/CameraProvenance"
+    },
+    "rotation_format": {
+      "const": "quaternion_wxyz",
+      "default": "quaternion_wxyz",
+      "title": "Rotation Format",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_time_curve": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Time Curve"
+    },
+    "target_bindings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Target Bindings",
+      "type": "array"
+    },
+    "trajectory": {
+      "description": "Samples file (.npz or .csv) relative to this manifest",
+      "title": "Trajectory",
+      "type": "string"
+    },
+    "trajectory_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trajectory Sha256"
+    },
+    "units": {
+      "const": "meters",
+      "default": "meters",
+      "title": "Units",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "trajectory",
+    "intrinsics",
+    "provenance"
+  ],
+  "title": "CameraMotion",
+  "type": "object"
+}

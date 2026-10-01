@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "parry_001",
+  "type": "SwordCollision",
+  "source_time_seconds": 0.9,
+  "attachment": "contact_solver.parry_001",
+  "participants": [
+    "fighter_A.sword",
+    "fighter_B.sword"
+  ],
+  "seed": 731,
+  "effects": {
+    "sparks": {
+      "preset": "steel_parry",
+      "duration_seconds": 0.18
+    },
+    "flash": {
+      "preset": "blue_energy",
+      "light_scene": true
+    },
+    "camera_impulse": {
+      "preset": "short_impact",
+      "space": "camera_local"
+    },
+    "audio": {
+      "asset": "foley/parry_07",
+      "offset_seconds": 0.0
+    }
+  },
+  "cache_key_inputs": [
+    "scene_version",
+    "choreography_version",
+    "timewarp_version"
+  ]
+}

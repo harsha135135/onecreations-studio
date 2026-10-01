@@ -1,0 +1,377 @@
+{
+  "$defs": {
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        }
+      },
+      "required": [
+        "role",
+        "path"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    },
+    "RightsRecord": {
+      "additionalProperties": false,
+      "description": "Who owns an asset and what it may be used for (v1 §14). `ai_training_allowed` must be explicit.",
+      "properties": {
+        "ai_training_allowed": {
+          "title": "Ai Training Allowed",
+          "type": "boolean"
+        },
+        "allowed_uses": {
+          "items": {
+            "enum": [
+              "render",
+              "training",
+              "evaluation",
+              "distribution",
+              "reference"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Uses",
+          "type": "array"
+        },
+        "consent_record": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consent Record"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "license_snapshot_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License Snapshot Sha256"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        }
+      },
+      "required": [
+        "owner",
+        "license",
+        "allowed_uses",
+        "ai_training_allowed"
+      ],
+      "title": "RightsRecord",
+      "type": "object"
+    },
+    "SkeletonSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "bone_map": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "canonical joint name → rig bone name",
+          "title": "Bone Map",
+          "type": "object"
+        },
+        "rig_id": {
+          "title": "Rig Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rig_id",
+        "bone_map"
+      ],
+      "title": "SkeletonSpec",
+      "type": "object"
+    },
+    "StateVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "changes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "changes"
+      ],
+      "title": "StateVariant",
+      "type": "object"
+    },
+    "SymbolSpec": {
+      "additionalProperties": false,
+      "description": "Design-critical symbol whose orientation must never mirror (v1 §9).",
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "mirror_allowed": {
+          "default": false,
+          "title": "Mirror Allowed",
+          "type": "boolean"
+        },
+        "name": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "location"
+      ],
+      "title": "SymbolSpec",
+      "type": "object"
+    },
+    "WeaponSocket": {
+      "additionalProperties": false,
+      "properties": {
+        "bone": {
+          "title": "Bone",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "transform": {
+          "description": "Socket transform in bone space, row-major 4x4, meters",
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Transform",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "bone",
+        "transform"
+      ],
+      "title": "WeaponSocket",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/character_asset.schema.json",
+  "additionalProperties": false,
+  "description": "Design authority for a persistent character (v1 §9).",
+  "properties": {
+    "allowed_variations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Variations",
+      "type": "array"
+    },
+    "detail_inventory": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Detail Inventory",
+      "type": "array"
+    },
+    "display_name": {
+      "title": "Display Name",
+      "type": "string"
+    },
+    "expressions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Expressions",
+      "type": "array"
+    },
+    "files": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/FileRef"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "handedness": {
+      "enum": [
+        "right",
+        "left",
+        "ambidextrous"
+      ],
+      "title": "Handedness",
+      "type": "string"
+    },
+    "height_m": {
+      "exclusiveMinimum": 0,
+      "title": "Height M",
+      "type": "number"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "material_ids": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "default": {},
+      "title": "Material Ids",
+      "type": "object"
+    },
+    "measurements_m": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "default": {},
+      "title": "Measurements M",
+      "type": "object"
+    },
+    "rights": {
+      "$ref": "#/$defs/RightsRecord"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "skeleton": {
+      "$ref": "#/$defs/SkeletonSpec"
+    },
+    "state_variants": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StateVariant"
+      },
+      "title": "State Variants",
+      "type": "array"
+    },
+    "symbols": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SymbolSpec"
+      },
+      "title": "Symbols",
+      "type": "array"
+    },
+    "units": {
+      "const": "meters",
+      "default": "meters",
+      "title": "Units",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "weapon_sockets": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/WeaponSocket"
+      },
+      "title": "Weapon Sockets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "display_name",
+    "height_m",
+    "handedness",
+    "skeleton",
+    "rights"
+  ],
+  "title": "CharacterAsset",
+  "type": "object"
+}

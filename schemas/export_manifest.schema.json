@@ -1,0 +1,693 @@
+{
+  "$defs": {
+    "ArrayFile": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Keys",
+          "type": "array"
+        }
+      },
+      "required": [
+        "file",
+        "digest",
+        "keys"
+      ],
+      "title": "ArrayFile",
+      "type": "object"
+    },
+    "CameraIntrinsicsModel": {
+      "additionalProperties": false,
+      "description": "Blender perspective camera parameters (static over the motion; lens may additionally vary per sample).",
+      "properties": {
+        "K": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Derived 3x3 intrinsics (pixels, top-left origin)",
+          "title": "K"
+        },
+        "clip_end": {
+          "default": 1000.0,
+          "exclusiveMinimum": 0,
+          "title": "Clip End",
+          "type": "number"
+        },
+        "clip_start": {
+          "default": 0.1,
+          "exclusiveMinimum": 0,
+          "title": "Clip Start",
+          "type": "number"
+        },
+        "lens_mm": {
+          "exclusiveMinimum": 0,
+          "title": "Lens Mm",
+          "type": "number"
+        },
+        "pixel_aspect_x": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Pixel Aspect X",
+          "type": "number"
+        },
+        "pixel_aspect_y": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Pixel Aspect Y",
+          "type": "number"
+        },
+        "resolution_percentage": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Resolution Percentage",
+          "type": "integer"
+        },
+        "resolution_x": {
+          "default": 1920,
+          "exclusiveMinimum": 0,
+          "title": "Resolution X",
+          "type": "integer"
+        },
+        "resolution_y": {
+          "default": 1080,
+          "exclusiveMinimum": 0,
+          "title": "Resolution Y",
+          "type": "integer"
+        },
+        "sensor_fit": {
+          "default": "AUTO",
+          "enum": [
+            "AUTO",
+            "HORIZONTAL",
+            "VERTICAL"
+          ],
+          "title": "Sensor Fit",
+          "type": "string"
+        },
+        "sensor_height_mm": {
+          "default": 24.0,
+          "exclusiveMinimum": 0,
+          "title": "Sensor Height Mm",
+          "type": "number"
+        },
+        "sensor_width_mm": {
+          "default": 36.0,
+          "exclusiveMinimum": 0,
+          "title": "Sensor Width Mm",
+          "type": "number"
+        },
+        "shift_x": {
+          "default": 0.0,
+          "title": "Shift X",
+          "type": "number"
+        },
+        "shift_y": {
+          "default": 0.0,
+          "title": "Shift Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lens_mm"
+      ],
+      "title": "CameraIntrinsicsModel",
+      "type": "object"
+    },
+    "DepthCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "measured_convention": {
+          "enum": [
+            "planar",
+            "euclidean",
+            "unverified"
+          ],
+          "title": "Measured Convention",
+          "type": "string"
+        },
+        "median_error_euclidean_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Median Error Euclidean M"
+        },
+        "median_error_planar_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Median Error Planar M"
+        },
+        "probes": {
+          "title": "Probes",
+          "type": "integer"
+        },
+        "stored_as": {
+          "enum": [
+            "planar",
+            "raw"
+          ],
+          "title": "Stored As",
+          "type": "string"
+        }
+      },
+      "required": [
+        "measured_convention",
+        "probes",
+        "median_error_planar_m",
+        "median_error_euclidean_m",
+        "stored_as"
+      ],
+      "title": "DepthCheck",
+      "type": "object"
+    },
+    "ExportArmature": {
+      "additionalProperties": false,
+      "properties": {
+        "bones": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Bones",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "oc_id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Oc Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "oc_id",
+        "name",
+        "bones"
+      ],
+      "title": "ExportArmature",
+      "type": "object"
+    },
+    "ExportCamera": {
+      "additionalProperties": false,
+      "properties": {
+        "animated_lens": {
+          "title": "Animated Lens",
+          "type": "boolean"
+        },
+        "animated_shift": {
+          "title": "Animated Shift",
+          "type": "boolean"
+        },
+        "intrinsics": {
+          "$ref": "#/$defs/CameraIntrinsicsModel"
+        },
+        "object_name": {
+          "title": "Object Name",
+          "type": "string"
+        },
+        "samples": {
+          "$ref": "#/$defs/ArrayFile"
+        }
+      },
+      "required": [
+        "object_name",
+        "intrinsics",
+        "samples",
+        "animated_lens",
+        "animated_shift"
+      ],
+      "title": "ExportCamera",
+      "type": "object"
+    },
+    "ExportFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "blender_frame": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Exact Blender frame number (frame_start + source_time × fps)",
+          "title": "Blender Frame"
+        },
+        "index": {
+          "minimum": 0,
+          "title": "Index",
+          "type": "integer"
+        },
+        "output_time": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "Output Time"
+        },
+        "source_time": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "Source Time"
+        }
+      },
+      "required": [
+        "index",
+        "output_time",
+        "source_time",
+        "blender_frame"
+      ],
+      "title": "ExportFrame",
+      "type": "object"
+    },
+    "ExportObject": {
+      "additionalProperties": false,
+      "properties": {
+        "bound_box_local": {
+          "description": "8 local-space corners (Blender order)",
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Bound Box Local",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "oc_id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Oc Id",
+          "type": "string"
+        },
+        "pass_index": {
+          "title": "Pass Index",
+          "type": "integer"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "oc_id",
+        "name",
+        "type",
+        "pass_index",
+        "bound_box_local"
+      ],
+      "title": "ExportObject",
+      "type": "object"
+    },
+    "ExportPasses": {
+      "additionalProperties": false,
+      "properties": {
+        "background_depth": {
+          "const": "inf",
+          "default": "inf",
+          "title": "Background Depth",
+          "type": "string"
+        },
+        "depth": {
+          "$ref": "#/$defs/DepthCheck"
+        },
+        "engine": {
+          "title": "Engine",
+          "type": "string"
+        },
+        "file": {
+          "$ref": "#/$defs/ArrayFile"
+        },
+        "filter_width": {
+          "title": "Filter Width",
+          "type": "number"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "normal_space": {
+          "const": "world",
+          "default": "world",
+          "title": "Normal Space",
+          "type": "string"
+        },
+        "object_index_map": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Object Index Map",
+          "type": "object"
+        },
+        "samples": {
+          "title": "Samples",
+          "type": "integer"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "engine",
+        "samples",
+        "filter_width",
+        "width",
+        "height",
+        "file",
+        "depth",
+        "object_index_map"
+      ],
+      "title": "ExportPasses",
+      "type": "object"
+    },
+    "ExportScene": {
+      "additionalProperties": false,
+      "properties": {
+        "fps": {
+          "$ref": "#/$defs/FrameRateModel"
+        },
+        "frame_end": {
+          "title": "Frame End",
+          "type": "integer"
+        },
+        "frame_start": {
+          "title": "Frame Start",
+          "type": "integer"
+        },
+        "length_unit": {
+          "title": "Length Unit",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "unit_scale": {
+          "title": "Unit Scale",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "fps",
+        "frame_start",
+        "frame_end",
+        "length_unit",
+        "unit_scale"
+      ],
+      "title": "ExportScene",
+      "type": "object"
+    },
+    "ExportShot": {
+      "additionalProperties": false,
+      "properties": {
+        "duration": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "Duration"
+        },
+        "frame_count": {
+          "exclusiveMinimum": 0,
+          "title": "Frame Count",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "output_fps": {
+          "$ref": "#/$defs/FrameRateModel"
+        },
+        "timewarp_keys": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "anyOf": [
+                  {
+                    "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+              },
+              {
+                "anyOf": [
+                  {
+                    "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Timewarp Keys",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "output_fps",
+        "frame_count",
+        "duration",
+        "timewarp_keys"
+      ],
+      "title": "ExportShot",
+      "type": "object"
+    },
+    "FrameRateModel": {
+      "additionalProperties": false,
+      "properties": {
+        "den": {
+          "default": 1,
+          "exclusiveMinimum": 0,
+          "title": "Den",
+          "type": "integer"
+        },
+        "num": {
+          "exclusiveMinimum": 0,
+          "title": "Num",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "num"
+      ],
+      "title": "FrameRateModel",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/export_manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "armatures": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ExportArmature"
+      },
+      "title": "Armatures",
+      "type": "array"
+    },
+    "blender_version": {
+      "title": "Blender Version",
+      "type": "string"
+    },
+    "camera": {
+      "$ref": "#/$defs/ExportCamera"
+    },
+    "content_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Sha256",
+      "type": "string"
+    },
+    "conventions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Conventions",
+      "type": "object"
+    },
+    "deferred": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Deferred",
+      "type": "array"
+    },
+    "exporter_version": {
+      "title": "Exporter Version",
+      "type": "string"
+    },
+    "frames": {
+      "items": {
+        "$ref": "#/$defs/ExportFrame"
+      },
+      "title": "Frames",
+      "type": "array"
+    },
+    "joints_file": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArrayFile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "objects": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ExportObject"
+      },
+      "title": "Objects",
+      "type": "array"
+    },
+    "objects_file": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArrayFile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "passes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExportPasses"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "probe_labels": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Probe Labels",
+      "type": "array"
+    },
+    "probes_file": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArrayFile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "scene": {
+      "$ref": "#/$defs/ExportScene"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "shot": {
+      "$ref": "#/$defs/ExportShot"
+    },
+    "source_file": {
+      "title": "Source File",
+      "type": "string"
+    }
+  },
+  "required": [
+    "exporter_version",
+    "blender_version",
+    "source_file",
+    "conventions",
+    "scene",
+    "shot",
+    "frames",
+    "camera",
+    "content_sha256"
+  ],
+  "title": "ExportManifest",
+  "type": "object"
+}

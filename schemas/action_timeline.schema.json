@@ -1,0 +1,227 @@
+{
+  "$defs": {
+    "ContactInterval": {
+      "additionalProperties": false,
+      "description": "An authored contact: e.g. blade-on-blade between fighter_A.sword and fighter_B.sword.",
+      "properties": {
+        "contact_points": {
+          "default": [],
+          "description": "e.g. fighter_A.sword.tip",
+          "items": {
+            "type": "string"
+          },
+          "title": "Contact Points",
+          "type": "array"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "End"
+        },
+        "event": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VFX/audio event triggered by this contact",
+          "title": "Event"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "participants": {
+          "description": "role.part references, e.g. fighter_A.sword",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Participants",
+          "type": "array"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "Start"
+        }
+      },
+      "required": [
+        "id",
+        "participants",
+        "start",
+        "end"
+      ],
+      "title": "ContactInterval",
+      "type": "object"
+    },
+    "Phase": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "description": "Actor role, e.g. fighter_A",
+          "title": "Actor",
+          "type": "string"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "End"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "advance",
+            "strike",
+            "defense",
+            "contact",
+            "recoil",
+            "counterattack",
+            "dodge",
+            "throw",
+            "impact",
+            "hold",
+            "recovery",
+            "idle",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+          "title": "Start"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "actor",
+        "start",
+        "end"
+      ],
+      "title": "Phase",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/action_timeline.schema.json",
+  "additionalProperties": false,
+  "description": "Choreography in source time. `actors` binds roles to asset IDs so motion survives character swaps.",
+  "properties": {
+    "actors": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "description": "role → asset id, e.g. {fighter_A: hero_v4}",
+      "minProperties": 1,
+      "title": "Actors",
+      "type": "object"
+    },
+    "contacts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ContactInterval"
+      },
+      "title": "Contacts",
+      "type": "array"
+    },
+    "duration": {
+      "anyOf": [
+        {
+          "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+      "title": "Duration"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "phases": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Phase"
+      },
+      "title": "Phases",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "duration",
+    "actors"
+  ],
+  "title": "ActionTimeline",
+  "type": "object"
+}

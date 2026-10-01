@@ -1,0 +1,73 @@
+{
+  "$id": "onecreations/timewarp.schema.json",
+  "additionalProperties": false,
+  "description": "Output time → source time map (monotonic piecewise-linear; holds allowed).",
+  "properties": {
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "keys": {
+      "items": {
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "anyOf": [
+              {
+                "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+          },
+          {
+            "anyOf": [
+              {
+                "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals."
+          }
+        ],
+        "type": "array"
+      },
+      "minItems": 2,
+      "title": "Keys",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "keys"
+  ],
+  "title": "TimeWarpModel",
+  "type": "object"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "fixture_depth_backend",
+  "model_id": "fixture",
+  "runtime": "none (test fixture)",
+  "tasks": [
+    "i2v",
+    "v2v_control"
+  ],
+  "control_modalities": [
+    "depth",
+    "first_frame"
+  ],
+  "max_reference_images": 1,
+  "width_multiple": 32,
+  "height_multiple": 32,
+  "frame_count": {
+    "multiple": 8,
+    "remainder": 1,
+    "max_frames": 121
+  },
+  "admission": {
+    "status": "not_run"
+  },
+  "notes": "TEST FIXTURE ONLY. These limits are invented for validator tests and are not any real model's constraints."
+}

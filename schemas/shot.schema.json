@@ -1,0 +1,287 @@
+{
+  "$defs": {
+    "FrameRateModel": {
+      "additionalProperties": false,
+      "properties": {
+        "den": {
+          "default": 1,
+          "exclusiveMinimum": 0,
+          "title": "Den",
+          "type": "integer"
+        },
+        "num": {
+          "exclusiveMinimum": 0,
+          "title": "Num",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "num"
+      ],
+      "title": "FrameRateModel",
+      "type": "object"
+    },
+    "GenerationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_regions": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+            "type": "string"
+          },
+          "title": "Allowed Regions",
+          "type": "array"
+        },
+        "backend_profile": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Backend Profile",
+          "type": "string"
+        },
+        "controls": {
+          "default": [],
+          "items": {
+            "enum": [
+              "depth",
+              "pose",
+              "edges",
+              "normal",
+              "mask",
+              "first_frame",
+              "last_frame",
+              "keyframes",
+              "reference_image",
+              "camera_matrices",
+              "plucker_rays",
+              "optical_flow"
+            ],
+            "type": "string"
+          },
+          "title": "Controls",
+          "type": "array"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Height"
+        },
+        "protected_regions": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+            "type": "string"
+          },
+          "title": "Protected Regions",
+          "type": "array"
+        },
+        "reference_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Reference Count",
+          "type": "integer"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Width"
+        }
+      },
+      "required": [
+        "backend_profile"
+      ],
+      "title": "GenerationSpec",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/shot.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Acceptance"
+    },
+    "assets": {
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Assets",
+      "type": "array"
+    },
+    "camera": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Camera",
+      "type": "string"
+    },
+    "choreography": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Choreography",
+      "type": "string"
+    },
+    "continuity_out": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Continuity Out"
+    },
+    "duration_seconds": {
+      "anyOf": [
+        {
+          "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "description": "Seconds, exact. Serialized as \"n/d\" (e.g. \"9/10\"); accepts numbers and decimals.",
+      "title": "Duration Seconds"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "generation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GenerationSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "lighting": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lighting"
+    },
+    "output_fps": {
+      "$ref": "#/$defs/FrameRateModel"
+    },
+    "references": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "References",
+      "type": "array"
+    },
+    "scene_state_in": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Scene State In",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_start": {
+      "anyOf": [
+        {
+          "pattern": "^\\s*-?\\d+(\\.\\d+)?(\\s*/\\s*\\d+)?\\s*$",
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "default": 0,
+      "description": "Choreography source time at output time 0 (used when no timewarp is given)",
+      "title": "Source Start"
+    },
+    "timewarp": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Timewarp"
+    }
+  },
+  "required": [
+    "id",
+    "scene_state_in",
+    "duration_seconds",
+    "output_fps",
+    "assets",
+    "choreography",
+    "camera"
+  ],
+  "title": "Shot",
+  "type": "object"
+}
