@@ -1,0 +1,20 @@
+[project]
+name = "onecreations-studio"
+version = "0.0.1"
+description = "OneCreations controlled-cinematics production system: tooling, contracts and experiment records"
+authors = [{ name = "Harshavardhan M" }]
+requires-python = ">=3.11"
+dependencies = [
+    "psutil>=5.9",
+    "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

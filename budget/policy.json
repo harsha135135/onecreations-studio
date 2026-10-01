@@ -1,0 +1,17 @@
+{
+  "currency": "INR",
+  "hard_ceiling_inr": 15000,
+  "gate_a_ceiling_inr": 5000,
+  "gate_b_unlocked": false,
+  "gate_b_unlocked_by": null,
+  "gate_b_unlocked_on": null,
+  "gate_b_evidence": null,
+  "planning_rates_inr_per_hour": {
+    "rtx4090": 95,
+    "a100_80gb": 195,
+    "h100_pcie": 355,
+    "h100_sxm": 430,
+    "h200": 565
+  },
+  "rate_basis": "ADR-0001 D4 / v1 section 17: Runpod on-demand list prices retrieved for v1 (4090 $0.74, A100 $1.59, H100 PCIe $2.89, H100 SXM $3.49, H200 $4.59) x Rs100/USD assumption x 1.22 margin, rounded up. Planning rates, not quotes: re-check the live payable rate before every launch and pass it with --rate."
+}

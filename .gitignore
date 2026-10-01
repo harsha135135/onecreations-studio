@@ -1,0 +1,40 @@
+# Large artifacts live under the data root (default D:\onecreations\), never in Git.
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+*.onnx
+*.npz
+*.npy
+*.exr
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.blend1
+models/
+datasets/
+caches/
+renders/
+outputs/
+checkpoints/
+latents/
+
+# Admission time-series are small CSVs and stay committed; raw logs don't.
+admission_records/**/*.log
+
+# Python / tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.pem
+runpod_api_key*

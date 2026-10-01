@@ -1,0 +1,31 @@
+id: T2S-wan-vace-1.3b-depth-v1
+status: proposed
+purpose: >
+  Local rehearsal of the whole video-adapter loop on our own data, plus a small-model result. Not a substitute for the
+  LTX-2.5 adapter; weights do not transfer (ADR-0001 D1).
+hypothesis: >
+  A rank-16/32 LoRA on Wan2.1-VACE-1.3B, trained on paired depth-control -> polished-render clips, improves held-out
+  appearance adherence over pretrained VACE-1.3B with the same controls.
+baseline_failure: TODO-from-T0
+base_model: wan21_vace_1_3b
+data:
+  clips: "200 diagnostic clips first; grouped splits by scene/asset/choreography/camera family"
+  frames: [33, 49]
+  resolution: ["576x320", "832x480"]
+  control: depth
+  rights: "own renders only"
+method:
+  lora_rank: [16, 32]
+  targets: attention projections (record exact list)
+  precision: {base: bf16, lora: bf16}
+  cached: [umt5_text_embeddings, vae_latents]
+  batch: 1
+  gradient_checkpointing: true
+compute:
+  where: local_rtx4070
+  cap_local_gpu_hours: {pilot: 24, full: 72}
+evaluation:
+  compare_against: pretrained VACE-1.3B, same controls/refs/seeds
+  metrics: [pose/contact checks, landmark camera adherence, temporal stability, blind preference]
+results: {}
+decision: null

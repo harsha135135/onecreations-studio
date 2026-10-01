@@ -1,0 +1,83 @@
+# Model registry. Every hash/commit is filled on the desktop from the exact downloaded files.
+# admission.status: not_run | A_admitted | B_preview_only | C_not_admitted   (ADR-0001 D3)
+# Numbers marked "published" come from the cited source; "arithmetic" are size estimates; nothing here is measured yet.
+schema_version: 1
+
+models:
+  - id: ltx25_22b_distilled
+    role: primary_video_candidate          # chosen by T0 benchmark quality/controllability (ADR-0001 D1)
+    source: https://huggingface.co/Lightricks/LTX-2.5
+    license: LTX-2 community agreement (commercial license above US$10M annual revenue; see v1 §4)
+    license_snapshot: TODO
+    route: official ComfyUI 2.5 workflow, INT8 ConvRot components (Comfy-specific)
+    files:
+      - {name: ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors, sha256: TODO}
+      - {name: gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors, sha256: TODO}
+      - {name: ltx-2.5-video-vae-conv-bf16.safetensors, sha256: TODO}
+    memory_notes: "published: official general requirement 32 GB VRAM. arithmetic: transformer ~22 GB + encoder ~12 GB at INT8 > 32 GB RAM, so load sequentially."
+    local_training: false                  # 22B; trained only on H100 after G4/G5
+    admission: {status: not_run, envelope: null, records: []}
+
+  - id: ltx_union_ic_lora
+    role: control_adapter_for_primary
+    source: https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Union-Control
+    note: "The official 2.5 Union Control distilled workflow references this 2.3-named adapter (v1 §5). Use exactly that combination."
+    files:
+      - {name: TODO-from-official-workflow-json, sha256: TODO}
+    inspected_rank: TODO                   # tools/inspect_safetensors.py --lora-summary
+    inspected_modules: TODO
+    trainer_resume_compatible: unknown     # checked locally in M6 before any H100 spend
+
+  - id: ltx_ingredients_ic_lora
+    role: reference_experiment             # separate graph; never assumed stackable with Union
+    source: https://huggingface.co/Lightricks/LTX-2.5-22b-IC-LoRA-Ingredients
+    files: [{name: TODO, sha256: TODO}]
+
+  - id: flux2_klein_4b_distilled
+    role: keyframe_image_inference
+    source: https://huggingface.co/black-forest-labs/FLUX.2-klein-4B
+    license: Apache-2.0
+    memory_notes: "published: full pipeline ~13 GB; quantization/offload needed on 12 GB"
+    files: [{name: TODO, sha256: TODO}]
+    admission: {status: not_run, envelope: null, records: []}
+
+  - id: flux2_klein_4b_base
+    role: t1_lora_training_base           # train base, deploy on distilled (BFL guide)
+    source: TODO-official-base-checkpoint
+    license: Apache-2.0 (verify for the base checkpoint)
+    local_training: true
+    files: [{name: TODO, sha256: TODO}]
+
+  - id: wan21_vace_1_3b
+    role: local_small_model_experiment     # NOT primary unless it wins T0 on quality (ADR-0001 D1)
+    source: https://github.com/ali-vilab/VACE
+    license: Apache-2.0
+    memory_notes: "arithmetic: ~1.3B params ~2.6 GB bf16; umT5 text encoder is large, cache embeddings then unload"
+    local_training: true
+    files: [{name: TODO, sha256: TODO}]
+    admission: {status: not_run, envelope: null, records: []}
+
+  - id: wan22_ti2v_5b
+    role: optional_challenger              # only if T0 shows it is worth it
+    source: https://github.com/Wan-Video/Wan2.2
+    license: Apache-2.0
+    memory_notes: "published: official 720p route needs 24 GB with offload. arithmetic: ~5 GB weights at FP8"
+    local_training: experimental
+    files: [{name: TODO, sha256: TODO}]
+    admission: {status: not_run, envelope: null, records: []}
+
+  - id: wan21_vace_14b
+    role: challenger_quality_comparison
+    source: https://github.com/ali-vilab/VACE
+    license: Apache-2.0
+    local_training: false                  # out of scope on 32 GB RAM (ADR-0001 D5)
+    admission: {status: not_run, envelope: null, records: []}
+
+# Upstream code pinned to commits (fill when cloned on the desktop).
+runtimes:
+  - {id: comfyui, repo: https://github.com/comfyanonymous/ComfyUI, commit: TODO}
+  - {id: comfyui_ltxvideo, repo: https://github.com/Lightricks/ComfyUI-LTXVideo, commit: TODO}
+  - {id: ltx2_trainer, repo: https://github.com/Lightricks/LTX-2, path: packages/ltx-trainer, commit: TODO}
+  - {id: t1_trainer, repo: TODO, commit: TODO}
+  - {id: wan_trainer, repo: TODO, commit: TODO}
+  - {id: blender, version: "4.5 LTS", build: TODO}

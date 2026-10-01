@@ -1,0 +1,36 @@
+# Experiment card (v1 §29). Not a trainer config: the trainer-native config is derived from the pinned trainer's
+# example and stored next to this card once the trainer is chosen.
+id: T1-flux2-klein-character-v1
+status: proposed            # proposed | ready | running | done | rejected
+hypothesis: >
+  A rank-16 LoRA on FLUX.2-klein-base-4B makes approved character appearance more repeatable on held-out
+  angles/lighting than reference-only editing, without hurting editability or a second character.
+baseline_failure: TODO-from-T0     # must name a measured, repeatable failure (G3) before running
+base_model: flux2_klein_4b_base
+deployment_model: flux2_klein_4b_distilled
+data:
+  task: character_views            # or paired_edits (don't mix schemas)
+  train_examples: "40-120 approved views"
+  holdout: "angles, lighting and scene contexts never seen in training"
+  rights: "own renders only; manifest with license snapshot per asset"
+method:
+  lora_rank: 16
+  targets: "image-transformer attention projections supported by the trainer (record exact module list)"
+  frozen: [base_transformer, text_encoder, vae]
+  precision: {base: fp8_or_nf4, lora: bf16}
+  cached: [text_embeddings, latents]
+  batch: 1
+  grad_accum: 4
+  gradient_checkpointing: true
+  optimizer: adamw8bit
+  resolution_buckets: [512]        # add 768/1024 only with >=1 GB VRAM headroom at 512
+compute:
+  where: local_rtx4070
+  cap_local_gpu_hours: 12
+  cloud_fallback: {gpu: rtx4090, cap_hours: 4, gate: A, requires: "local OOM at 512 px or impractical speed + owner approval"}
+evaluation:
+  compare_against: same distilled graph with references, no LoRA
+  metrics: [blind human reference matching, silhouette/costume/ornament/palette checks, second-character bleed]
+  accept_if: "held-out identity improves and editability does not worsen"
+results: {}
+decision: null

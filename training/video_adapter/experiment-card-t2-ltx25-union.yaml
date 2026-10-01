@@ -1,0 +1,36 @@
+id: T2-ltx25-union-depth-continuation-v1
+status: proposed
+hypothesis: >
+  A short continuation of the released Union IC-LoRA, restricted to OneCreations' approved render language with depth
+  control, improves held-out appearance adherence while keeping the pretrained control response and distilled few-step quality.
+baseline_failure: TODO-from-T0
+base_model: ltx25_22b_distilled
+init_adapter: ltx_union_ic_lora           # only if trainer load/resume is verified locally (M6) and on H100 (G5)
+data:
+  clips: "200 diagnostic first; 600-1,000 approved 49-frame clips only after a promising pilot"
+  frames: 49
+  control: depth
+  splits: "grouped by scene/asset/choreography/camera family; held-out families never trained"
+  rights: "own renders only; no Mixamo; no Hunyuan/H3 outputs"
+method:
+  trainable: "existing IC-LoRA parameters only; keep the adapter's actual rank and module layout"
+  frozen: [base_transformer, vae, text_encoder, audio_path]
+  loss: "native video flow-matching on the noised target segment; conditioning segment clean, excluded from loss"
+  cached: [text_embeddings, latents]       # precompute locally if it fits (runbook M6 step 5)
+compute:
+  local_prep: [adapter inspection, resume-compatibility check, dataset, caches if they fit, config, launch script]
+  cloud:
+    gpu: h100_pcie_80gb
+    g5_admission: {cap_hours: 2}
+    gate_a: {cap_hours_total: 8, split: "2 admission/caching + 4 pilot + 2 validation/export"}
+    gate_b: {cap_hours_total: 32, requires: "pilot beats pretrained on held-out + owner approval"}
+    h200: "only on measured 80 GB OOM"
+  preconditions: ["G4 passed", "LTX-2.5 admission outcome A or B", "ledger check OK", "owner go-ahead in session"]
+evaluation:
+  compare_against: "same pretrained Union graph, same controls/refs/seeds/scheduler/dimensions/compositing"
+  accept_if: "improved held-out acceptance without worsening hard constraints (v1 §21)"
+stop_rules:
+  - "resume incompatible or control degraded -> stop T2, keep budget (v1 §16)"
+  - "pilot doesn't beat pretrained -> keep pretrained, money stays unspent"
+results: {}
+decision: null
