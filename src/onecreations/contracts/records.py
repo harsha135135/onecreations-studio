@@ -35,9 +35,21 @@ class AdmissionSummary(Model):
     min_ram_available_mb: float | None = None
     peak_swap_used_mb: float | None = None
     peak_proc_tree_rss_mb: float | None = None
+    peak_proc_tree_private_mb: float | None = None
     baseline_gpu_mem_used_mb: float | None = None
     baseline_swap_used_mb: float | None = None
     swap_growth_mb: float | None = None
+    baseline_commit_total_mb: float | None = None
+    peak_commit_total_mb: float | None = None
+    commit_limit_mb: float | None = None
+    peak_commit_pct: float | None = None
+    pagefile_total_growth_mb: float | None = None
+    pcie_start: str | None = None
+    pcie_end: str | None = None
+    pcie_under_load: dict[str, int] = {}
+    min_pcie_gen_under_load: int | None = None
+    min_pcie_width_under_load: int | None = None
+    expect_pcie: str | None = None
     samples: int
     auto_flags: list[str] = []
 

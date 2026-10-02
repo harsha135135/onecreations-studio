@@ -11,6 +11,18 @@
           "title": "Auto Flags",
           "type": "array"
         },
+        "baseline_commit_total_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Commit Total Mb"
+        },
         "baseline_gpu_mem_used_mb": {
           "anyOf": [
             {
@@ -35,6 +47,54 @@
           "default": null,
           "title": "Baseline Swap Used Mb"
         },
+        "commit_limit_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commit Limit Mb"
+        },
+        "expect_pcie": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expect Pcie"
+        },
+        "min_pcie_gen_under_load": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Pcie Gen Under Load"
+        },
+        "min_pcie_width_under_load": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Pcie Width Under Load"
+        },
         "min_ram_available_mb": {
           "anyOf": [
             {
@@ -47,6 +107,74 @@
           "default": null,
           "title": "Min Ram Available Mb"
         },
+        "pagefile_total_growth_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pagefile Total Growth Mb"
+        },
+        "pcie_end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pcie End"
+        },
+        "pcie_start": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pcie Start"
+        },
+        "pcie_under_load": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "default": {},
+          "title": "Pcie Under Load",
+          "type": "object"
+        },
+        "peak_commit_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Commit Pct"
+        },
+        "peak_commit_total_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Commit Total Mb"
+        },
         "peak_gpu_mem_used_mb": {
           "anyOf": [
             {
@@ -58,6 +186,18 @@
           ],
           "default": null,
           "title": "Peak Gpu Mem Used Mb"
+        },
+        "peak_proc_tree_private_mb": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peak Proc Tree Private Mb"
         },
         "peak_proc_tree_rss_mb": {
           "anyOf": [

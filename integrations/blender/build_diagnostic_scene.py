@@ -11,6 +11,9 @@ Contents (all tagged with `oc_id`, meshes with `pass_index`):
 - diag_wall (4): plane at y = 6 facing −Y. diag_floor (5): plane at z = 0.
 - diag_rig: two-bone armature whose lower bone bends 0 → 60°.
 Frame range 1–24 at 24/1 fps; source time 0 = frame 1.
+
+Optional `--resolution WxH --frames N` (defaults 160x90, 24) make larger/longer control renders for admission rungs;
+the motion keeps the same start/end poses, stretched over N frames (camera end key at N+1). Tests use the defaults.
 """
 
 from __future__ import annotations
@@ -65,14 +68,15 @@ def look_quat(eye, target, roll_deg=0.0):
     return tuple(quat.from_matrix(m[:3, :3]))
 
 
-def build(out_path: str) -> None:
+def build(out_path: str, resolution: tuple[int, int] = (160, 90), frames: int = 24) -> None:
     clear_scene()
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
     scene.render.fps, scene.render.fps_base = 24, 1.0
-    scene.frame_start, scene.frame_end = 1, 24
-    scene.render.resolution_x, scene.render.resolution_y, scene.render.resolution_percentage = 160, 90, 100
+    scene.frame_start, scene.frame_end = 1, frames
+    scene.render.resolution_x, scene.render.resolution_y = resolution
+    scene.render.resolution_percentage = 100
     scene.render.pixel_aspect_x = scene.render.pixel_aspect_y = 1.0
 
     cam_data = bpy.data.cameras.new("OC_Camera")
@@ -83,7 +87,7 @@ def build(out_path: str) -> None:
     scene.collection.objects.link(cam)
     scene.camera = cam
     cam.rotation_mode = "QUATERNION"
-    for frame, loc, roll in ((1, CAM_START, 0.0), (25, CAM_END, 10.0)):
+    for frame, loc, roll in ((1, CAM_START, 0.0), (frames + 1, CAM_END, 10.0)):
         cam.location = loc
         cam.rotation_quaternion = look_quat(loc, (0.0, 0.0, 0.5), roll)
         cam.keyframe_insert("location", frame=frame)
@@ -94,7 +98,7 @@ def build(out_path: str) -> None:
     cube = add_mesh_box("diag_cube", (1.0, 1.0, 1.0), (-1.5, 0.0, 0.5))
     cube.keyframe_insert("location", frame=1)
     cube.location = (1.5, 0.0, 0.5)
-    cube.keyframe_insert("location", frame=24)
+    cube.keyframe_insert("location", frame=frames)
     linear_keys(cube)
     tag(cube, "diag_cube", 1)
 
@@ -104,14 +108,14 @@ def build(out_path: str) -> None:
     asym.rotation_euler = Euler((math.radians(90), 0.0, 0.0))
     asym.keyframe_insert("rotation_euler", frame=1)
     asym.rotation_euler = Euler((math.radians(90), 0.0, math.radians(90)))
-    asym.keyframe_insert("rotation_euler", frame=24)
+    asym.keyframe_insert("rotation_euler", frame=frames)
     linear_keys(asym)
     tag(asym, "diag_asym", 2)
 
     occ = add_mesh_box("diag_occluder", (0.3, 0.3, 3.0), (-6.0, -4.0, 1.5))
     occ.keyframe_insert("location", frame=1)
     occ.location = (6.0, -4.0, 1.5)
-    occ.keyframe_insert("location", frame=24)
+    occ.keyframe_insert("location", frame=frames)
     linear_keys(occ)
     tag(occ, "diag_occluder", 3)
 
@@ -142,7 +146,7 @@ def build(out_path: str) -> None:
     pb.rotation_euler = (0.0, 0.0, 0.0)
     pb.keyframe_insert("rotation_euler", frame=1)
     pb.rotation_euler = (math.radians(60), 0.0, 0.0)
-    pb.keyframe_insert("rotation_euler", frame=24)
+    pb.keyframe_insert("rotation_euler", frame=frames)
     linear_keys(rig)
     tag(rig, "diag_rig")
 
@@ -159,7 +163,11 @@ def build(out_path: str) -> None:
 def main() -> None:
     p = argparse.ArgumentParser(prog="build_diagnostic_scene")
     p.add_argument("--out", required=True)
-    build(p.parse_args(common.script_args()).out)
+    p.add_argument("--resolution", default="160x90", help="WxH")
+    p.add_argument("--frames", type=int, default=24)
+    a = p.parse_args(common.script_args())
+    w, h = (int(v) for v in a.resolution.lower().split("x"))
+    build(a.out, (w, h), a.frames)
 
 
 if __name__ == "__main__":

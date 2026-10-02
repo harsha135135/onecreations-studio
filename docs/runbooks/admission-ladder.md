@@ -3,36 +3,56 @@
 Purpose: **measure**, on this desktop (RTX 4070 12 GB, 32 GB RAM), whether each candidate's real controlled
 graph runs reliably — and record the envelope. Source procedure: v1 §18; decisions: ADR-0001 D3.
 
-**Do not assume LTX-2.5 fails on 32 GB RAM. Run it.** Order: FLUX.2-klein-4B (quick win, shakes out tooling)
-→ Wan2.1-VACE-1.3B → LTX-2.5.
+**Do not assume LTX-2.5 fails on 32 GB RAM. Run it.** The original order was FLUX.2-klein-4B → Wan2.1-VACE-1.3B → LTX-2.5.
+**Owner decision 2026-10-02: LTX-2.5 rungs 1–2 go first**, because the most valuable fact now is whether LTX-2.5 works on this machine
+and what its measured bottleneck is. FLUX and VACE follow.
 
 ## Before every rung
 
 - Fresh reboot or at least: close browsers, Blender, launchers, anything on the GPU. `nvidia-smi` idle ≈ a few hundred MB.
 - Note free RAM. The goal is a clean, repeatable baseline.
+- **Windows Update:** nothing pending that would reboot. **Pause updates** (Settings → Windows Update → Pause) for the run session.
+  Driver updates stay hidden or unselected (see `docs/measurements/`).
+- **PCIe:** the monitor records the link under load and flags anything below Gen4 x16 (`--expect-pcie`). If x4 returns repeatedly,
+  stop and investigate (reseat or slot check) before trusting offload timings.
 - Models from the official sources, hashes recorded (`uv run python tools/registry/hash_files.py ...`) in `model_registry/models.yaml`.
+- **Downloads are staged per rung.** Download only what the rung's graph needs, into `G:\onecreations\models\…`, with
+  `tools\windows\oc_env.ps1` dot-sourced so no cache lands on C:.
 
 ## How to record
 
-Every rung is wrapped by the monitor so VRAM (device-wide), RAM, pagefile and wall time are captured:
+Each run is `monitor.py` wrapping `comfy_run.py`, which launches ComfyUI as a child, runs the jobs, and shuts ComfyUI down.
+The admission record then captures:
+- device VRAM, RAM, the process-tree working set and private bytes
+- commit charge/limit, pagefile use and pagefile growth
+- PCIe gen/width at start, under load and at end
+- wall time
+
+The `comfy_run` report adds:
+- startup time
+- per job: wall time and ComfyUI execution time
+- **per phase** (load / text_encode / denoise / vae_decode / output, from the websocket node events) and denoise step times
+- timestamped ComfyUI log events (model loads, "loaded partially", OOM, tracebacks)
+- output files and status
 
 ```powershell
-# Cold-load measurement for ComfyUI: start the monitor first, then launch ComfyUI, queue the workflow once,
-# wait for the output file, then Ctrl+C the monitor.
-uv run python tools\admission\monitor.py --label ltx25-r1-t2v --attach `
-  --meta width=512 height=320 frames=49 fps=24 steps=<n> quant=int8-convrot vae=conv-bf16 control=none ref=none `
-         runtime=comfyui@<sha> nodes=ComfyUI-LTXVideo@<sha> driver=<ver> `
-  --notes "official LTX-2.5 distilled workflow, offload settings: ..."
+. .\tools\windows\oc_env.ps1
+$X = "$env:ONECREATIONS_DATA\experiments\2026-10-0X_ltx25-r1a"
+uv run python tools\admission\monitor.py --label ltx25-r1a `
+  --meta width=512 height=320 frames=49 fps=24 quant=int8-convrot sysmem=driver-default runtime=comfyui@<sha> `
+         nodes=ComfyUI-LTXVideo@<sha> driver=591.74 comfy_report=$X\report.json `
+  --notes "official 2.5 T2V single-stage distilled, INT8 ConvRot, enhancer off" -- `
+  uv run python tools\admission\comfy_run.py --workflow workflows\ltx25\r1_t2v_api.json --repeat 2 `
+    --seed "<node>/noise_seed=1000" --report $X\report.json --launch-log $X\comfy.log -- `
+    <comfy python.exe> main.py --port 8188 --output-directory $X --temp-directory $env:ONECREATIONS_DATA\temp\comfy
 ```
 
-For scripted runs, wrap the command instead: `monitor.py --label ... --meta ... -- <python ...>`.
+`--repeat 2` runs one cold and one warm job, and the seed is incremented per job so ComfyUI cannot serve the warm run from cache. Add a third
+job only after the variant is viable, or if repeatability needs it. **After a failure,** read the telemetry first (OOM, `loaded partially`,
+commit near limit, paging, PCIe), then make **one** change justified by that bottleneck, and retry under a new label. Further variants need evidence.
 
 Then open `admission_records/records.jsonl`, set `"outcome"` (`pass` / `partial` / `fail`) with a one-line reason,
 and add a row to the results table below. Keep failed rungs; they are evidence.
-
-> Desktop to-do (M3): write `tools/admission/comfy_run.py` that submits an API-format workflow JSON to a running
-> ComfyUI (`POST /prompt`), polls `/history/<id>`, and exits — so "three consecutive jobs" and cold/warm timings
-> are scripted instead of clicked. Add a unit test with a stub HTTP server.
 
 ## Pass criteria (proposed in v1 §18 — targets, not facts)
 

@@ -19,6 +19,9 @@ def test_registry_keeps_primary_and_experiment_roles():
     assert roles["wan21_vace_1_3b"] == "local_small_model_experiment"
 
 
-def test_powershell_script_is_ascii():
-    # Windows PowerShell 5.1 reads BOM-less scripts as ANSI; keep it ASCII.
-    (ROOT / "tools" / "windows" / "check_env.ps1").read_bytes().decode("ascii")
+def test_powershell_scripts_are_ascii():
+    # Windows PowerShell 5.1 reads BOM-less scripts as ANSI; keep them ASCII.
+    scripts = sorted((ROOT / "tools" / "windows").glob("*.ps1"))
+    assert {p.name for p in scripts} >= {"check_env.ps1", "oc_env.ps1"}
+    for p in scripts:
+        p.read_bytes().decode("ascii")

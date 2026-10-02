@@ -21,17 +21,25 @@ Everything here is local and free. Tick the boxes in `STATUS.md` when done.
 ## 2. Data root (outside Git, outside OneDrive)
 
 This desktop uses `G:\onecreations\` (owner-approved 2026-10-02, **temporary**). There is no D: drive: a single 1 TB NVMe is
-split into C:, F: and G:, and G: had about 280 GB free at setup. Do storage planning before M2/M3. Change the path here and in `STATUS.md` if it moves:
+split into C:, F: and G:, and G: had about 280 GB free at setup. That covers first admission work only, with staged downloads and controlled caches.
+**Before building the real model library, add a dedicated 2 TB NVMe (4 TB if the price difference is reasonable)** in M.2_2 or M.2_3. Those are
+chipset Gen4 x4 slots, and ASUS lists no lane sharing with the GPU slot. Then copy the tree across and point `-DataRoot`/`ONECREATIONS_DATA` at it.
+The layout is the same on G: now and on the future drive:
 
 ```
-G:\onecreations\
-  models\      # checkpoints, by family (ltx\, flux2\, wan\) — hashes go in model_registry/models.yaml
-  datasets\    # rendered training/eval data + manifests
-  caches\      # latents / text embeddings, one folder per (model, encoder, VAE) hash
-  renders\     # Blender outputs, control passes
-  envs\        # optional: venvs for upstream tools (ComfyUI, trainers)
-  upstream\    # pinned clones of ComfyUI, ComfyUI-LTXVideo, trainers
+G:\onecreations\            # = ONECREATIONS_DATA
+  models\{ltx,wan,flux}\    # checkpoints by family; hashes go in model_registry/models.yaml
+  datasets\                 # rendered training/eval data + manifests
+  hf-cache\                 # HF_HOME (hub cache, token) and TORCH_HOME
+  comfy\                    # pinned ComfyUI + custom nodes + its own Python/venv + extra_model_paths.yaml
+  renders\                  # Blender outputs, control videos, first frames
+  experiments\              # admission/eval outputs, one folder per run label
+  training\                 # trainer clones, configs, latent/text caches per (model, encoder, VAE) hash
+  temp\                     # uv/pip caches and TEMP for this project's sessions
 ```
+
+**Every shell that downloads, installs or runs models first dot-sources `tools\windows\oc_env.ps1`.** It sets HF_HOME, TORCH_HOME,
+UV_CACHE_DIR, PIP_CACHE_DIR and TEMP to the data root for that session only, so nothing large lands on C:. It makes no global changes.
 
 ## 3. Base tools
 
@@ -64,7 +72,7 @@ One venv per upstream tool, never one global environment (v1 §19). Pin every up
 
 | Env | Purpose | Notes |
 |---|---|---|
-| `comfyui` | LTX-2.5, FLUX.2-klein, Wan VACE inference graphs | ComfyUI (manual install or portable build) + ComfyUI-LTXVideo nodes at pinned commits. Use the PyTorch/CUDA build that ComfyUI's README recommends at that commit. |
+| `comfyui` | LTX-2.5, FLUX.2-klein, Wan VACE inference graphs | `G:\onecreations\comfy\`: ComfyUI + ComfyUI-LTXVideo at pinned commits. It has its **own uv-managed CPython**, because a venv `python.exe` on Windows is a launcher and the CUDA process is the base interpreter. A per-exe NVIDIA profile then touches only ComfyUI. Use the PyTorch/CUDA build ComfyUI's README recommends at that commit. |
 | `flux-train` | T1 FLUX.2-klein-base-4B LoRA | Trainer chosen in `docs/runbooks/local-training.md` |
 | `wan-train` | Wan2.1-VACE-1.3B LoRA (and TI2V-5B if justified) | musubi-tuner or DiffSynth-Studio, whichever supports VACE-1.3B LoRA at the pinned commit |
 | `ltx-prep` | LTX-2 trainer *preprocessing and config validation only* (no 22B training locally) | Same commit that will run on the H100 |
@@ -74,7 +82,7 @@ Rules: PyTorch SDPA attention first; no flash-attn / SageAttention / triton-wind
 Check each env's torch install:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1 -TorchPython G:\onecreations\envs\comfyui\.venv\Scripts\python.exe
+powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1 -TorchPython G:\onecreations\comfy\.venv\Scripts\python.exe
 ```
 
 ## 6. G0 exit
