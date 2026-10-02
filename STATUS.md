@@ -6,11 +6,11 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-10-02 — Mac session A (hardware-independent core) |
-| **Current phase** | **M0 + M0.5 (Mac core, Session A) complete → M1 next (desktop setup)**. Session B is **not** started (owner decides when). |
-| **Who acts next** | The Windows desktop (RTX 4070 12 GB · i7-14700K · 32 GB RAM · Windows 11) |
+| **Last updated** | 2026-10-02: Windows desktop, M1 (setup and baseline measurements) |
+| **Current phase** | **M0, M0.5 and M1 complete.** G0 passed on the desktop on 2026-10-02. **M2/M3 are next**, after the owner's storage plan. Session B is **not** started (owner decides when). |
+| **Who acts next** | **Owner:** storage plan for the data root, and the open questions below. **Then the desktop:** M2 (real-scene export) and M3 (pinned ComfyUI + admission ladders). |
 | **External spend** | **₹0 of ₹15,000** · active gate: **Gate A (≤ ₹5,000)** · Gate B: locked |
-| **Measured results** | **No GPU/model measurements yet.** Mac-only data-contract checks on Blender 4.5.14 (CPU): Cycles depth is planar, projection matches Blender to ≈ 0.0005 px — see `docs/contracts.md`. Not 4070 results. |
+| **Measured results** | **Desktop baseline, all measured, no model runs yet:** <ul><li>107/107 tests pass on Windows, including the 11 headless-Blender tests (Blender 4.5.14).</li><li>The Blender contract agrees with the Mac: projection within 0.00053 px, planar depth median error 1.54 µm, plane recovery within 5.3 µm.</li><li>Idle 4070 VRAM dropped from **1167 to 129 MiB** after the display moved to the iGPU.</li><li>PCIe ran **Gen4 x4 under load before the reboot and Gen4 x16 after**. The cause is unidentified.</li><li>Commit peak is 16.9 GB against a 58.75 GB limit, with the pagefile system-managed.</li></ul>Details: `docs/measurements/2026-10-02-desktop-m1.md`. Mac contract numbers: `docs/contracts.md`. |
 | **Primary model** | LTX-2.5 22B distilled + Union IC-LoRA (candidate; confirm/replace via T0 benchmark) |
 
 ---
@@ -52,7 +52,8 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 |---|---|---|---|---|
 | M0 | Research snapshot, ADR, runbooks, tooling, registry, budget ledger, tests | Mac | Repo pushed; tests pass on Mac | ✅ **Done** 2026-10-02 |
 | M0.5 | Session A (Mac): contracts + schemas, exact time base/TimeWarp, camera geometry, trajectory library (stats, normalize, retarget + clearance, CSV, minimal COLMAP), shot validator, cache keys, Blender exporter/importer/visualizer + diagnostic scene, CLI, 107 tests | Mac | `uv run pytest -q` passes incl. 11 headless-Blender tests | ✅ **Done** 2026-10-02 |
-| M1 | Desktop setup: clone, `uv sync`, iGPU display, sysmem-fallback off, pagefile, Blender 4.5 LTS, pinned ComfyUI | Desktop | **G0:** `tools/windows/check_env.ps1` clean, idle VRAM ≈ 0, `uv run pytest -q` passes (incl. `-m blender` on Windows Blender 4.5) | ⬜ Next |
+| M1 | Desktop setup: clone, `uv sync`, iGPU display, Blender 4.5 LTS, baseline measurements. Owner decisions: sysmem fallback, pagefile and Defender tuning wait for a measured need in M3; pinned ComfyUI moves to M3 | Desktop | **G0:** `tools/windows/check_env.ps1` clean, idle VRAM ≈ 0, `uv run pytest -q` passes (incl. `-m blender` on Windows Blender 4.5) | ✅ **Done** 2026-10-02. G0 passed: check_env exit 0 with 0 FAIL and 3 accepted WARN; idle VRAM 129 MiB; 107 tests pass including 11 Blender. Evidence: `docs/measurements/2026-10-02-desktop-m1.md` |
+| M1.x | Storage plan for models/datasets/caches (G: has 280 GB free on a single 1 TB NVMe) | Owner | Plan agreed before any weight download | ⬜ **Next** |
 | M2 | Use the Session A exporter on the first real scene (V0 rigs + environment); extend the diagnostic checks only where the real scene needs it (pose visibility, Cryptomatte if compositing requires it) | Desktop | **G1:** Windows Blender tests pass + a real-scene export bundle validates | ⬜ |
 | M3 | Admission ladders: LTX-2.5 (INT8 ConvRot + offload), FLUX.2-klein-4B, Wan2.1-VACE-1.3B | Desktop | **G2:** outcome A/B/C recorded for each in `admission_records/` + `model_registry/models.yaml` | ⬜ |
 | M4 | V0 shot in Blender only: two rigs, one environment, one parry, one dive/orbit, one timed effect | Desktop | Deterministic preview correct (parallel with M3) | ⬜ |
@@ -70,12 +71,13 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 |---|---|---|
 | `docs/research/2026-10-01-decision-v1.md` | Original research/design document (verbatim snapshot) | Reference |
 | `docs/decisions/ADR-0001-...md` | Hardware/compute strategy; overrides v1 where they conflict | Accepted |
-| `docs/runbooks/windows-desktop-setup.md` | M1 step-by-step | Ready to execute |
+| `docs/runbooks/windows-desktop-setup.md` | M1 step-by-step | Executed 2026-10-02; owner deferrals recorded in §1 |
+| `docs/measurements/2026-10-02-desktop-m1.md` (+ PCIe CSVs) | Desktop baseline: versions, VRAM before/after the iGPU move, memory/commit/pagefile, PCIe under load, storage, check_env | Measured |
 | `docs/runbooks/admission-ladder.md` | M3 procedure + record format | Ready to execute |
 | `docs/runbooks/local-training.md` | M6 procedure (T1, VACE-1.3B, LTX prep) | Ready; trainer commits to pin |
 | `docs/runbooks/cloud-h100.md` | M7 procedure, cost controls | Ready; locked behind G4 |
-| `tools/windows/check_env.ps1` | Read-only environment check (G0) | Written on Mac — **not yet run on Windows** |
-| `tools/admission/monitor.py` | Runs a command, samples GPU/RAM/pagefile, writes CSV + JSONL summary | Tested on Mac (no-GPU path only) |
+| `tools/windows/check_env.ps1` | Read-only environment check (G0); default data root `G:\onecreations` | Run on Windows 2026-10-02: 0 FAIL, 3 WARN |
+| `tools/admission/monitor.py` | Runs a command, samples GPU/RAM/pagefile, writes CSV + JSONL summary | Unit tests pass on Windows; not yet run on a GPU job. **Does not record the PCIe link gen/width yet.** Add this before M3 rungs (x4 was observed once) |
 | `tools/inspect_safetensors.py` | Header-only tensor/LoRA-rank inspector (no weight load) | Tested on Mac with synthetic file |
 | `tools/registry/hash_files.py` | Streaming SHA-256 for model files → registry | Tested on Mac |
 | `tools/budget/ledger.py` + `budget/` | Spend ledger with gate enforcement | Tested on Mac |
@@ -88,19 +90,24 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 | `src/onecreations/camera/` | Trajectories (spline/slerp), stats, normalize (up/scale/provenance), retarget + clearance report, CSV, minimal COLMAP import | Tested on Mac |
 | `src/onecreations/shotpkg/` | Project loader + shot cross-reference validator + event schedule | Tested on Mac |
 | `src/onecreations/cachekeys.py`, `hashing.py` | Canonical JSON, content/array digests, artifact dependency graph | Tested on Mac |
-| `src/onecreations/blender_bridge.py`, `blender_bundle.py` | Find/run Blender headless; load + verify export bundles | Tested on Mac (Blender 4.5.14) |
-| `integrations/blender/` | `build_diagnostic_scene.py`, `oc_export.py`, `oc_import_camera.py`, `oc_visualize_trajectory.py` | Tested on Mac — **re-run on Windows in M1** |
-| `examples/diagnostic/` | Fixture project from v1's own numbers (contact 0.90 s, 6 s shot, impact hold); backend profile is a labelled test fixture | Validates (2 expected warnings) |
+| `src/onecreations/blender_bridge.py`, `blender_bundle.py` | Find/run Blender headless; load + verify export bundles | Tested on Mac and Windows (Blender 4.5.14) |
+| `integrations/blender/` | `build_diagnostic_scene.py`, `oc_export.py`, `oc_import_camera.py`, `oc_visualize_trajectory.py` | Tested on Mac and Windows; numbers agree (see `docs/contracts.md`) |
+| `examples/diagnostic/` | Fixture project from v1's own numbers (contact 0.90 s, 6 s shot, impact hold); backend profile is a labelled test fixture | Validates (2 expected warnings) on both machines |
+
+All 107 tests also pass on the Windows desktop (2026-10-02, Python 3.12.6 via uv 0.12.22). No code changes were needed.
 
 **Not started:** Session B (VFX event system, dataset/provenance pipeline, 12-shot evaluation framework), ComfyUI workflow templates, studio UI, job queue. Deferred Session A items are listed in `docs/contracts.md` (Cryptomatte decoding, beauty renders, motion vectors, joint visibility, sub-frame pass rendering, auto path adjustment, COLMAP distortion/gyro, visualizer preview renders).
 
-### M1 checklist for the desktop (in order)
+### Before M2/M3 on the desktop (in order)
 
-1. Follow `docs/runbooks/windows-desktop-setup.md` (iGPU display, sysmem fallback off, pagefile, Blender 4.5 LTS, uv).
-2. `uv sync` then `uv run pytest -q`. The 11 Blender tests run if Blender 4.5 is found (default install path or `$env:ONECREATIONS_BLENDER`); they must pass on Windows too — record any numeric differences from `docs/contracts.md`.
-3. `uv run onecreations blender info` (should report the pinned 4.5 series) and `uv run onecreations validate-shot examples/diagnostic`.
-4. `powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1` → G0.
-5. Update this file and push; then M2/M3.
+1. **Storage plan (owner).** The data root is `G:\onecreations\`, a temporary choice with 280 GB free on one 1 TB NVMe (C:, F: and G: share it). Settle this before downloading any weights, datasets or caches.
+2. **Windows Update.** About 11 GB of updates were downloaded on 2026-10-02, and the last installed hotfix is from 2026-02. Let it install, or pause updates, before any multi-hour run.
+3. **PCIe link.** Before the reboot it ran Gen4 x4 under load; after the reboot it ran Gen4 x16, with the cause unidentified. Check `nvidia-smi --query-gpu=pcie.link.gen.current,pcie.link.width.current --format=csv` before each admission run. Extend `tools/admission/monitor.py` to record link gen/width before M3 rungs. Make no BIOS PCIe changes without the owner.
+4. **Deferred tuning.** Apply each item only when an M3 admission run measures the need:
+   - sysmem fallback per executable/profile, never global
+   - the pagefile, for a measured commit/paging shortfall
+   - Defender, as the narrowest data/cache path
+5. **M2:** export a first real scene with the Session A exporter. **M3:** clone ComfyUI and ComfyUI-LTXVideo into `G:\onecreations\upstream` pinned to commits, then run the admission ladders (`docs/runbooks/admission-ladder.md`).
 
 ---
 
@@ -108,8 +115,9 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 
 1. If LTX-2.5 admission is **outcome C**: approve a ≤ 2 h H100 cloud T0 comparison (≤ ₹710)? Or promote the best admitted challenger? (Decide when M3 finishes.)
 2. Gate B unlock after the pilot (M8).
-3. Where the desktop keeps big data: assumed `D:\onecreations\` (models/, datasets/, caches/, renders/). Change in `docs/runbooks/windows-desktop-setup.md` if different.
-4. When to run Session B (VFX events, dataset/provenance, evaluation framework): on the Mac before M1, or after the first GPU measurements. Not started automatically.
+3. ~~Where the desktop keeps big data~~ → `G:\onecreations\` (owner, 2026-10-02, **temporary**). Open: the storage plan before M2/M3, given 280 GB free and no D: drive.
+4. When to run Session B (VFX events, dataset/provenance, evaluation framework): on the Mac now, or after the first GPU measurements. Not started automatically.
+5. PCIe x4 → x16: should the earlier x4 be investigated physically (reseat the card, check for a riser), or only monitored? No BIOS or hardware changes have been made.
 
 ---
 
@@ -124,5 +132,29 @@ At the end of every session on any machine:
 
 ## Session log
 
+- **2026-10-02 · Windows desktop (M1 → G0 passed)**
+  - **Setup.** Cloned to `C:\Users\ADMIN\documents\developer\llm\onecreations-studio` (not OneDrive-synced) and set the repo-local git identity Harshavardhan M.
+  - **Installs.**
+    - Blender 4.5.14 LTS from the official MSI, with the SHA-256 matched and the Authenticode signature valid. Blender 4.4 was kept.
+    - uv 0.12.22, FFmpeg 9.0.2 and 7-Zip 26.03 through winget.
+    - The NVIDIA driver 591.74 and system Python 3.12.6 are untouched.
+  - **Data root.** `G:\onecreations\` was created. There is no D: drive, and G: has 280 GB free.
+  - **Tests.**
+    - `uv sync` then `pytest`: **107 passed**, including 11 headless-Blender tests. No code changes were needed.
+    - `validate-shot` reports the 2 expected warnings.
+    - The Windows Blender numbers match the Mac: projection 0.00053 px; depth planar at 1.54 µm against 0.286 m Euclidean; floor/wall planes within 4.6/5.3 µm; cube mask 0.459 px; identical repeat-export manifests.
+  - **iGPU display.** At the owner's direction, the BIOS was set to iGPU Multi-Monitor + IGFX and the monitor moved to the motherboard DP; it still runs 1440p @ 165 Hz.
+    Idle 4070 VRAM went from **1167 to 129 MiB** (median of 30 s samples) and idle power from about 10 W to 3 W.
+  - **PCIe under load** (Cycles OptiX, about 70 s at 93 % utilisation):
+    - Before the reboot: **Gen4 x4** across all 285 busy samples. The GPU is in the CPU x16 slot, and the NVMe has its own CPU M.2 lanes.
+    - After the reboot: **Gen4 x16** across all 273 busy samples.
+    - No settings were changed, so the cause of the x4 is unknown; monitor it.
+  - **Memory.** Commit peak since boot was 16.9 GB against a 58.75 GB limit, with the system-managed pagefile at 27 GB and at most 149 MB used.
+  - **check_env.** Exit 0 with 0 FAIL and 3 accepted WARN:
+    - the pagefile is system-managed
+    - G: has under 500 GB free
+    - Blender is not on PATH
+  - **Not done, by owner decision:** pagefile, Defender and sysmem-fallback tuning, BIOS PCIe changes, ComfyUI and model weights.
+  - **Spend:** ₹0. Session B is not started.
 - **2026-10-02 · Mac (Session A)** — Built the hardware-independent core: contracts + JSON Schemas, exact time base/TimeWarp, camera geometry, trajectory library (stats, normalization, retarget + clearance, CSV, minimal COLMAP), shot validator with event schedule, cache-key graph, Blender exporter/importer/trajectory visualizer + diagnostic scene, CLI. Installed Blender 4.5.14 LTS on the Mac (checksum verified; 4.3 kept). 107 tests pass (96 pure, 11 headless Blender). Mac/Blender measurements: Cycles depth is planar (1.4 µm median error vs 0.29 m Euclidean); projection matches `world_to_camera_view` to ≈ 0.0005 px; depth unprojection recovers floor/wall planes to ≈ 6 µm; repeated exports have identical canonical manifests. No GPU work, no spend. Session B not started.
 - **2026-10-02 · Mac** — Repo created. Archived v1 research doc. ADR-0001 adopted: 4070-first → H100 only after admission; ₹15,000 hard ceiling (Gate A ₹5,000); LTX-2.5 stays primary candidate; VACE-1.3B is a local experiment; 32 GB RAM stays; LTX inference on 32 GB to be measured, not assumed. Built tooling (env check, monitor, safetensors inspector, hasher, budget ledger) and unit tests (Mac). Nothing installed or measured on the desktop yet. ₹0 spent.
