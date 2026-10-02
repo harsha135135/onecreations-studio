@@ -1,6 +1,6 @@
 """Streaming SHA-256 of model/asset files for `model_registry/models.yaml` and dataset manifests.
 
-    hash_files.py D:\\onecreations\\models\\ltx\\*.safetensors
+    hash_files.py G:\\onecreations\\models\\ltx\\*.safetensors
     hash_files.py --json file1 file2 > hashes.json
 
 Reads in 16 MiB chunks, so multi-GB checkpoints don't need to fit in RAM.

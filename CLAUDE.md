@@ -18,7 +18,7 @@ Start every session by reading `STATUS.md` (current phase, next milestone, hard 
   `tools/admission/monitor.py` into `admission_records/`. Report failures and all seeds, not just the best.
 - **4070-first:** develop, debug and train locally whatever fits; rent H100 only for the LTX-2.5 adapter after gate G4.
 - **Model choice by benchmark quality/controllability**, not by fit. Wan2.1-VACE-1.3B is an experiment, not the primary.
-- **No large files in Git:** weights, datasets, renders, caches and latents live under the data root (default `D:\onecreations\`),
+- **No large files in Git:** weights, datasets, renders, caches and latents live under the data root (desktop: `G:\onecreations\`),
   referenced by hash in `model_registry/` and manifests.
 - **Pin upstream repos** (ComfyUI, ComfyUI-LTXVideo, LTX-2 trainer, musubi-tuner, ai-toolkit) to commit SHAs in `model_registry/models.yaml`.
 - **Authorship:** all commits, PRs and docs are by Harshavardhan M (`harsha135135`). Never add `Co-Authored-By` lines,

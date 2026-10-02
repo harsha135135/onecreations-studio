@@ -6,7 +6,7 @@
 # Exit code 0 = no FAIL lines (WARN lines still need a human look). Kept ASCII-only for Windows PowerShell 5.1.
 
 param(
-    [string]$DataRoot = "D:\onecreations",
+    [string]$DataRoot = "G:\onecreations",
     [string]$TorchPython = "",
     [int]$IdleVramWarnMB = 600,
     [int]$MinFreeGB = 500

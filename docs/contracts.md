@@ -87,6 +87,22 @@ is one ray through (nearly) its centre. That makes the index and depth passes ex
 These are CPU/Blender measurements for the data contract, not GPU or model measurements. Re-run `pytest -m blender`
 on the Windows desktop to confirm the same on Blender 4.5 for Windows.
 
+### Measured on the Windows desktop (Blender 4.5.14 LTS, Windows 11 x64, same scene, 2026-10-02)
+
+The 11 headless-Blender tests pass. Below are the actual values the tests only threshold, with pass rendering on Cycles CPU as above:
+
+| Check | Mac | Windows |
+|---|---|---|
+| Depth convention (45 probes) | planar; median error 1.4 µm planar vs 0.29 m Euclidean | planar; **1.54 µm** planar vs **0.286 m** Euclidean |
+| Projection vs `world_to_camera_view` | ≈ 0.0005 px | **0.00053 px** (3.3e-6 normalized); depth agrees to 1.0e-5 m |
+| Plane recovery from depth | ≈ 6 µm | floor \|z\| ≤ **4.6 µm**, wall \|y − 6\| ≤ **5.3 µm** (all 24 frames) |
+| Cube mask vs projected box | within 0.5 px | **0.459 px**; cube pixels 499 (f0) → 216 (f12–13 occluded) → 550 (f16) |
+| Same-machine export determinism | identical canonical manifests | identical (content hash, camera and pass digests) |
+
+Windows digests are recorded so a later cross-platform comparison is possible. Byte-identity across platforms is still deferred, see below.
+The values are content_sha256 `1c853bef…b53985`, camera samples `38ee76b4…528d1d79` and passes `43321b4c…31c54f76`. Full values are in
+`docs/measurements/2026-10-02-desktop-m1.md`.
+
 ## Deferred in Session A (documented, not built)
 
 Cryptomatte decoding · beauty/AOV production renders · motion vectors · joint visibility flags ·

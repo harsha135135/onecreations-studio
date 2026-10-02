@@ -1,4 +1,4 @@
-# Large artifacts live under the data root (default D:\onecreations\), never in Git.
+# Large artifacts live under the data root (desktop: G:\onecreations\), never in Git.
 *.safetensors
 *.ckpt
 *.pt

@@ -55,4 +55,4 @@ uv run python tools/registry/hash_files.py <files...>
 
 Windows only: `powershell -ExecutionPolicy Bypass -File tools\windows\check_env.ps1`
 
-Model weights, datasets, renders and caches are never committed; they live under the data root (default `D:\onecreations\`).
+Model weights, datasets, renders and caches are never committed; they live under the data root (desktop: `G:\onecreations\`, temporary; see the M1 runbook).
