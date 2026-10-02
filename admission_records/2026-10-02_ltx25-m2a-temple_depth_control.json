@@ -1,0 +1,17 @@
+{
+  "convention": "inverse planar depth, per-clip min-max normalization (VDA gray), near=white, background=black, 8-bit gray, lossless full-range H.264",
+  "inv_depth_lo": 0.04312528696698171,
+  "inv_depth_hi": 0.19879757512975174,
+  "near_m": 5.030242443084717,
+  "far_m": 23.188251495361328,
+  "background_fraction": 0.05317768953284441,
+  "lo_pct": 0.0,
+  "hi_pct": 100.0,
+  "source_bundle": "G:\\onecreations\\renders\\m2a_temple\\export",
+  "source_content_sha256": "5ac577906c478aace703e98734fba12e8913fdc83ca6e417bfc159386ea728ae",
+  "frames": 49,
+  "width": 512,
+  "height": 320,
+  "fps": "24/1",
+  "video": "depth_control.mp4"
+}

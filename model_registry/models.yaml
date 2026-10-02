@@ -21,7 +21,8 @@ models:
     admission:
       status: not_run                      # full ladder (rungs 3-6) not run; R1+R2 measured 2026-10-02
       envelope: "measured R1/R2: 512x320x49, 8 distilled steps, ComfyUI defaults (DynamicVRAM): cold ~31-33 s, warm ~8-9 s e2e; peak VRAM ~11.9 GB device-wide; min free RAM ~2.0 GB; commit <=75%; no paging"
-      records: [ltx25-r1a, ltx25-r1b, ltx25-r2, ltx25-r2d-control-diagnostic]   # admission_records/records.jsonl; docs/measurements/2026-10-02-ltx25-r1-r2.md, 2026-10-02-ltx25-r2d-control-diagnostic.md
+      records: [ltx25-r1a, ltx25-r1b, ltx25-r2, ltx25-r2d-control-diagnostic, ltx25-m2a-temple]   # admission_records/records.jsonl; docs/measurements/2026-10-02-ltx25-r1-r2.md, -r2d-control-diagnostic.md, 2026-10-02-m2a-temple-shot.md
+      representative_scene: "measured M2-A: rigid-translation control holds in a representative temple scene at 512x320x49 (98.5% travel; structures stable); small occluded secondary degrades"
       control: "measured R2D: Union depth control followed (box within 3 px, ball area x6.2 vs x6.4) at 512x320x49 on an unambiguous diagnostic"
 
   - id: ltx_union_ic_lora

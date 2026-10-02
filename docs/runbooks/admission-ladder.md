@@ -113,6 +113,7 @@ INT4/GGUF variants are a *separate* later experiment, not a substitute result.
 
 | Date | Model | Rung | Settings | Peak VRAM (MB) | Peak RAM (MB) | Pagefile growth (MB) | Cold / warm / e2e | Outcome | Record |
 |---|---|---|---|---|---|---|---|---|---|
+| 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA | M2-A (representative temple shot) | R2D graph with a neutral prompt; procedural temple courtyard, static camera; **whole-body rigid translation** of a humanoid-shaped proxy, L→R while approaching; 512×320×49; 1 generation | 11,949 | 30,444 (min avail 2,065; commit 74.6 %) | 19 (peak use 131) | 32.3 s / — / startup 7.2 s (warm cache) | **pass**: 98.5 % of travel, within 0–2.8 px of the reference-tracked path; area ×1.35 vs ×1.39; structures stable; small occluded secondary re-emerges degraded (caveat) | `ltx25-m2a-temple` |
 | 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA | R2D (control diagnostic) | R2 graph with a neutral prompt; static camera, red box L→R + blue ball toward camera; corrected depth control (min–max, lossless); 512×320×49; 1 generation | 11,943 | 30,385 (min avail 2,124; commit 74.8 %) | 8 (peak use 126) | 33.1 s / — / startup 6.6 s (warm cache) | **pass**: box centroid within 0.2–2.9 px of GT, 99.9 % of travel; ball area ×6.20 vs ×6.42 | `ltx25-r2d-control-diagnostic` |
 | 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA | R2 | first frame + Blender depth Union control, stage 1, 512×320×49, 8 steps, ComfyUI defaults, driver-default sysmem | 11,949 | 30,501 (min avail 2,008; commit 75.4 %) | 63 (peak use 156) | 32.7 s / 8.9 s / startup 6.2 s (warm cache) | partial (owner): motion present but vague in playback, direction hard to read; keyframes track the depth control (frame-sheet check) | `ltx25-r2` |
 | 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot | R1b | as R1a, **Prefer No Sysmem Fallback** for the ComfyUI interpreter only | 11,373 | 30,470 (min avail 2,039; commit 73.8 %) | 42 (peak use 93) | 31.1 s / 8.7 s / startup 23.4 s (warm cache) | pass: outputs byte-identical to R1a; no OOM without sysmem fallback | `ltx25-r1b` |
@@ -125,6 +126,12 @@ Under load the link was Gen4 x16, except for about 1–5 low-power seconds at ge
 The width stayed x16 throughout.
 
 Per-phase timings for each run are in `admission_records/2026-10-02_<label>_comfy_report.json`.
+
+**Running a controlled shot (from M2-A on):** use `tools\windows\run_admission.ps1`.
+- It takes `-Label`, `-Workflow` and `-InputDir` (which must hold `first_frame.png`, `depth_control.mp4` and its `.json` sidecar), plus `-Meta`.
+- It records the input hashes as run metadata.
+- Cache keys come from `tools/admission/experiment_keys.py`.
+- The pre-LTX gate and the comparison come from `tools/admission/control_diagnostic.py --spec <scene spec>`.
 
 ## G2 exit
 

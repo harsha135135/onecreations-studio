@@ -6,11 +6,11 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-10-02 (night): Windows desktop, M3 LTX-2.5 control diagnostic (R2D) |
-| **Current phase** | **M0, M0.5 and M1 complete** (G0 passed). **M3 in progress:** LTX-2.5 R1, R2 and **R2D** measured at 512×320×49. R1 pass; R2 partial on motion clarity; **R2D control diagnostic PASS**: an unambiguous Blender-authored motion is followed to within 3 px. Rungs 3–6, FLUX.2-klein and Wan2.1-VACE are not run. M2 was deferred behind the first admission at the owner's choice. Session B is **not** started. |
-| **Who acts next** | **Owner:** decide on starting the next milestone and on cache reclamation (open questions). **Then the desktop:** **M2 real-scene export → first genuinely representative controlled shot → 768×448 quality/performance admission**. FLUX.2-klein, Wan2.1-VACE and LTX rungs 4–6 come after that. **No hardware purchases**: the 4070 12 GB, 32 GB RAM and current storage are permanent design constraints. |
+| **Last updated** | 2026-10-02 (late night): Windows desktop, **M2-A** representative temple shot |
+| **Current phase** | **M0, M0.5 and M1 complete** (G0 passed). **M3 in progress:** LTX-2.5 R1, R2 and **R2D** measured at 512×320×49. R1 pass; R2 partial on motion clarity; **R2D control diagnostic PASS**: an unambiguous Blender-authored motion is followed to within 3 px. **M2 started:** **M2-A PASS**: whole-body rigid translation of a humanoid-shaped proxy is followed in a representative temple scene. M2-B, M2-C and 768×448 are documented, not run. Rungs 3–6, FLUX.2-klein and Wan2.1-VACE are not run. Session B is **not** started. |
+| **Who acts next** | **Owner:** choose the next isolated experiment: **M2-B** (articulated choreography, static camera), **M2-C** (authored camera, rigid motion) or the **same-shot 768×448** comparison. See open questions 6 and 8. **Then the desktop** runs only the chosen one. FLUX.2-klein, Wan2.1-VACE and LTX rungs 4–6 come later. **No hardware purchases**: the 4070 12 GB, 32 GB RAM and current storage are permanent design constraints. |
 | **External spend** | **₹0 of ₹15,000** · active gate: **Gate A (≤ ₹5,000)** · Gate B: locked |
-| **Measured results** | **LTX-2.5 22B distilled (INT8 ConvRot) on the RTX 4070 + 32 GB RAM, 512×320×49, 8 steps:** <ul><li>T2V: **cold 31.1 s / warm 7.8 s**.</li><li>First frame + Blender-depth Union control: **cold 32.7 s / warm 8.9 s**.</li><li>Owner review: **R1 pass**; **R2 partial** (motion vague in playback).</li><li>**R2D control diagnostic PASS** (static camera, red box left → right, blue ball approaching, neutral prompt):<ul><li>box centroid within 0.2–2.9 px of Blender ground truth, 99.9 % of travel</li><li>ball area ×6.20 vs ×6.42</li><li>generation 33.1 s</li></ul></li><li>The depth control is now aligned with the official preprocessing (per-clip min–max disparity, lossless), except for an 8-bit video-input residual.</li><li>The binding resource is **system RAM**: minimum free about 2.0 GB, commit ≤ 75 %, no paging (pagefile ≤ 156 MB).</li><li>VRAM peaks at about 11.9 GB by DynamicVRAM design, with **no sysmem fallback**: R1b, run without it, is byte-identical.</li><li>The PCIe link is Gen4 x16, with a brief gen2 x16 window during weight streaming.</li></ul>Details: `docs/measurements/2026-10-02-ltx25-r1-r2.md` and `2026-10-02-ltx25-r2d-control-diagnostic.md`. Desktop baseline: `2026-10-02-desktop-m1.md` and `2026-10-02-post-update-r1-setup.md`. Mac contract numbers: `docs/contracts.md`. |
+| **Measured results** | **LTX-2.5 22B distilled (INT8 ConvRot) on the RTX 4070 + 32 GB RAM, 512×320×49, 8 steps:** <ul><li>T2V: **cold 31.1 s / warm 7.8 s**.</li><li>First frame + Blender-depth Union control: **cold 32.7 s / warm 8.9 s**.</li><li>Owner review: **R1 pass**; **R2 partial** (motion vague in playback).</li><li>**R2D control diagnostic PASS** (static camera, red box left → right, blue ball approaching, neutral prompt):<ul><li>box centroid within 0.2–2.9 px of Blender ground truth, 99.9 % of travel</li><li>ball area ×6.20 vs ×6.42</li><li>generation 33.1 s</li></ul></li><li>**M2-A representative temple shot PASS** (procedural courtyard, rigid humanoid-shaped proxy moving left → right while approaching, static camera, neutral prompt):<ul><li>98.5 % of travel</li><li>within 0–2.8 px of the reference-tracked path</li><li>area ×1.35 vs ×1.39</li><li>structures stable</li><li>32.3 s</li><li>**caveat:** a small (0.44-cell) secondary figure occluded for about 35 frames re-emerges degraded</li><li>the first frame, not the prompt, sets the character look</li></ul></li><li>The depth control is now aligned with the official preprocessing (per-clip min–max disparity, lossless), except for an 8-bit video-input residual.</li><li>The binding resource is **system RAM**: minimum free about 2.0 GB, commit ≤ 75 %, no paging (pagefile ≤ 156 MB).</li><li>VRAM peaks at about 11.9 GB by DynamicVRAM design, with **no sysmem fallback**: R1b, run without it, is byte-identical.</li><li>The PCIe link is Gen4 x16, with a brief gen2 x16 window during weight streaming.</li></ul>Details: `docs/measurements/2026-10-02-ltx25-r1-r2.md`, `2026-10-02-ltx25-r2d-control-diagnostic.md` and `2026-10-02-m2a-temple-shot.md`. Desktop baseline: `2026-10-02-desktop-m1.md` and `2026-10-02-post-update-r1-setup.md`. Mac contract numbers: `docs/contracts.md`. |
 | **Primary model** | LTX-2.5 22B distilled + Union IC-LoRA (candidate; confirm/replace via T0 benchmark) |
 
 ---
@@ -54,7 +54,7 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 | M0.5 | Session A (Mac): contracts + schemas, exact time base/TimeWarp, camera geometry, trajectory library (stats, normalize, retarget + clearance, CSV, minimal COLMAP), shot validator, cache keys, Blender exporter/importer/visualizer + diagnostic scene, CLI, 107 tests | Mac | `uv run pytest -q` passes incl. 11 headless-Blender tests | ✅ **Done** 2026-10-02 |
 | M1 | Desktop setup: clone, `uv sync`, iGPU display, Blender 4.5 LTS, baseline measurements. Owner decisions: sysmem fallback, pagefile and Defender tuning wait for a measured need in M3; pinned ComfyUI moves to M3 | Desktop | **G0:** `tools/windows/check_env.ps1` clean, idle VRAM ≈ 0, `uv run pytest -q` passes (incl. `-m blender` on Windows Blender 4.5) | ✅ **Done** 2026-10-02. G0 passed: check_env exit 0 with 0 FAIL and 3 accepted WARN; idle VRAM 129 MiB; 107 tests pass including 11 Blender. Evidence: `docs/measurements/2026-10-02-desktop-m1.md` |
 | M1.x | **Storage efficiency policy.** Owner decision 2026-10-02: **no hardware purchases**, so the current storage is permanent. G: has 239.16 GiB free.<ul><li>Keep only model files the active path needs, with staged downloads.</li><li>No duplicate variants or weights.</li><li>Clean superseded renders and caches only with owner approval.</li></ul> | Owner + desktop | Applied each session (free space recorded before and after) | 🟢 Policy in force. The 4 LTX files (36.3 GiB) are all pinned and used. About 4.2 GiB is safely reclaimable on G: (uv wheel cache), pending owner approval |
-| M2 | Use the Session A exporter on the first real scene (V0 rigs + environment); extend the diagnostic checks only where the real scene needs it (pose visibility, Cryptomatte if compositing requires it) | Desktop | **G1:** Windows Blender tests pass + a real-scene export bundle validates | ⬜ |
+| M2 | Use the Session A exporter on the first real scene (V0 rigs + environment); extend the diagnostic checks only where the real scene needs it (pose visibility, Cryptomatte if compositing requires it) | Desktop | **G1:** Windows Blender tests pass + a real-scene export bundle validates | 🟡 **Started.** **M2-A ✅ PASS** (2026-10-02): a representative temple scene exported and validated through the Session A exporter, with rigid-translation control followed (`docs/measurements/2026-10-02-m2a-temple-shot.md`). Next, isolated: **M2-B** (articulated, static camera), **M2-C** (camera move, rigid subject); not started |
 | M3 | Admission ladders: LTX-2.5 (INT8 ConvRot + offload), FLUX.2-klein-4B, Wan2.1-VACE-1.3B | Desktop | **G2:** outcome A/B/C recorded for each in `admission_records/` + `model_registry/models.yaml` | 🟡 **In progress.** LTX-2.5 **R1 (T2V) and R2 (first frame + depth Union) run reliably** at 512×320×49 (owner: R1 pass, R2 partial). The **R2D control diagnostic passed**: the Union depth control is clearly followed (2026-10-02; `docs/measurements/2026-10-02-ltx25-r1-r2.md`, `…-r2d-control-diagnostic.md`). Not yet run: LTX rungs 3–6, FLUX.2-klein, Wan2.1-VACE. No A/B/C outcome yet |
 | M4 | V0 shot in Blender only: two rigs, one environment, one parry, one dive/orbit, one timed effect | Desktop | Deterministic preview correct (parallel with M3) | ⬜ |
 | M5 | T0 pretrained baseline on the 12-shot benchmark (staged) | Desktop | **G3:** primary confirmed/replaced; a named, learnable defect (or "no training needed") | ⬜ |
@@ -76,7 +76,8 @@ Gates are defined in `docs/decisions/ADR-0001-hardware-and-compute-strategy.md`.
 | `docs/runbooks/admission-ladder.md` | M3 procedure + record format + results table | R1/R2 rows filled 2026-10-02 |
 | `docs/measurements/2026-10-02-post-update-r1-setup.md`, `2026-10-02-ltx25-r1-r2.md` | Post-update verification, driver 591.86, Smart App Control, ComfyUI pins, staged downloads; LTX-2.5 R1/R2 results and bottleneck analysis | Measured |
 | `tools/admission/comfy_run.py`, `make_controls.py`, `tools/windows/oc_env.ps1` | ComfyUI job runner with per-phase timings; Blender depth → control video; session-only data/cache environment | Used for R1/R2; unit-tested |
-| `integrations/blender/build_control_diagnostic_scene.py`, `tools/admission/control_diagnostic.py` | R2D diagnostic scene (static camera, box L→R, ball toward camera); control inspection + objective comparison (ground truth from the object-index pass, colour tracking, pre-registered rules, contact sheets) | Used for R2D; unit-tested |
+| `integrations/blender/build_control_diagnostic_scene.py`, `tools/admission/control_diagnostic.py` | R2D diagnostic scene (static camera, box L→R, ball toward camera); control inspection + objective comparison, **spec-driven since M2-A** (ground truth, coverage in guide cells, control contrast, occlusion, colour tracking, pre-registered checks, report-only structure drift, contact sheets) | Used for R2D and M2-A; unit-tested |
+| `integrations/blender/build_temple_shot_scene.py`, `tools/admission/experiment_keys.py`, `tools/windows/run_admission.ps1` | M2-A representative temple scene (procedural; rigid humanoid-shaped proxy; spec with pre-registered tracking/gate); run cache keys via `cachekeys`; reproducible run launcher (records input hashes) | Used for M2-A; tested (scene: build + export validated) |
 | `workflows/ltx25/` | API-format R1 (T2V video-only) and R2 (first frame + depth Union) workflows, with deviations from the official graphs documented | Used for R1/R2 |
 | `admission_records/` | `records.jsonl` (+ per-run CSV + comfy reports) for ltx25-r1a, r1b, r2 | Measured |
 | `docs/runbooks/local-training.md` | M6 procedure (T1, VACE-1.3B, LTX prep) | Ready; trainer commits to pin |
@@ -105,17 +106,21 @@ All tests pass on the Windows desktop: 107 at M1, 117 with the admission tooling
 
 ### Next on the desktop (owner decides the order)
 
-1. **Next milestone (not started): M2 real-scene export** with the Session A exporter.
-   - Then the **first genuinely representative controlled shot**, at 512×320 with the R2D control path.
-   - Then **768×448 quality/performance admission**. RAM is the binding resource: minimum free about 2 GB at 512×320.
-   - Do not jump to 960×544 or the upscaler first.
-   - **Design guidance from R2D (proposed):** control-relevant objects should span at least about 2 Union-guide cells. A cell is 64 px at 512×320 (output ÷ 2 ÷ 32), and sub-cell objects carried weak control in R2.
+1. **M2-A done (PASS).** Choose next, one axis at a time (designs are in `docs/measurements/2026-10-02-m2a-temple-shot.md` §7–8):
+   - **M2-B:** the same temple and envelope, with a rigged humanoid proxy performing one clear articulated action, under a static camera. This is the first use of the armature/joint export and of `ActionTimeline`. Measure trajectory plus weapon-apex timing.
+   - **M2-C:** the same temple and rigid proxy translation, plus one authored camera move (`CameraMotion`). Measure structure parallax and subject screen trajectory.
+   - **Same-shot 768×448:** M2-A re-rendered at 768×448 with only the resolution changed. Measure quality, control fidelity, VRAM, RAM and runtime. RAM is the binding resource (about 2.1 GB free at 512×320).
+   - No 960×544 or upscaler first.
+   - **Working heuristics (proposed, not proven rules):**
+     - control-relevant subjects should span ≥ about 2 Union-guide cells (64 px each at 512×320)
+     - avoid long occlusions of small secondary subjects, or composite them from the Blender beauty pass
+     - the first frame sets the look
 2. **LTX rung 3** (orbit, fast near pass, two-character motion) builds on M2/V0 scenes. **Rung 6** is reliability: 3 runs from a clean launch, plus an oversized request and recovery.
 3. **FLUX.2-klein-4B and Wan2.1-VACE-1.3B ladders** come later, with staged downloads within the storage policy.
 4. **Before every run:**
    - Updates are paused (until 2026-10-09; re-pause after that).
    - Dot-source `tools\windows\oc_env.ps1`. Close browsers: RAM is the binding resource.
-   - Use the scratch run scripts as templates; the commands are in the runbook.
+   - Launch runs with `tools\windows\run_admission.ps1`. Gate and compare with `control_diagnostic.py --spec`; cache keys come from `experiment_keys.py`.
    - The NVIDIA program entry for the ComfyUI interpreter exists at *Use global setting*.
 
 ### Done from the M1 handoff list (kept for reference)
@@ -139,9 +144,9 @@ All tests pass on the Windows desktop: 107 at M1, 117 with the admission tooling
 4. When to run Session B (VFX events, dataset/provenance, evaluation framework): on the Mac now, or after the first GPU measurements. Not started automatically.
 5. PCIe x4 → x16: should the earlier x4 be investigated physically (reseat the card, check for a riser), or only monitored? No BIOS or hardware changes have been made.
    x4 has **not** recurred: Gen4 x16 held under load in every run since. The monitor now flags it automatically.
-6. **Quality ladder:** after M2 and the first representative shot, approve 768×448 admission? 960×544 and the official upscaler (1 GB) are deferred, and RAM headroom is the limit.
+6. **Quality ladder:** approve the **same-shot 768×448** M2-A comparison, with only the resolution changed? It is now justified by M2-A's pass. 960×544 and the official upscaler (1 GB) stay deferred; RAM headroom is the limit.
 7. **Smart App Control** is off (owner, 2026-10-02), because it blocked PyAV's unsigned DLL. Keep it off on this ML workstation?
-8. **Start M2** (real-scene export → first representative controlled shot)? It is not started automatically.
+8. **Next M2 experiment:** M2-B (articulated choreography, static camera) or M2-C (authored camera, rigid motion), one at a time. Neither starts automatically.
 
 ---
 
@@ -155,6 +160,34 @@ At the end of every session on any machine:
 4. Commit with a plain message, e.g. `status: M3 LTX-2.5 ladder rungs 1-3 measured`, and push.
 
 ## Session log
+
+- **2026-10-02 (late night) · Windows desktop (M2-A: representative temple shot → PASS)**
+  - **Scope:** M2-A tests **whole-body rigid translation of a humanoid-shaped proxy** in a representative environment. It is not articulated motion (that is M2-B). Difficulty changed along one axis (synthetic → representative); everything else is R2D's: 512×320×49, static camera, graph, strengths, seed 1000, neutral prompt, corrected control.
+  - **Scene:** `build_temple_shot_scene.py`, a procedural courtyard:
+    - tiled floor, 8 pillars, a stepped shrine on a platform with steps, walls, rubble, warm low sun
+    - a crimson horned proxy (about 2.9 m, upright gold mace) translating left → right while approaching, 6.3 → 5.3 m
+    - a static ash-blue proxy with a trident on the shrine (report-only)
+  - **Pre-LTX gate passed:**
+    - coverage 2.6–3.1 cells wide, 3.8–4.5 tall, 4.9–6.8 cells area
+    - travel 4.5 cells; control contrast ≥ 0.41
+    - the primary is never occluded; the secondary is occluded in frames 13–47 (intended layering test)
+    - the colour tracker reproduces the reference
+  - **New reusable pieces:**
+    - `control_diagnostic.py` is now spec-driven: coverage, contrast, occlusion, report-only drift; R2D results reproduce unchanged with no spec
+    - `experiment_keys.py`: run cache keys via `cachekeys`
+    - `tools/windows/run_admission.ps1`
+    - 124 tests pass
+  - **`ltx25-m2a-temple` (one generation): PASS.**
+    - Lateral travel 98.5 %, monotone over 49/49 frames.
+    - Within **0–2.8 px of the reference-tracked path**; 7–11 px from GT, which is the tracker's own offset.
+    - Area ×1.351 vs GT ×1.385.
+    - Structures and layering preserved; structure drift is small (report-only).
+    - 32.3 s; VRAM 11.9 GB; minimum free RAM 2.07 GB; commit 74.6 %; pagefile +19 MB; PCIe Gen4 x16.
+    - No retry (rule).
+  - **Caveat:** the small, long-occluded secondary figure re-emerges degraded (ghosted, smeared).
+  - **Observation:** the first frame, not the prompt, sets the character look (the proxies stay primitive).
+  - **Documented, not run:** M2-B, M2-C and a same-shot 768×448 comparison.
+  - **Storage:** G: 239.16 → 239.14 GiB, with no downloads. ₹0 spent.
 
 - **2026-10-02 (night) · Windows desktop (M3: R2D control diagnostic → PASS)**
   - **New owner constraint:** **no hardware purchases.** The 4070 12 GB, 32 GB RAM and current storage are permanent, and storage efficiency is architectural. Cloud only for a future, narrowly justified training experiment.

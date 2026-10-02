@@ -7,6 +7,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 |---|---|---|---|
 | `r1_t2v_video_only_api.json` | R1 T2V smoke | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_T2V_I2V_Single_Stage_Distilled.json` | see below |
 | `r2_union_depth_api.json` | R2 first frame + depth Union control | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_ICLoRA_Union_Control_Distilled.json` | see "R2" below |
+| `m2a_temple_api.json` | M2-A representative temple shot | same as R2 | R2D's graph with only the prompt (neutral: environment, style, subjects, lighting; no motion direction or timing) and the output prefix changed |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
 **R1 keeps the official values:** distilled 8-step `ManualSigmas`, `euler_ancestral`, CFG 1, `LTXVConditioning` at 24 fps, and tiled decode 512/64/128/32.
@@ -44,3 +45,11 @@ Its inputs come from `integrations/blender/build_control_diagnostic_scene.py`, i
 - a depth control from the corrected `make_controls.py`: per-clip min–max disparity, lossless full-range H.264
 
 This path is aligned with the official preprocessing except for the documented 8-bit video-input residual. Result: **PASS**, see the measurement doc.
+
+**M2-A** (`m2a_temple_api.json`) is node-for-node R2D. The inputs come from `integrations/blender/build_temple_shot_scene.py`, in `G:\onecreations\renders\m2a_temple\`:
+- a procedural temple courtyard
+- a humanoid-shaped proxy under whole-body **rigid translation**
+- a static secondary figure
+- a static camera
+
+Run it with `tools/windows/run_admission.ps1`. Result: **PASS**; see `docs/measurements/2026-10-02-m2a-temple-shot.md`.
