@@ -8,12 +8,14 @@ models:
     role: primary_video_candidate          # chosen by T0 benchmark quality/controllability (ADR-0001 D1)
     source: https://huggingface.co/Lightricks/LTX-2.5
     license: LTX-2 community agreement (commercial license above US$10M annual revenue; see v1 §4)
-    license_snapshot: TODO
-    route: official ComfyUI 2.5 workflow, INT8 ConvRot components (Comfy-specific)
-    files:
-      - {name: ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors, sha256: TODO}
-      - {name: gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors, sha256: TODO}
-      - {name: ltx-2.5-video-vae-conv-bf16.safetensors, sha256: TODO}
+    license_snapshot: model_registry/licenses/LTX-2_x-community-license.txt   # Lightricks/LTX-2@2d6e71c8 LICENSE-2_x, dated 2026-08-11
+    revision: 5e6e71018ee1756ed329b697a7b4aedc934dfce9   # HF repo revision downloaded 2026-10-02
+    route: official ComfyUI 2.5 workflow, INT8 ConvRot components (Comfy-specific); R1 graph in workflows/ltx25/
+    files:   # measured: SHA-256 of the local files == HF LFS sha256; header facts from tools/inspect_safetensors.py
+      - {name: ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors, bytes: 21504034224, sha256: c4279eeff115cbeaca494bd2183e7d768c38fe85a184dc6afbb7159157c44334, params: 21009290240, dtypes: "I8 97.7%, BF16, F32, U8"}
+      - {name: gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors, bytes: 15372969374, sha256: 6ce688a0aa98a5fa36a9f1e6c3f42152a498cc2b53ee8c15674c64244f91487f, params: 13150247014, dtypes: "I8 82.9%, BF16 16.9%, F32, U8"}
+      - {name: ltx-2.5-video-vae-bf16.safetensors, bytes: 1472223346, sha256: 847e14ca7f3355debca0cea4eaa24ac0fbcdf0061da054ac89ca638a869ddba3, params: 736070897, dtypes: BF16}
+    not_downloaded: [audio VAE, spatial upscaler, bf16/dev/NVFP4 transformers, bf16 Gemma, Gemma-E2B enhancer]   # staged per rung (owner)
     memory_notes: "published: official general requirement 32 GB VRAM. arithmetic: transformer ~22 GB + encoder ~12 GB at INT8 > 32 GB RAM, so load sequentially."
     local_training: false                  # 22B; trained only on H100 after G4/G5
     admission: {status: not_run, envelope: null, records: []}
@@ -75,9 +77,9 @@ models:
 
 # Upstream code pinned to commits (fill when cloned on the desktop).
 runtimes:
-  - {id: comfyui, repo: https://github.com/comfyanonymous/ComfyUI, commit: TODO}
-  - {id: comfyui_ltxvideo, repo: https://github.com/Lightricks/ComfyUI-LTXVideo, commit: TODO}
+  - {id: comfyui, repo: https://github.com/comfyanonymous/ComfyUI, tag: v0.38.0, commit: 6b747c0428c343e1417219641db93a4fb7cb69ae, python: "3.13.16 (uv-managed, dedicated)", torch: 2.14.1+cu130}
+  - {id: comfyui_ltxvideo, repo: https://github.com/Lightricks/ComfyUI-LTXVideo, commit: 3bf3ca62595f1764c47d01c35c8e5dfe47e1a88f}
   - {id: ltx2_trainer, repo: https://github.com/Lightricks/LTX-2, path: packages/ltx-trainer, commit: TODO}
   - {id: t1_trainer, repo: TODO, commit: TODO}
   - {id: wan_trainer, repo: TODO, commit: TODO}
-  - {id: blender, version: "4.5 LTS", build: TODO}
+  - {id: blender, version: "4.5 LTS", build: 4.5.14 (MSI sha256 5e04b3f587250d611bdd40d41fd9e3f75207a44e7d554d495dfe81ff6345937c)}
