@@ -18,16 +18,21 @@ models:
     not_downloaded: [audio VAE, spatial upscaler, bf16/dev/NVFP4 transformers, bf16 Gemma, Gemma-E2B enhancer]   # staged per rung (owner)
     memory_notes: "published: official general requirement 32 GB VRAM. arithmetic: transformer ~22 GB + encoder ~12 GB at INT8 > 32 GB RAM, so load sequentially."
     local_training: false                  # 22B; trained only on H100 after G4/G5
-    admission: {status: not_run, envelope: null, records: []}
+    admission:
+      status: not_run                      # full ladder (rungs 3-6) not run; R1+R2 measured 2026-10-02
+      envelope: "measured R1/R2: 512x320x49, 8 distilled steps, ComfyUI defaults (DynamicVRAM): cold ~31-33 s, warm ~8-9 s e2e; peak VRAM ~11.9 GB device-wide; min free RAM ~2.0 GB; commit <=75%; no paging"
+      records: [ltx25-r1a, ltx25-r1b, ltx25-r2]   # admission_records/records.jsonl; docs/measurements/2026-10-02-ltx25-r1-r2.md
 
   - id: ltx_union_ic_lora
     role: control_adapter_for_primary
     source: https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Union-Control
     note: "The official 2.5 Union Control distilled workflow references this 2.3-named adapter (v1 §5). Use exactly that combination."
+    revision: b4d1c4d8c9e544e9bbbd6811bb4363708b6093ff
+    license_snapshot: model_registry/licenses/LTX-2-community-license.txt   # LTX-2 Community License, 2026-01-05 (+ repo copy LTX-2.3-IC-LoRA-Union-Control-LICENSE@b4d1c4d8.txt)
     files:
-      - {name: TODO-from-official-workflow-json, sha256: TODO}
-    inspected_rank: TODO                   # tools/inspect_safetensors.py --lora-summary
-    inspected_modules: TODO
+      - {name: ltx-2.3-22b-ic-lora-union-control-ref0.5.safetensors, bytes: 654465352, sha256: a1b888a87f661d27f08b394ae559e8e1050be33900bcc36a5cdf659e48f88d18, params: 327155712, dtypes: BF16}
+    inspected_rank: 64                     # measured: all 480 LoRA modules rank 64, no alpha tensors; header model_version 2.3.0, reference_downscale_factor 2
+    inspected_modules: "transformer_blocks.N.{attn1,attn2}.{to_q,to_k,to_v,to_out.0}, ff.net.0.proj, ff.net.2"
     trainer_resume_compatible: unknown     # checked locally in M6 before any H100 spend
 
   - id: ltx_ingredients_ic_lora

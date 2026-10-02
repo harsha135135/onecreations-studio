@@ -113,7 +113,17 @@ INT4/GGUF variants are a *separate* later experiment, not a substitute result.
 
 | Date | Model | Rung | Settings | Peak VRAM (MB) | Peak RAM (MB) | Pagefile growth (MB) | Cold / warm / e2e | Outcome | Record |
 |---|---|---|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — | — | — | — |
+| 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA | R2 | first frame + Blender depth Union control, stage 1, 512×320×49, 8 steps, ComfyUI defaults, driver-default sysmem | 11,949 | 30,501 (min avail 2,008; commit 75.4 %) | 63 (peak use 156) | 32.7 s / 8.9 s / startup 6.2 s (warm cache) | partial (owner): motion present but vague in playback, direction hard to read; keyframes track the depth control (frame-sheet check) | `ltx25-r2` |
+| 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot | R1b | as R1a, **Prefer No Sysmem Fallback** for the ComfyUI interpreter only | 11,373 | 30,470 (min avail 2,039; commit 73.8 %) | 42 (peak use 93) | 31.1 s / 8.7 s / startup 23.4 s (warm cache) | pass: outputs byte-identical to R1a; no OOM without sysmem fallback | `ltx25-r1b` |
+| 2026-10-02 | LTX-2.5 22B distilled INT8 ConvRot | R1a | T2V video-only, 512×320×49, 8 steps, ComfyUI defaults (DynamicVRAM, pinned 13 GB, async offload), driver-default sysmem, cold restart | 11,943 | 30,455 (min avail 2,055; commit 74.3 %) | 69 (peak use 69) | 31.1 s / 7.8 s / startup 29.0 s (cold) | pass (owner): coherent, on-prompt; faces unclear at this envelope | `ltx25-r1a` |
+
+Peak VRAM is device-wide `nvidia-smi` and goes above the 11,000 MB proposed target because ComfyUI's DynamicVRAM fills the card on purpose.
+R1b shows that this does not depend on CUDA sysmem fallback.
+
+Under load the link was Gen4 x16, except for about 1–5 low-power seconds at gen2 x16 while weights stream in at the start of denoising.
+The width stayed x16 throughout.
+
+Per-phase timings for each run are in `admission_records/2026-10-02_<label>_comfy_report.json`.
 
 ## G2 exit
 
