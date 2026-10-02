@@ -1,0 +1,270 @@
+{
+  "mode": "inspect",
+  "bundle": "G:\\onecreations\\renders\\r2d_control_diag\\export",
+  "bundle_content_sha256": "871134bdfb2ed10557a47baeb405c85c97acf3bba6cb28d0b9453add2d86cd13",
+  "frames": 49,
+  "checkpoints": [
+    0,
+    12,
+    24,
+    36,
+    48
+  ],
+  "guide_cell_px": 64,
+  "ground_truth": {
+    "r2d_box": [
+      {
+        "cx": 90.62064965197216,
+        "cy": 220.75812064965197,
+        "bbox": [
+          0,
+          160,
+          182,
+          282
+        ],
+        "w_px": 183,
+        "h_px": 123,
+        "w_cells": 2.86,
+        "area_px": 22412,
+        "area_pct": 13.68,
+        "median_depth_m": 6.5
+      },
+      {
+        "cx": 167.5,
+        "cy": 221.0,
+        "bbox": [
+          76,
+          160,
+          259,
+          282
+        ],
+        "w_px": 184,
+        "h_px": 123,
+        "w_cells": 2.88,
+        "area_px": 22632,
+        "area_pct": 13.81,
+        "median_depth_m": 6.5
+      },
+      {
+        "cx": 255.5,
+        "cy": 221.0,
+        "bbox": [
+          164,
+          160,
+          347,
+          282
+        ],
+        "w_px": 184,
+        "h_px": 123,
+        "w_cells": 2.88,
+        "area_px": 22632,
+        "area_pct": 13.81,
+        "median_depth_m": 6.5
+      },
+      {
+        "cx": 343.5,
+        "cy": 221.0,
+        "bbox": [
+          252,
+          160,
+          435,
+          282
+        ],
+        "w_px": 184,
+        "h_px": 123,
+        "w_cells": 2.88,
+        "area_px": 22632,
+        "area_pct": 13.81,
+        "median_depth_m": 6.5
+      },
+      {
+        "cx": 420.37935034802786,
+        "cy": 220.75812064965197,
+        "bbox": [
+          329,
+          160,
+          511,
+          282
+        ],
+        "w_px": 183,
+        "h_px": 123,
+        "w_cells": 2.86,
+        "area_px": 22412,
+        "area_pct": 13.68,
+        "median_depth_m": 6.5
+      }
+    ],
+    "r2d_ball": [
+      {
+        "cx": 255.5,
+        "cy": 126.25698827772769,
+        "bbox": [
+          229,
+          100,
+          282,
+          152
+        ],
+        "w_px": 54,
+        "h_px": 53,
+        "w_cells": 0.84,
+        "area_px": 2218,
+        "area_pct": 1.35,
+        "median_depth_m": 14.417
+      },
+      {
+        "cx": 255.5,
+        "cy": 120.310546875,
+        "bbox": [
+          225,
+          89,
+          286,
+          151
+        ],
+        "w_px": 62,
+        "h_px": 63,
+        "w_cells": 0.97,
+        "area_px": 3072,
+        "area_pct": 1.88,
+        "median_depth_m": 12.163
+      },
+      {
+        "cx": 255.5,
+        "cy": 111.77406593406593,
+        "bbox": [
+          218,
+          74,
+          293,
+          149
+        ],
+        "w_px": 76,
+        "h_px": 76,
+        "w_cells": 1.19,
+        "area_px": 4550,
+        "area_pct": 2.78,
+        "median_depth_m": 9.908
+      },
+      {
+        "cx": 255.5,
+        "cy": 98.57042633567188,
+        "bbox": [
+          208,
+          50,
+          303,
+          147
+        ],
+        "w_px": 96,
+        "h_px": 98,
+        "w_cells": 1.5,
+        "area_px": 7412,
+        "area_pct": 4.52,
+        "median_depth_m": 7.652
+      },
+      {
+        "cx": 255.4953277594323,
+        "cy": 75.02873603597274,
+        "bbox": [
+          189,
+          8,
+          322,
+          142
+        ],
+        "w_px": 134,
+        "h_px": 135,
+        "w_cells": 2.09,
+        "area_px": 14233,
+        "area_pct": 8.69,
+        "median_depth_m": 5.391
+      }
+    ]
+  },
+  "control_mean_inside_gt_mask": {
+    "r2d_box": [
+      0.6864,
+      0.6902,
+      0.6902,
+      0.6902,
+      0.6864
+    ],
+    "r2d_ball": [
+      0.1279,
+      0.2131,
+      0.3369,
+      0.5336,
+      0.895
+    ]
+  },
+  "reference_tracking": {
+    "checkpoints": [
+      0,
+      12,
+      24,
+      36,
+      48
+    ],
+    "box": {
+      "generated_cx": [
+        90.21949125739846,
+        167.5,
+        255.5,
+        343.5,
+        420.6993183767436
+      ],
+      "gt_cx": [
+        90.62064965197216,
+        167.5,
+        255.5,
+        343.5,
+        420.37935034802786
+      ],
+      "monotone": true,
+      "travel_px": 330.5,
+      "gt_travel_px": 329.8,
+      "travel_frac": 1.002,
+      "abs_err_px": [
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.3
+      ],
+      "within_one_cell": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "followed": true,
+      "direction_correct": true
+    },
+    "ball": {
+      "generated_area_px": [
+        2201,
+        3045,
+        4521,
+        7373,
+        14162
+      ],
+      "gt_area_px": [
+        2218,
+        3072,
+        4550,
+        7412,
+        14233
+      ],
+      "area_ratio": 6.43,
+      "gt_area_ratio": 6.42,
+      "nondecreasing": true,
+      "followed": true,
+      "direction_correct": true
+    },
+    "metric_class": "PASS",
+    "note": "metric_class is evidence only; the final class also requires visual inspection to agree (plan)"
+  },
+  "gate": {
+    "box_travel_cells": 5.15,
+    "ball_area_ratio": 6.42,
+    "ball_control_brightening": true,
+    "passed": true
+  }
+}

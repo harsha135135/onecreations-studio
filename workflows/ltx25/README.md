@@ -7,6 +7,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 |---|---|---|---|
 | `r1_t2v_video_only_api.json` | R1 T2V smoke | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_T2V_I2V_Single_Stage_Distilled.json` | see below |
 | `r2_union_depth_api.json` | R2 first frame + depth Union control | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_ICLoRA_Union_Control_Distilled.json` | see "R2" below |
+| `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
 **R1 keeps the official values:** distilled 8-step `ManualSigmas`, `euler_ancestral`, CFG 1, `LTXVConditioning` at 24 fps, and tiled decode 512/64/128/32.
 
@@ -28,6 +29,18 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 **R2 deviations:**
 - Everything listed for R1: INT8 ConvRot, 512×320 × 49, video-only, no enhancer or API encode.
 - **Stage 1 only.** The official "Upscale and re-sampler (3 steps)" stage needs the spatial upscaler, which the owner excluded during admission (no upscale additions).
-- **The depth control comes from Blender, not a preprocessor.** The official graph runs Video Depth Anything (or DW-pose/Canny) on a reference video. Here the control is the diagnostic scene's planar depth pass, converted by `tools/admission/make_controls.py`: inverse depth, per-clip p1–p99 normalisation, near = white. That convention is *proposed*, chosen to resemble Video Depth Anything's gray output, and has not been verified against it.
+- **The depth control comes from Blender, not a preprocessor.** The official graph runs Video Depth Anything (or DW-pose/Canny) on a reference video. Here the control is the diagnostic scene's planar depth pass, converted by `tools/admission/make_controls.py`: inverse depth, per-clip p1–p99 normalisation, near = white. R2 used p1–p99 percentile clipping and lossy H.264 (CRF 10). Both were corrected for R2D, and their effect on R2 is unknown. The official expectation is in `docs/measurements/2026-10-02-ltx25-r2d-control-diagnostic.md` §1.
 - **First frame:** a Blender Cycles render of frame 1 (128 spp, denoised, exposure −1.5 for legibility; the default exposure was nearly white). There are no materials, so it is a gray studio look.
 - **Prompt:** it describes the diagnostic scene so that text, first frame and depth agree. The R2 inputs live in `G:\onecreations\renders\diag_512x320x49\`, which is passed to ComfyUI as `--input-directory`.
+
+**R2D** (`r2d_control_diagnostic_api.json`) is node-for-node R2's graph. Only two inputs changed:
+- The **prompt is neutral**: it names the objects but has no motion words, so any directed motion must come from the control.
+- The **output prefix**.
+
+Its inputs come from `integrations/blender/build_control_diagnostic_scene.py`, in `G:\onecreations\renders\r2d_control_diag\`:
+- a static camera
+- a red box sliding left → right
+- a blue ball approaching the camera
+- a depth control from the corrected `make_controls.py`: per-clip min–max disparity, lossless full-range H.264
+
+This path is aligned with the official preprocessing except for the documented 8-bit video-input residual. Result: **PASS**, see the measurement doc.

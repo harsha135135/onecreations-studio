@@ -1,0 +1,387 @@
+{
+  "started_at": "2026-10-02T22:52:08+05:30",
+  "workflow": "workflows\\ltx25\\r2d_control_diagnostic_api.json",
+  "workflow_sha256": "e7f4c0a98b9b0468e16f099e103c77c19475274251cbd3d35729eedf1ed57a72",
+  "server": "http://127.0.0.1:8188",
+  "launch": [
+    "G:\\onecreations\\comfy\\.venv\\Scripts\\python.exe",
+    "G:\\onecreations\\comfy\\ComfyUI\\main.py",
+    "--port",
+    "8188",
+    "--disable-auto-launch",
+    "--extra-model-paths-config",
+    "G:\\onecreations\\comfy\\extra_model_paths.yaml",
+    "--output-directory",
+    "G:\\onecreations\\experiments\\2026-10-02_ltx25-r2d-control-diagnostic",
+    "--input-directory",
+    "G:\\onecreations\\renders\\r2d_control_diag",
+    "--temp-directory",
+    "G:\\onecreations\\temp\\comfy"
+  ],
+  "jobs": [
+    {
+      "index": 0,
+      "overrides": {
+        "8/noise_seed": 1000
+      },
+      "prompt_id": "32871897-7ad0-48c2-ba89-6853330d57d1",
+      "wall_s": 33.094,
+      "status": "success",
+      "completed": true,
+      "comfy_exec_s": 33.083,
+      "outputs": [
+        {
+          "node": "18",
+          "kind": "images",
+          "filename": "depth_control.mp4",
+          "subfolder": ""
+        },
+        {
+          "node": "15",
+          "kind": "images",
+          "filename": "ltx25_r2d_00001_.mp4",
+          "subfolder": "ltx25_r2d"
+        }
+      ],
+      "error": null,
+      "phases_s": {
+        "load": 3.468,
+        "other": 1.281,
+        "text_encode": 9.063,
+        "denoise": 17.156,
+        "vae_decode": 1.922,
+        "output": 0.188
+      },
+      "nodes": [
+        {
+          "node": "3",
+          "class_type": "VAELoader",
+          "phase": "load",
+          "start_s": 0.016,
+          "duration_s": 2.0
+        },
+        {
+          "node": "1",
+          "class_type": "UNETLoader",
+          "phase": "load",
+          "start_s": 2.016,
+          "duration_s": 0.375
+        },
+        {
+          "node": "16",
+          "class_type": "LTXICLoRALoaderModelOnly",
+          "phase": "load",
+          "start_s": 2.391,
+          "duration_s": 0.125
+        },
+        {
+          "node": "18",
+          "class_type": "LoadVideo",
+          "phase": "other",
+          "start_s": 2.516,
+          "duration_s": 0.0
+        },
+        {
+          "node": "19",
+          "class_type": "GetVideoComponents",
+          "phase": "other",
+          "start_s": 2.516,
+          "duration_s": 0.031
+        },
+        {
+          "node": "7",
+          "class_type": "EmptyLTXVLatentVideo",
+          "phase": "other",
+          "start_s": 2.547,
+          "duration_s": 0.0
+        },
+        {
+          "node": "17",
+          "class_type": "LoadImage",
+          "phase": "other",
+          "start_s": 2.547,
+          "duration_s": 0.016
+        },
+        {
+          "node": "20",
+          "class_type": "LTXVImgToVideoInplace",
+          "phase": "other",
+          "start_s": 2.563,
+          "duration_s": 0.703
+        },
+        {
+          "node": "2",
+          "class_type": "CLIPLoader",
+          "phase": "load",
+          "start_s": 3.266,
+          "duration_s": 0.968
+        },
+        {
+          "node": "5",
+          "class_type": "CLIPTextEncode",
+          "phase": "text_encode",
+          "start_s": 4.234,
+          "duration_s": 6.969
+        },
+        {
+          "node": "4",
+          "class_type": "CLIPTextEncode",
+          "phase": "text_encode",
+          "start_s": 11.203,
+          "duration_s": 2.094
+        },
+        {
+          "node": "6",
+          "class_type": "LTXVConditioning",
+          "phase": "text_encode",
+          "start_s": 13.297,
+          "duration_s": 0.0
+        },
+        {
+          "node": "21",
+          "class_type": "LTXAddVideoICLoRAGuide",
+          "phase": "other",
+          "start_s": 13.297,
+          "duration_s": 0.531
+        },
+        {
+          "node": "10",
+          "class_type": "ManualSigmas",
+          "phase": "other",
+          "start_s": 13.828,
+          "duration_s": 0.0
+        },
+        {
+          "node": "9",
+          "class_type": "KSamplerSelect",
+          "phase": "denoise",
+          "start_s": 13.828,
+          "duration_s": 0.016
+        },
+        {
+          "node": "11",
+          "class_type": "CFGGuider",
+          "phase": "other",
+          "start_s": 13.844,
+          "duration_s": 0.0
+        },
+        {
+          "node": "8",
+          "class_type": "RandomNoise",
+          "phase": "other",
+          "start_s": 13.844,
+          "duration_s": 0.0
+        },
+        {
+          "node": "12",
+          "class_type": "SamplerCustomAdvanced",
+          "phase": "denoise",
+          "start_s": 13.844,
+          "duration_s": 17.14
+        },
+        {
+          "node": "22",
+          "class_type": "LTXVCropGuides",
+          "phase": "other",
+          "start_s": 30.984,
+          "duration_s": 0.0
+        },
+        {
+          "node": "13",
+          "class_type": "VAEDecodeTiled",
+          "phase": "vae_decode",
+          "start_s": 30.984,
+          "duration_s": 1.922
+        },
+        {
+          "node": "14",
+          "class_type": "CreateVideo",
+          "phase": "output",
+          "start_s": 32.906,
+          "duration_s": 0.0
+        },
+        {
+          "node": "15",
+          "class_type": "SaveVideo",
+          "phase": "output",
+          "start_s": 32.906,
+          "duration_s": 0.188
+        }
+      ],
+      "cached_nodes": [],
+      "denoise_steps": {
+        "12": {
+          "steps": 8,
+          "first_step_s": 12.187,
+          "median_step_s": 0.594
+        }
+      }
+    }
+  ],
+  "provenance": "measured",
+  "startup_s": 6.593,
+  "system_stats": {
+    "system": {
+      "os": "win32",
+      "ram_total": 34088300544,
+      "ram_free": 23933431808,
+      "comfyui_version": "0.38.0",
+      "required_frontend_version": "1.53.6",
+      "installed_templates_version": "0.11.70",
+      "required_templates_version": "0.11.70",
+      "comfy_package_versions": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.53.6",
+          "required": "1.53.6"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.70",
+          "required": "0.11.70"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.12",
+          "required": "0.5.12"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.36",
+          "required": "0.2.36"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.5",
+          "required": "0.5.5"
+        }
+      ],
+      "python_version": "3.13.16 (main, Oct  1 2026, 20:59:40) [MSC v.1944 64 bit (AMD64)]",
+      "pytorch_version": "2.14.1+cu130",
+      "embedded_python": false,
+      "deploy_environment": "local-git",
+      "argv": [
+        "G:\\onecreations\\comfy\\ComfyUI\\main.py",
+        "--port",
+        "8188",
+        "--disable-auto-launch",
+        "--extra-model-paths-config",
+        "G:\\onecreations\\comfy\\extra_model_paths.yaml",
+        "--output-directory",
+        "G:\\onecreations\\experiments\\2026-10-02_ltx25-r2d-control-diagnostic",
+        "--input-directory",
+        "G:\\onecreations\\renders\\r2d_control_diag",
+        "--temp-directory",
+        "G:\\onecreations\\temp\\comfy"
+      ]
+    },
+    "devices": [
+      {
+        "name": "cuda:0 NVIDIA GeForce RTX 4070 : cudaMallocAsync",
+        "type": "cuda",
+        "index": 0,
+        "vram_total": 12878086144,
+        "vram_free": 11628707840,
+        "torch_vram_total": 0,
+        "torch_vram_free": 0
+      }
+    ]
+  },
+  "comfy_exit_code": 1,
+  "log_events": [
+    {
+      "t_s": 2.515,
+      "line": "\u001b[32m[INFO]\u001b[0m Found comfy_kitchen backend triton: {'available': False, 'disabled': True, 'unavailable_reason': \"ImportError: No module named 'triton'\", 'capabilities': []}"
+    },
+    {
+      "t_s": 2.593,
+      "line": "\u001b[32m[INFO]\u001b[0m Total VRAM 12282 MB, total RAM 32509 MB"
+    },
+    {
+      "t_s": 2.593,
+      "line": "\u001b[32m[INFO]\u001b[0m pytorch version: 2.14.1+cu130"
+    },
+    {
+      "t_s": 2.593,
+      "line": "\u001b[32m[INFO]\u001b[0m Set vram state to: NORMAL_VRAM"
+    },
+    {
+      "t_s": 2.593,
+      "line": "\u001b[32m[INFO]\u001b[0m Device: cuda:0 NVIDIA GeForce RTX 4070 : cudaMallocAsync"
+    },
+    {
+      "t_s": 2.625,
+      "line": "\u001b[32m[INFO]\u001b[0m Using async weight offloading with 2 streams"
+    },
+    {
+      "t_s": 6.578,
+      "line": "\u001b[32m[INFO]\u001b[0m Starting server"
+    },
+    {
+      "t_s": 6.578,
+      "line": "\u001b[32m[INFO]\u001b[0m To see the GUI go to: http://127.0.0.1:8188"
+    },
+    {
+      "t_s": 8.5,
+      "line": "\u001b[32m[INFO]\u001b[0m VAE load device: cuda:0, offload device: cpu, dtype: torch.bfloat16"
+    },
+    {
+      "t_s": 9.172,
+      "line": "\u001b[32m[INFO]\u001b[0m Requested to load CausalDiffusionVAE"
+    },
+    {
+      "t_s": 9.609,
+      "line": "\u001b[32m[INFO]\u001b[0m loaded completely;  1403.92 MB loaded, full load: True"
+    },
+    {
+      "t_s": 10.843,
+      "line": "\u001b[32m[INFO]\u001b[0m CLIP/text encoder model load device: cuda:0, offload device: cpu, current: cpu, dtype: torch.float16"
+    },
+    {
+      "t_s": 10.843,
+      "line": "\u001b[32m[INFO]\u001b[0m Requested to load LTXAVTEModel_"
+    },
+    {
+      "t_s": 11.156,
+      "line": "\u001b[32m[INFO]\u001b[0m Model LTXAVTEModel_ prepared for dynamic VRAM loading. 14612MB Staged. 0 patches attached. Force pre-loaded 293 weights: 1535 KB."
+    },
+    {
+      "t_s": 17.812,
+      "line": "\u001b[32m[INFO]\u001b[0m 0 models unloaded."
+    },
+    {
+      "t_s": 17.859,
+      "line": "\u001b[32m[INFO]\u001b[0m Model LTXAVTEModel_ prepared for dynamic VRAM loading. 14612MB Staged. 0 patches attached. Force pre-loaded 293 weights: 1535 KB."
+    },
+    {
+      "t_s": 19.906,
+      "line": "\u001b[32m[INFO]\u001b[0m Requested to load CausalDiffusionVAE"
+    },
+    {
+      "t_s": 20.297,
+      "line": "\u001b[32m[INFO]\u001b[0m loaded completely;  1403.92 MB loaded, full load: True"
+    },
+    {
+      "t_s": 20.468,
+      "line": "\u001b[32m[INFO]\u001b[0m Requested to load LTXAV"
+    },
+    {
+      "t_s": 21.14,
+      "line": "\u001b[32m[INFO]\u001b[0m Model LTXAV prepared for dynamic VRAM loading. 20484MB Staged. 480 patches attached. Force pre-loaded 608 weights: 3303 KB."
+    },
+    {
+      "t_s": 37.593,
+      "line": "\u001b[32m[INFO]\u001b[0m Requested to load CausalDiffusionVAE"
+    },
+    {
+      "t_s": 38.172,
+      "line": "\u001b[32m[INFO]\u001b[0m loaded completely;  1403.92 MB loaded, full load: True"
+    },
+    {
+      "t_s": 39.703,
+      "line": "\u001b[32m[INFO]\u001b[0m \u001b[32mPrompt executed in 33.09 seconds\u001b[0m"
+    }
+  ],
+  "launch_log": "G:\\onecreations\\experiments\\2026-10-02_ltx25-r2d-control-diagnostic\\comfy.log",
+  "total_wall_s": 40.953
+}

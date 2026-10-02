@@ -2,10 +2,15 @@
 
     make_controls.py <bundle_dir> --out G:/onecreations/renders/diag_512x320x49/depth_control.mp4
 
-Convention (proposed — compare with the target graph's own depth preprocessor before trusting results):
-inverse planar depth, normalized per clip between its 1st and 99th percentiles, near = white, background (inf) = black,
-8-bit gray encoded by ffmpeg as H.264 yuv420p, CRF 10, at the shot's output fps. A JSON sidecar next to the video
-records the mapping and the bundle's content hash so the control is traceable to the exact export.
+Convention: aligned with the official LTX Union-control depth preprocessing (Video Depth Anything relative model,
+`gray` output in ComfyUI-Video-Depth-Anything: global per-clip min-max of disparity, near = white, 3 equal channels),
+except for one documented residual: the official path hands float frames to the guide node, while this tool writes an
+8-bit video. Here: inverse planar depth (exact disparity), per-clip min-max over finite depth, background (inf) = black,
+8-bit gray, encoded **losslessly** by ffmpeg as full-range H.264 (yuvj420p, -qp 0) so ComfyUI's LoadVideo decodes the
+exact 8-bit values (verified through its decoder; see docs/measurements/2026-10-02-ltx25-r2d-control-diagnostic.md).
+A JSON sidecar next to the video records the mapping and the bundle's content hash.
+
+Before 2026-10-02 R2D the defaults were p1-p99 percentile clipping and lossy yuv420p CRF 10 (used by R2).
 """
 
 from __future__ import annotations
@@ -19,11 +24,15 @@ from pathlib import Path
 
 import numpy as np
 
-CONVENTION = "inverse planar depth, per-clip p1-p99 normalization, near=white, background=black, 8-bit gray"
+CONVENTION = ("inverse planar depth, per-clip min-max normalization (VDA gray), near=white, background=black, "
+              "8-bit gray, lossless full-range H.264")
 
 
-def depth_to_control(depth_m: np.ndarray, lo_pct: float = 1.0, hi_pct: float = 99.0) -> tuple[np.ndarray, dict]:
-    """(F,H,W) planar depth in metres (inf = background) -> (F,H,W) uint8 control frames and the mapping used."""
+def depth_to_control(depth_m: np.ndarray, lo_pct: float = 0.0, hi_pct: float = 100.0) -> tuple[np.ndarray, dict]:
+    """(F,H,W) planar depth in metres (inf = background) -> (F,H,W) uint8 control frames and the mapping used.
+
+    Defaults (0, 100) are the official per-clip min-max; other percentiles exist only to reproduce old controls.
+    """
     depth = np.asarray(depth_m, dtype=np.float64)
     finite = np.isfinite(depth) & (depth > 0)
     if not finite.any():
@@ -38,7 +47,7 @@ def depth_to_control(depth_m: np.ndarray, lo_pct: float = 1.0, hi_pct: float = 9
     frames = np.round(norm * 255.0).astype(np.uint8)
     meta = {"convention": CONVENTION, "inv_depth_lo": float(lo), "inv_depth_hi": float(hi),
             "near_m": float(1.0 / hi), "far_m": float(1.0 / lo) if lo > 0 else None,
-            "background_fraction": float(1.0 - finite.mean())}
+            "background_fraction": float(1.0 - finite.mean()), "lo_pct": lo_pct, "hi_pct": hi_pct}
     return frames, meta
 
 
@@ -49,7 +58,7 @@ def encode_video(frames: np.ndarray, out: Path, fps: str) -> None:
     n, h, w = frames.shape
     out.parent.mkdir(parents=True, exist_ok=True)
     cmd = [exe, "-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "gray",
-           "-s", f"{w}x{h}", "-r", fps, "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "10", str(out)]
+           "-s", f"{w}x{h}", "-r", fps, "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuvj420p", "-qp", "0", str(out)]
     subprocess.run(cmd, input=np.ascontiguousarray(frames).tobytes(), check=True)
 
 
