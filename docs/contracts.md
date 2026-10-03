@@ -103,6 +103,16 @@ Windows digests are recorded so a later cross-platform comparison is possible. B
 The values are content_sha256 `1c853bef…b53985`, camera samples `38ee76b4…528d1d79` and passes `43321b4c…31c54f76`. Full values are in
 `docs/measurements/2026-10-02-desktop-m1.md`.
 
+**Re-export vs rebuild** (measured 2026-10-03 on the M2-A scene):
+- Re-exporting a saved `.blend` is bit-identical: same content hash.
+- Rebuilding the scene from its script and then exporting gives bit-identical depth and object index, and identical camera, object and probe arrays. The normal pass differs by float32 noise (|Δ| ≤ 1.5e-5), so the content hash changes.
+- Depth controls derive from depth only, so they are unaffected.
+
+**Joints in a real scene** (M2-B, 2026-10-03): `joints.npz` from a rigidly skinned 16-bone rig is consistent with the render.
+- The weapon bone's tail, projected with `geometry.intrinsics.project`, lands within 0.57 px (median 0.30) of the weapon object's object-index centroid (pixel centres at +0.5).
+- Unkeyed bones move 0.0 m.
+- Details: `docs/measurements/2026-10-03-m2b-temple-strike.md`.
+
 ## Deferred in Session A (documented, not built)
 
 Cryptomatte decoding · beauty/AOV production renders · motion vectors · joint visibility flags ·

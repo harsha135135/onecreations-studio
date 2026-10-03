@@ -204,7 +204,8 @@ def build_shiva(m):
     return obj
 
 
-def build(out_path: str, spec_path: str | None) -> None:
+def setup_scene():
+    """Clear the file and set the shared M2 render/time settings; returns the scene."""
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
     scene = bpy.context.scene
@@ -221,12 +222,18 @@ def build(out_path: str, spec_path: str | None) -> None:
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs["Color"].default_value = (*SKY, 1.0)
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.55
+    return scene
 
+
+def make_materials() -> dict:
     m = {k: flat_material(f"m2a_{k}", v) for k, v in COLORS.items() if k not in ("stone_a", "stone_b", "mortar")}
     m["stone"] = stone_material("m2a_stone", COLORS["stone_a"], COLORS["stone_b"])
     m["stone_b"] = flat_material("m2a_stone_b", COLORS["stone_b"])
     m["gold"].node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 0.6
+    return m
 
+
+def add_camera(scene):
     cam_data = bpy.data.cameras.new("OC_Camera")
     cam_data.lens, cam_data.sensor_width, cam_data.sensor_fit = CAMERA["lens_mm"], CAMERA["sensor_mm"], "AUTO"
     cam_data.clip_start, cam_data.clip_end = 0.1, 300.0
@@ -236,7 +243,12 @@ def build(out_path: str, spec_path: str | None) -> None:
     cam.location = CAMERA["location"]
     cam.rotation_euler = [math.radians(a) for a in CAMERA["rotation_euler_deg"]]
     tag(cam, "m2a_camera")
+    return cam
 
+
+def build_environment(m, finial=None) -> None:
+    """Floor, colonnade, shrine, walls and rubble (pass indices 7, 3, 4, 5, 6). `finial` overrides the gold
+    shrine finial's material (M2-B keeps gold unique to the weapon)."""
     bpy.ops.mesh.primitive_plane_add(size=120.0, location=(0.0, 20.0, 0.0))
     floor = bpy.context.active_object
     floor.name = "m2a_floor"
@@ -263,7 +275,7 @@ def build(out_path: str, spec_path: str | None) -> None:
     for w, d, h in ((5.0, 3.6, 2.6), (4.0, 2.9, 1.8), (3.0, 2.2, 1.5), (2.0, 1.5, 1.2)):
         shrine_parts.append(box((w, d, h), (0.0, py + 0.6, z + h / 2), m["stone"]))
         z += h
-    shrine_parts.append(sphere(0.55, (0.0, py + 0.6, z + 0.4), m["gold"]))
+    shrine_parts.append(sphere(0.55, (0.0, py + 0.6, z + 0.4), finial or m["gold"]))
     shrine_parts.append(box((1.2, 0.1, 1.9), (0.0, py + 0.6 - 1.8 - 0.05, sz + 0.95), m["shrine_dark"]))
     tag(join(shrine_parts, "m2a_shrine"), "m2a_shrine", 4)
 
@@ -283,9 +295,35 @@ def build(out_path: str, spec_path: str | None) -> None:
         rubble.append(r)
     tag(join(rubble, "m2a_rubble"), "m2a_rubble", 6)
 
+
+def add_shiva(m):
     shiva = build_shiva(m)
     shiva.location = SHIVA_AT
     tag(shiva, "m2a_shiva", 2)
+    return shiva
+
+
+def add_sun(scene):
+    sun = bpy.data.objects.new("m2a_sun", bpy.data.lights.new("m2a_sun", "SUN"))
+    sun.data.energy = 4.0
+    sun.data.color = (1.0, 0.84, 0.68)
+    sun.rotation_euler = (math.radians(62), 0.0, math.radians(-38))
+    scene.collection.objects.link(sun)
+    return sun
+
+
+def scene_spec() -> dict:
+    return {"sky": SKY, "colors": COLORS, "pillars": {"x": PILLAR_X, "ys": PILLAR_YS},
+            "platform": PLATFORM, "shiva_at": SHIVA_AT, "rubble_seed": 7,
+            "sun": {"energy": 4.0, "color": [1.0, 0.84, 0.68], "rotation_euler_deg": [62, 0, -38]}}
+
+
+def build(out_path: str, spec_path: str | None) -> None:
+    scene = setup_scene()
+    m = make_materials()
+    add_camera(scene)
+    build_environment(m)
+    add_shiva(m)
 
     asura = build_asura(m)
     asura.location = ASURA_PATH["start"]
@@ -296,12 +334,7 @@ def build(out_path: str, spec_path: str | None) -> None:
         for kp in fc.keyframe_points:
             kp.interpolation = "LINEAR"
     tag(asura, "m2a_asura", 1)
-
-    sun = bpy.data.objects.new("m2a_sun", bpy.data.lights.new("m2a_sun", "SUN"))
-    sun.data.energy = 4.0
-    sun.data.color = (1.0, 0.84, 0.68)
-    sun.rotation_euler = (math.radians(62), 0.0, math.radians(-38))
-    scene.collection.objects.link(sun)
+    add_sun(scene)
 
     scene.frame_set(1)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(out_path))
@@ -311,9 +344,7 @@ def build(out_path: str, spec_path: str | None) -> None:
             "purpose": ("M2-A: representative environment; whole-body RIGID TRANSLATION of a humanoid-shaped proxy "
                         "(no articulation, no rotation), static camera"),
             "frames": FRAMES, "fps": FPS, "resolution": list(RES), "camera": CAMERA,
-            "scene": {"sky": SKY, "colors": COLORS, "pillars": {"x": PILLAR_X, "ys": PILLAR_YS},
-                      "platform": PLATFORM, "shiva_at": SHIVA_AT, "rubble_seed": 7,
-                      "sun": {"energy": 4.0, "color": [1.0, 0.84, 0.68], "rotation_euler_deg": [62, 0, -38]}},
+            "scene": scene_spec(),
             "choreography": {"m2a_asura": dict(ASURA_PATH, interpolation="LINEAR", rotation="none",
                                                motion="LEFT->RIGHT while approaching (6.5 m -> 5.5 m)")},
             "tracking": {

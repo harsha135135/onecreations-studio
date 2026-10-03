@@ -1,0 +1,47 @@
+{
+  "actors": {
+    "asura": "m2b_asura"
+  },
+  "contacts": [],
+  "duration": "49/24",
+  "id": "m2b_mace_strike_v1",
+  "phases": [
+    {
+      "actor": "asura",
+      "end": "7/24",
+      "id": "guard",
+      "kind": "idle",
+      "start": "0"
+    },
+    {
+      "actor": "asura",
+      "end": "23/24",
+      "id": "windup",
+      "kind": "other",
+      "start": "7/24"
+    },
+    {
+      "actor": "asura",
+      "end": "4/3",
+      "id": "strike",
+      "kind": "strike",
+      "start": "23/24"
+    },
+    {
+      "actor": "asura",
+      "end": "17/12",
+      "id": "impact",
+      "kind": "impact",
+      "start": "4/3"
+    },
+    {
+      "actor": "asura",
+      "end": "2",
+      "id": "recovery",
+      "kind": "recovery",
+      "start": "17/12"
+    }
+  ],
+  "schema_version": 1,
+  "version": "1.0.0-strike9f"
+}

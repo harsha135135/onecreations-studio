@@ -8,6 +8,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 | `r1_t2v_video_only_api.json` | R1 T2V smoke | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_T2V_I2V_Single_Stage_Distilled.json` | see below |
 | `r2_union_depth_api.json` | R2 first frame + depth Union control | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_ICLoRA_Union_Control_Distilled.json` | see "R2" below |
 | `m2a_temple_api.json` | M2-A representative temple shot | same as R2 | R2D's graph with only the prompt (neutral: environment, style, subjects, lighting; no motion direction or timing) and the output prefix changed |
+| `m2b_strike_api.json` | M2-B articulated strike (and its retry) | same as R2 | M2-A's graph and prompt; only the output prefix changed |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
 **R1 keeps the official values:** distilled 8-step `ManualSigmas`, `euler_ancestral`, CFG 1, `LTXVConditioning` at 24 fps, and tiled decode 512/64/128/32.
@@ -53,3 +54,10 @@ This path is aligned with the official preprocessing except for the documented 8
 - a static camera
 
 Run it with `tools/windows/run_admission.ps1`. Result: **PASS**; see `docs/measurements/2026-10-02-m2a-temple-shot.md`.
+
+**M2-B** (`m2b_strike_api.json`) is node-for-node M2-A, with the same prompt. The inputs come from `integrations/blender/build_temple_strike_scene.py` (`--strike-frames 9` for the retry), with references from `integrations/blender/render_reference.py`. They are in `G:\onecreations\renders\m2b_strike[_retry]\`:
+- the M2-A temple
+- a rigged humanoid proxy with a fixed root performing one **articulated** mace strike
+- a static camera
+
+Result: **PARTIAL** (both runs). Timing is followed to the frame, but the weapon smears in the fastest strike frames; see `docs/measurements/2026-10-03-m2b-temple-strike.md`.

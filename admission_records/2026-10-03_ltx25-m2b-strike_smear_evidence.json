@@ -1,0 +1,317 @@
+{
+ "note": "report-only evidence for the visual smear finding: per-frame weapon-head speed (GT object-index centroid, px/frame, into and out of the frame) vs generated/reference gold-mask area and edge energy inside the 6-px-dilated GT head mask",
+ "runs": {
+  "run1": [
+   {
+    "f": 18,
+    "speed_in": 7.6,
+    "speed_out": 7.1,
+    "gold_area_gen_over_ref": 0.849,
+    "edge_energy_gen_over_ref": 1.021
+   },
+   {
+    "f": 19,
+    "speed_in": 7.1,
+    "speed_out": 6.4,
+    "gold_area_gen_over_ref": 0.863,
+    "edge_energy_gen_over_ref": 1.065
+   },
+   {
+    "f": 20,
+    "speed_in": 6.4,
+    "speed_out": 5.5,
+    "gold_area_gen_over_ref": 0.88,
+    "edge_energy_gen_over_ref": 1.098
+   },
+   {
+    "f": 21,
+    "speed_in": 5.5,
+    "speed_out": 4.4,
+    "gold_area_gen_over_ref": 0.731,
+    "edge_energy_gen_over_ref": 1.066
+   },
+   {
+    "f": 22,
+    "speed_in": 4.4,
+    "speed_out": 4.3,
+    "gold_area_gen_over_ref": 0.761,
+    "edge_energy_gen_over_ref": 1.124
+   },
+   {
+    "f": 23,
+    "speed_in": 4.3,
+    "speed_out": 7.2,
+    "gold_area_gen_over_ref": 0.656,
+    "edge_energy_gen_over_ref": 1.116
+   },
+   {
+    "f": 24,
+    "speed_in": 7.2,
+    "speed_out": 24.6,
+    "gold_area_gen_over_ref": 0.57,
+    "edge_energy_gen_over_ref": 1.066
+   },
+   {
+    "f": 25,
+    "speed_in": 24.6,
+    "speed_out": 80.1,
+    "gold_area_gen_over_ref": 0.009,
+    "edge_energy_gen_over_ref": 0.789
+   },
+   {
+    "f": 26,
+    "speed_in": 80.1,
+    "speed_out": 76.6,
+    "gold_area_gen_over_ref": 0.471,
+    "edge_energy_gen_over_ref": 0.853
+   },
+   {
+    "f": 27,
+    "speed_in": 76.6,
+    "speed_out": 48.0,
+    "gold_area_gen_over_ref": 0.736,
+    "edge_energy_gen_over_ref": 0.982
+   },
+   {
+    "f": 28,
+    "speed_in": 48.0,
+    "speed_out": 13.0,
+    "gold_area_gen_over_ref": 0.784,
+    "edge_energy_gen_over_ref": 0.769
+   },
+   {
+    "f": 29,
+    "speed_in": 13.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 1.001,
+    "edge_energy_gen_over_ref": 0.837
+   },
+   {
+    "f": 30,
+    "speed_in": 0.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 1.005,
+    "edge_energy_gen_over_ref": 0.857
+   },
+   {
+    "f": 31,
+    "speed_in": 0.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 0.953,
+    "edge_energy_gen_over_ref": 0.835
+   },
+   {
+    "f": 32,
+    "speed_in": 0.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 0.952,
+    "edge_energy_gen_over_ref": 0.883
+   },
+   {
+    "f": 33,
+    "speed_in": 0.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 0.93,
+    "edge_energy_gen_over_ref": 0.864
+   },
+   {
+    "f": 34,
+    "speed_in": 0.0,
+    "speed_out": 0.4,
+    "gold_area_gen_over_ref": 0.928,
+    "edge_energy_gen_over_ref": 0.871
+   },
+   {
+    "f": 35,
+    "speed_in": 0.4,
+    "speed_out": 0.7,
+    "gold_area_gen_over_ref": 0.911,
+    "edge_energy_gen_over_ref": 0.886
+   },
+   {
+    "f": 36,
+    "speed_in": 0.7,
+    "speed_out": 1.1,
+    "gold_area_gen_over_ref": 0.907,
+    "edge_energy_gen_over_ref": 0.915
+   },
+   {
+    "f": 37,
+    "speed_in": 1.1,
+    "speed_out": 4.0,
+    "gold_area_gen_over_ref": 0.873,
+    "edge_energy_gen_over_ref": 0.927
+   },
+   {
+    "f": 38,
+    "speed_in": 4.0,
+    "speed_out": 9.8,
+    "gold_area_gen_over_ref": 0.808,
+    "edge_energy_gen_over_ref": 1.005
+   },
+   {
+    "f": 39,
+    "speed_in": 9.8,
+    "speed_out": 17.8,
+    "gold_area_gen_over_ref": 0.737,
+    "edge_energy_gen_over_ref": 0.848
+   }
+  ],
+  "retry": [
+   {
+    "f": 18,
+    "speed_in": 7.6,
+    "speed_out": 7.2,
+    "gold_area_gen_over_ref": 0.757,
+    "edge_energy_gen_over_ref": 0.99
+   },
+   {
+    "f": 19,
+    "speed_in": 7.2,
+    "speed_out": 6.5,
+    "gold_area_gen_over_ref": 0.784,
+    "edge_energy_gen_over_ref": 1.04
+   },
+   {
+    "f": 20,
+    "speed_in": 6.5,
+    "speed_out": 5.6,
+    "gold_area_gen_over_ref": 0.781,
+    "edge_energy_gen_over_ref": 1.086
+   },
+   {
+    "f": 21,
+    "speed_in": 5.6,
+    "speed_out": 4.4,
+    "gold_area_gen_over_ref": 0.696,
+    "edge_energy_gen_over_ref": 1.104
+   },
+   {
+    "f": 22,
+    "speed_in": 4.4,
+    "speed_out": 3.8,
+    "gold_area_gen_over_ref": 0.686,
+    "edge_energy_gen_over_ref": 1.113
+   },
+   {
+    "f": 23,
+    "speed_in": 3.8,
+    "speed_out": 3.2,
+    "gold_area_gen_over_ref": 0.674,
+    "edge_energy_gen_over_ref": 1.11
+   },
+   {
+    "f": 24,
+    "speed_in": 3.2,
+    "speed_out": 9.9,
+    "gold_area_gen_over_ref": 0.755,
+    "edge_energy_gen_over_ref": 1.099
+   },
+   {
+    "f": 25,
+    "speed_in": 9.9,
+    "speed_out": 19.2,
+    "gold_area_gen_over_ref": 0.577,
+    "edge_energy_gen_over_ref": 1.049
+   },
+   {
+    "f": 26,
+    "speed_in": 19.2,
+    "speed_out": 43.4,
+    "gold_area_gen_over_ref": 0.231,
+    "edge_energy_gen_over_ref": 0.758
+   },
+   {
+    "f": 27,
+    "speed_in": 43.4,
+    "speed_out": 64.1,
+    "gold_area_gen_over_ref": 0.615,
+    "edge_energy_gen_over_ref": 0.753
+   },
+   {
+    "f": 28,
+    "speed_in": 64.1,
+    "speed_out": 50.5,
+    "gold_area_gen_over_ref": 0.629,
+    "edge_energy_gen_over_ref": 1.039
+   },
+   {
+    "f": 29,
+    "speed_in": 50.5,
+    "speed_out": 37.1,
+    "gold_area_gen_over_ref": 0.755,
+    "edge_energy_gen_over_ref": 0.966
+   },
+   {
+    "f": 30,
+    "speed_in": 37.1,
+    "speed_out": 17.7,
+    "gold_area_gen_over_ref": 0.664,
+    "edge_energy_gen_over_ref": 1.021
+   },
+   {
+    "f": 31,
+    "speed_in": 17.7,
+    "speed_out": 9.0,
+    "gold_area_gen_over_ref": 0.688,
+    "edge_energy_gen_over_ref": 0.943
+   },
+   {
+    "f": 32,
+    "speed_in": 9.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 0.716,
+    "edge_energy_gen_over_ref": 0.838
+   },
+   {
+    "f": 33,
+    "speed_in": 0.0,
+    "speed_out": 0.0,
+    "gold_area_gen_over_ref": 0.641,
+    "edge_energy_gen_over_ref": 0.823
+   },
+   {
+    "f": 34,
+    "speed_in": 0.0,
+    "speed_out": 0.4,
+    "gold_area_gen_over_ref": 0.696,
+    "edge_energy_gen_over_ref": 0.832
+   },
+   {
+    "f": 35,
+    "speed_in": 0.4,
+    "speed_out": 0.7,
+    "gold_area_gen_over_ref": 0.683,
+    "edge_energy_gen_over_ref": 0.84
+   },
+   {
+    "f": 36,
+    "speed_in": 0.7,
+    "speed_out": 1.1,
+    "gold_area_gen_over_ref": 0.678,
+    "edge_energy_gen_over_ref": 0.858
+   },
+   {
+    "f": 37,
+    "speed_in": 1.1,
+    "speed_out": 4.0,
+    "gold_area_gen_over_ref": 0.628,
+    "edge_energy_gen_over_ref": 0.882
+   },
+   {
+    "f": 38,
+    "speed_in": 4.0,
+    "speed_out": 9.8,
+    "gold_area_gen_over_ref": 0.594,
+    "edge_energy_gen_over_ref": 0.949
+   },
+   {
+    "f": 39,
+    "speed_in": 9.8,
+    "speed_out": 17.8,
+    "gold_area_gen_over_ref": 0.518,
+    "edge_energy_gen_over_ref": 0.866
+   }
+  ]
+ }
+}

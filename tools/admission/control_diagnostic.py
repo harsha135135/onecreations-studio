@@ -15,10 +15,15 @@ Deliberately simple evidence, no learned metric:
   median depth) and occlusion (nearer non-ground objects inside the subject's bbox);
 - the control's mean intensity inside each subject mask, and its contrast against a ring around the subject;
 - colour-blob tracking in the Blender reference (validates the tracker) and in the generated video;
-- pre-registered checks -> PASS/PARTIAL/FAIL metric class (the final class also needs visual agreement);
+- pre-registered checks -> PASS/PARTIAL/FAIL metric class (the final class also needs visual agreement):
+  `lateral` and `approach` (M2-A), `position` (a stationary-root body: displacement from frame 0 and relative area
+  follow GT) and `timing` (a weapon's apex and contact frames, excursion and swing direction vs GT; M2-B);
+- with a "joints" section (M2-B): the weapon bone's projected tail vs its object-index centroid, stationary bones,
+  and agreement of the exported motion's events with the ActionTimeline phase boundaries;
 - static-structure drift (mean |frame_t - frame_0| over static structures away from subjects) — REPORT-ONLY:
   lighting, texture, shadow or generative appearance changes must not fail coherence on their own.
-Writes <out-dir>/<mode>.json and a contact sheet PNG (rows: reference, control[, generated]) at 0/25/50/75/100 %.
+Writes <out-dir>/<mode>.json and a contact sheet PNG (rows: reference, control[, generated]) at 0/25/50/75/100 %,
+plus an event contact sheet (GT apex - 2 ... contact + 2) when a subject has a `timing` check.
 Needs ffmpeg on PATH. Units: output pixels; "cells" are Union-guide latent cells (32 px x reference downscale 2).
 """
 
@@ -27,9 +32,11 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import shutil
 import subprocess
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
@@ -56,7 +63,10 @@ R2D_TRACKING = {
 def load_tracking(spec_path: Path | None) -> dict:
     if spec_path is None:
         return copy.deepcopy(R2D_TRACKING)
-    spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+    return tracking_from_spec(json.loads(Path(spec_path).read_text(encoding="utf-8")), spec_path)
+
+
+def tracking_from_spec(spec: dict, spec_path=None) -> dict:
     tracking = spec.get("tracking")
     if not tracking or not tracking.get("subjects"):
         raise ValueError(f"{spec_path}: no tracking.subjects section")
@@ -83,13 +93,16 @@ def mask_stats(mask: np.ndarray) -> dict | None:
 
 
 def color_mask(rgb: np.ndarray, color: str) -> np.ndarray:
-    """Plain RGB-dominance masks for flat red / blue subjects (uint8 HxWx3)."""
+    """Plain RGB-dominance masks for flat red / blue / gold subjects (uint8 HxWx3). `gold` needs strong R and G
+    over B (b < 0.55 g), which keeps warm sunlit stone (b ~ 0.75 g) out."""
     c = rgb.astype(np.float32)
     r, g, b = c[..., 0], c[..., 1], c[..., 2]
     if color == "red":
         return (r > 90) & (r > 1.6 * g) & (r > 1.6 * b)
     if color == "blue":
         return (b > 80) & (b > 1.4 * r) & (b > 1.15 * g)
+    if color == "gold":
+        return (r > 100) & (g > 60) & (r >= g) & (g > 0.45 * r) & (b < 0.55 * g)
     raise ValueError(f"unknown colour {color!r}")
 
 
@@ -227,7 +240,78 @@ def check_approach(gen: list, gt: list, cps: list[int], params: dict) -> dict:
                 followed=bool(ratio >= threshold and nondecreasing))
 
 
-CHECKS = {"lateral": check_lateral, "approach": check_approach}
+def check_position(gen: list, gt: list, cps: list[int], params: dict) -> dict:
+    """Stationary-root body: displacement from frame 0 and area relative to frame 0 follow GT at every checkpoint.
+
+    Relative to frame 0, so a constant colour-tracker offset (non-red parts in the GT mask) cancels. Catches invented
+    translation and a body that breaks up or vanishes."""
+    g, t = ([track[f] if f < len(track) else None for f in cps] for track in (gen, gt))
+    out = {"generated_cx": [(r or {}).get("cx") for r in g], "generated_cy": [(r or {}).get("cy") for r in g],
+           "gt_cx": [(r or {}).get("cx") for r in t], "gt_cy": [(r or {}).get("cy") for r in t]}
+    if any(r is None for r in g) or any(r is None for r in t):
+        return dict(out, followed=None, reason="not detected at every checkpoint (colour metric unavailable)")
+    tol, area_tol = float(params.get("tol_px", 32.0)), float(params.get("area_tol", 0.25))
+    disp = [max(abs((a["cx"] - g[0]["cx"]) - (b["cx"] - t[0]["cx"])),
+                abs((a["cy"] - g[0]["cy"]) - (b["cy"] - t[0]["cy"]))) for a, b in zip(g, t)]
+    area = [abs((a["area_px"] / g[0]["area_px"]) / (b["area_px"] / t[0]["area_px"]) - 1.0) for a, b in zip(g, t)]
+    ok = all(d <= tol for d in disp)
+    return dict(out, displacement_err_px=[round(d, 1) for d in disp], relative_area_err=[round(a, 3) for a in area],
+                abs_err_px=[round(math.hypot(a["cx"] - b["cx"], a["cy"] - b["cy"]), 1) for a, b in zip(g, t)],
+                tol_px=tol, area_tol=area_tol, direction_correct=ok,
+                followed=bool(ok and all(a <= area_tol for a in area)))
+
+
+def strike_events(track: list[dict | None], stop_px: float = 4.0) -> dict | None:
+    """Events of a downward strike in a per-frame track. apex = highest on screen (min cy). contact = the first frame
+    after the fastest frame-to-frame move following the apex from which the subject moves <= stop_px to the next
+    frame (it stops). 2D speed, not vertical speed, so a final sideways settle is not taken for the stop."""
+    pts = [(s["cx"], s["cy"]) if s else None for s in track]
+    det = [i for i, q in enumerate(pts) if q is not None]
+    if len(det) < 3:
+        return None
+    apex = min(det, key=lambda i: (pts[i][1], i))
+    speed = {i: math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1])
+             for i in range(apex, len(pts) - 1) if pts[i] is not None and pts[i + 1] is not None}
+    ev = {"apex": apex, "contact": None, "peak_speed_frame": None, "peak_speed_px": None, "excursion_px": None,
+          "dx_px": None}
+    if not speed:
+        return ev
+    peak = max(speed, key=lambda i: (speed[i], -i))
+    contact = next((i for i in sorted(speed) if i > peak and speed[i] <= stop_px), None)
+    ev.update(peak_speed_frame=peak, peak_speed_px=round(speed[peak], 1), contact=contact)
+    if contact is not None:
+        ev.update(excursion_px=round(pts[contact][1] - pts[apex][1], 1), dx_px=round(pts[contact][0] - pts[apex][0], 1))
+    return ev
+
+
+def check_timing(gen: list, gt: list, cps: list[int], params: dict) -> dict:
+    """A weapon's strike: apex and contact frames within tol_frames of GT, a downswing (apex before contact) with
+    excursion >= min_excursion_frac of GT, the swing's x direction when GT moves >= min_dx_px sideways, and the
+    subject detected in >= min_detect_frac of the frames. Uses every frame, not only the checkpoints."""
+    stop = float(params.get("stop_px", 4.0))
+    ev_g, ev_t = strike_events(gen, stop), strike_events(gt, stop)
+    detected = sum(s is not None for s in gen) / max(len(gen), 1)
+    out = {"generated_events": ev_g, "gt_events": ev_t, "detected_frac": round(detected, 3)}
+    if ev_t is None or ev_t["contact"] is None:
+        return dict(out, followed=None, reason="no strike events in ground truth")
+    if detected < float(params.get("min_detect_frac", 0.9)) or ev_g is None:
+        return dict(out, followed=None, reason="detected in too few frames (colour metric unavailable)")
+    if ev_g["contact"] is None:
+        return dict(out, followed=False, direction_correct=False, reason="no stop after the fastest move")
+    tol = int(params.get("tol_frames", 2))
+    d_apex, d_contact = ev_g["apex"] - ev_t["apex"], ev_g["contact"] - ev_t["contact"]
+    exc_frac = ev_g["excursion_px"] / ev_t["excursion_px"] if ev_t["excursion_px"] else 0.0
+    dx_applicable = abs(ev_t["dx_px"]) >= float(params.get("min_dx_px", 32.0))
+    dx_ok = (not dx_applicable) or (ev_g["dx_px"] * ev_t["dx_px"] > 0)
+    downswing = ev_g["excursion_px"] > 0 and ev_g["apex"] < ev_g["contact"]
+    return dict(out, apex_offset_frames=d_apex, contact_offset_frames=d_contact, excursion_frac=round(exc_frac, 3),
+                dx_check_applicable=dx_applicable, dx_ok=dx_ok, tol_frames=tol,
+                direction_correct=bool(downswing and dx_ok),
+                followed=bool(abs(d_apex) <= tol and abs(d_contact) <= tol and downswing and dx_ok
+                              and exc_frac >= float(params.get("min_excursion_frac", 0.5))))
+
+
+CHECKS = {"lateral": check_lateral, "approach": check_approach, "position": check_position, "timing": check_timing}
 
 
 def classify(gen: dict, gt: dict, n_frames: int, tracking: dict) -> dict:
@@ -291,11 +375,82 @@ def _legacy_r2d_gate(gt: dict, inside: dict) -> dict:
     return gate
 
 
+def in_frame(row: dict | None, width: int, height: int) -> bool:
+    """True when the subject's bbox does not touch the image border (it is not cut by the frame)."""
+    if row is None:
+        return False
+    x0, y0, x1, y1 = row["bbox"]
+    return x0 > 0 and y0 > 0 and x1 < width - 1 and y1 < height - 1
+
+
+def joint_checks(heads: np.ndarray, tails: np.ndarray, bones: list[str], c2w: np.ndarray, k: np.ndarray,
+                 weapon_track: list[dict | None], cfg: dict) -> dict:
+    """First real-scene use of joints.npz: the weapon bone's tail projected with the shared camera model vs the weapon
+    object's object-index centroid (pixel centres at +0.5), stationary bones, and the weapon's 3D height events."""
+    from onecreations.geometry.intrinsics import project
+
+    w = bones.index(cfg["weapon_bone"])
+    errs = []
+    for f in range(tails.shape[0]):
+        s = weapon_track[f] if f < len(weapon_track) else None
+        if s is None:
+            errs.append(None)
+            continue
+        uv, _ = project(tails[f, w][None], c2w[f], k)
+        errs.append(round(math.hypot(uv[0, 0] - (s["cx"] + 0.5), uv[0, 1] - (s["cy"] + 0.5)), 3))
+    valid = [e for e in errs if e is not None]
+    moves = {b: round(float(np.abs(heads[:, bones.index(b)] - heads[0, bones.index(b)]).max()), 6)
+             for b in cfg.get("stationary_bones", [])}
+    z = tails[:, w, 2]
+    apex = int(np.argmax(z))
+    low = float(z[apex:].min())
+    contact = next(int(i) for i in range(apex, len(z)) if z[i] <= low + 1e-3)
+    proj_ok = bool(valid) and len(valid) == len(errs) and max(valid) <= float(cfg.get("max_projection_err_px", 3.0))
+    stat_ok = all(m <= float(cfg.get("max_stationary_m", 1e-3)) for m in moves.values())
+    return {"projection_err_px": {"max": max(valid) if valid else None,
+                                  "median": round(float(np.median(valid)), 3) if valid else None, "per_frame": errs},
+            "stationary_max_move_m": moves,
+            "weapon_height_events_3d": {"apex": apex, "contact": contact, "apex_height_m": round(float(z[apex]), 4),
+                                        "contact_height_m": round(float(z[contact]), 4)},
+            "projection_ok": proj_ok, "stationary_ok": stat_ok, "passed": bool(proj_ok and stat_ok)}
+
+
+def timeline_frames(timeline: dict, fps: Fraction, apex_after: str, contact_after: str) -> dict:
+    """Output-frame indices of the ActionTimeline boundaries that should be the apex and the contact (identity time
+    map: output frame = source time x fps, source time 0 = the scene's first frame)."""
+    from onecreations.timebase import parse_time
+
+    phases = {ph["id"]: ph for ph in timeline["phases"]}
+    out = {}
+    for key, pid in (("apex", apex_after), ("contact", contact_after)):
+        f = parse_time(phases[pid]["end"]) * fps
+        if f.denominator != 1:
+            raise ValueError(f"phase {pid} ends between frames ({f})")
+        out[key] = int(f)
+    return out
+
+
+def timeline_agreement(expected: dict, observed: dict[str, dict | None], tol: int) -> dict:
+    res = {"expected": expected, "tol_frames": tol, "observed": {}}
+    ok = True
+    for label, ev in observed.items():
+        if ev is None or ev.get("contact") is None:
+            res["observed"][label] = None
+            ok = False
+            continue
+        d = {k: ev[k] - expected[k] for k in ("apex", "contact")}
+        res["observed"][label] = {"apex": ev["apex"], "contact": ev["contact"], "offset_frames": d}
+        ok = ok and all(abs(v) <= tol for v in d.values())
+    res["passed"] = bool(ok)
+    return res
+
+
 def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Path, generated: Path | None,
         spec: Path | None = None) -> dict:
     from onecreations.blender_bundle import load_bundle
 
-    tracking = load_tracking(spec)
+    spec_doc = json.loads(Path(spec).read_text(encoding="utf-8")) if spec else None
+    tracking = tracking_from_spec(spec_doc, spec) if spec_doc else load_tracking(None)
     subjects = tracking["subjects"]
     bundle = load_bundle(bundle_dir)
     passes = bundle.passes()
@@ -306,7 +461,12 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
     ref = decode_rgb(reference)
     n = idx.shape[0]
     cps = checkpoint_frames(n)
-    ignore = {index_of[g] for g in tracking["ground"] if g in index_of}
+    height, width = idx.shape[1:]
+    ground_ids = {index_of[g] for g in tracking["ground"] if g in index_of}
+    ignore = {oc: ground_ids | {index_of[o] for o in cfg.get("ignore_occluders", []) if o in index_of}
+              for oc, cfg in subjects.items()}
+    timed = [oc for oc, cfg in subjects.items() if "timing" in cfg.get("checks", {})]
+    gt_events = {oc: strike_events(gt[oc], float(subjects[oc]["checks"]["timing"].get("stop_px", 4.0))) for oc in timed}
 
     inside = {oc: [round(float(ctrl[f][idx[f] == index_of[oc]].mean()) / 255.0, 4)
                    if (idx[f] == index_of[oc]).any() else None for f in cps] for oc in subjects}
@@ -316,9 +476,13 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
               "control_mean_inside_gt_mask": inside,
               "control_contrast_vs_ring": {oc: [control_contrast(ctrl[f], idx[f] == index_of[oc]) for f in cps]
                                            for oc in subjects},
-              "occluded_frames": {oc: [f for f in range(n) if occlusion_fraction(idx[f], depth[f], index_of[oc], ignore)
-                                       > OCCLUSION_FRAC] for oc in subjects},
+              "occluded_frames": {oc: [f for f in range(n) if occlusion_fraction(
+                  idx[f], depth[f], index_of[oc], ignore[oc]) > OCCLUSION_FRAC] for oc in subjects},
               "reference_tracking": classify(track_colors(ref, subjects), gt, n, tracking)}
+    if timed:
+        report["gt_events"] = gt_events
+        report["control_contrast_series_report_only"] = {
+            oc: [control_contrast(ctrl[f], idx[f] == index_of[oc]) for f in range(n)] for oc in timed}
 
     gate_cfg = tracking["gate"]
     if gate_cfg.get("legacy_r2d"):
@@ -328,26 +492,69 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
         for oc, cfg in subjects.items():
             if cfg.get("role", "primary") != "primary":
                 continue
+            g = {**gate_cfg, **cfg.get("gate", {})}          # per-subject overrides of the global thresholds
             rows = [gt[oc][f] for f in cps]
-            cov = all(r is not None and r["h_cells"] >= gate_cfg.get("min_height_cells", 0)
-                      and r["area_cells"] >= gate_cfg.get("min_area_cells", 0)
-                      and r["w_cells"] >= gate_cfg.get("min_width_cells", 0) for r in rows)
+            cov = all(r is not None and r["h_cells"] >= g.get("min_height_cells", 0)
+                      and r["area_cells"] >= g.get("min_area_cells", 0)
+                      and r["w_cells"] >= g.get("min_width_cells", 0) for r in rows)
             travel_cells = round((rows[-1]["cx"] - rows[0]["cx"]) / GUIDE_CELL_PX, 2) if rows[0] and rows[-1] else None
-            contrast = report["control_contrast_vs_ring"][oc]
-            checks[oc] = {
+            if g.get("contrast_frames") == "events":
+                ev = gt_events.get(oc)
+                contrast_frames = [ev["apex"], ev["contact"]] if ev and ev["contact"] is not None else []
+                contrast = [control_contrast(ctrl[f], idx[f] == index_of[oc]) for f in contrast_frames]
+            else:
+                contrast_frames, contrast = cps, report["control_contrast_vs_ring"][oc]
+            c = {
                 "coverage_ok": cov, "travel_cells": travel_cells,
                 "travel_ok": travel_cells is not None and ("lateral" not in cfg.get("checks", {})
-                                                          or abs(travel_cells) >= gate_cfg.get("min_travel_cells", 0)),
-                "min_control_contrast": min((c for c in contrast if c is not None), default=None),
-                "contrast_ok": all(c is not None and c >= gate_cfg.get("min_control_contrast", 0) for c in contrast),
+                                                          or abs(travel_cells) >= g.get("min_travel_cells", 0)),
+                "contrast_frames": contrast_frames,
+                "min_control_contrast": min((v for v in contrast if v is not None), default=None),
+                "contrast_ok": bool(contrast) and all(v is not None and v >= g.get("min_control_contrast", 0)
+                                                      for v in contrast),
                 "not_occluded": not report["occluded_frames"][oc],
                 "depth_trend_m": [r["median_depth_m"] if r else None for r in rows],
             }
+            required = ["coverage_ok", "travel_ok", "contrast_ok", "not_occluded"]
+            if g.get("require_visible_all_frames"):
+                c["visible_all_frames"] = all(r is not None for r in gt[oc])
+                required.append("visible_all_frames")
+            if g.get("require_in_frame"):
+                c["in_frame"] = all(in_frame(r, width, height) for r in gt[oc] if r is not None)
+                required.append("in_frame")
+            if "min_excursion_cells" in g:
+                ev = gt_events.get(oc)
+                exc = ev["excursion_px"] / GUIDE_CELL_PX if ev and ev["excursion_px"] is not None else None
+                c["excursion_cells"] = round(exc, 2) if exc is not None else None
+                c["excursion_ok"] = exc is not None and exc >= g["min_excursion_cells"]
+                required.append("excursion_ok")
+            c["ok"] = all(c[k] for k in required)
+            checks[oc] = c
         tracker_ok = report["reference_tracking"]["metric_class"] == "PASS"
-        report["gate"] = {"subjects": checks, "reference_tracker_reproduces_gt": tracker_ok,
-                          "passed": bool(tracker_ok and checks and all(
-                              c["coverage_ok"] and c["travel_ok"] and c["contrast_ok"] and c["not_occluded"]
-                              for c in checks.values()))}
+        gate = {"subjects": checks, "reference_tracker_reproduces_gt": tracker_ok}
+        passed = bool(tracker_ok and checks and all(c["ok"] for c in checks.values()))
+        if "joints" in tracking:
+            jc = tracking["joints"]
+            arm = next(a for a in bundle.manifest.armatures if a.oc_id == jc["rig"])
+            joints, cam = bundle.joints(), bundle.camera_arrays()
+            report["joints"] = joint_checks(joints[f"{jc['rig']}.heads"], joints[f"{jc['rig']}.tails"], list(arm.bones),
+                                            cam["c2w"], bundle.K(), gt[jc["weapon_object"]], jc)
+            gate["joints_ok"] = report["joints"]["passed"]
+            passed = passed and gate["joints_ok"]
+        if "timeline" in tracking and spec_doc:
+            tc = tracking["timeline"]
+            rate = bundle.manifest.shot.output_fps
+            expected = timeline_frames(spec_doc["choreography"]["action_timeline"], Fraction(rate.num, rate.den),
+                                       tc["apex_after_phase"], tc["contact_after_phase"])
+            observed = {"screen_gt": gt_events.get(tracking.get("joints", {}).get("weapon_object", timed[0] if timed
+                                                                                    else ""))}
+            if "joints" in report:
+                observed["joints_3d"] = report["joints"]["weapon_height_events_3d"]
+            report["timeline_agreement"] = timeline_agreement(expected, observed, int(tc.get("tol_frames", 1)))
+            gate["timeline_ok"] = report["timeline_agreement"]["passed"]
+            passed = passed and gate["timeline_ok"]
+        gate["passed"] = passed
+        report["gate"] = gate
 
     # report-only coherence evidence: static structures away from every subject's bbox (all frames)
     static_ids = [index_of[s] for s in tracking["static_structures"] if s in index_of]
@@ -371,6 +578,7 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
         report["generated_frames"] = int(len(gen))
         tracked = track_colors(gen, subjects)
         report["generated_full_series"] = {oc: {"cx": [(s or {}).get("cx") for s in tr],
+                                                "cy": [(s or {}).get("cy") for s in tr],
                                                 "area_px": [(s or {}).get("area_px") for s in tr]}
                                            for oc, tr in tracked.items()}
         report["generated_area_vs_gt"] = {oc: [round(a / g, 3) if a and g else None for a, g in zip(
@@ -380,6 +588,10 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
         rows.append(gen)
     out_dir.mkdir(parents=True, exist_ok=True)
     contact_sheet(rows, cps, out_dir / f"{mode}_contact_sheet.png")
+    ev = gt_events.get(timed[0]) if timed else None
+    if ev and ev["contact"] is not None:
+        report["event_contact_sheet_frames"] = list(range(max(0, ev["apex"] - 2), min(n - 1, ev["contact"] + 2) + 1))
+        contact_sheet(rows, report["event_contact_sheet_frames"], out_dir / f"{mode}_event_contact_sheet.png")
     (out_dir / f"{mode}.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
 
