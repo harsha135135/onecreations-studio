@@ -1,0 +1,727 @@
+{
+  "mode": "inspect",
+  "bundle": "G:\\onecreations\\renders\\m2b_strike_768\\export",
+  "bundle_content_sha256": "3016e786f0be06671051c3b562792a001e2609f28fa55a10f16ca9af0136a62f",
+  "spec": "G:\\onecreations\\renders\\m2b_strike_768\\shot_spec.json",
+  "frames": 49,
+  "checkpoints": [
+    0,
+    12,
+    24,
+    36,
+    48
+  ],
+  "guide_cell_px": 64,
+  "ground_truth": {
+    "m2a_shiva": [
+      {
+        "cx": 409.68179575727675,
+        "cy": 135.59940799210656,
+        "bbox": [
+          382,
+          66,
+          441,
+          190
+        ],
+        "w_px": 60,
+        "h_px": 125,
+        "w_cells": 0.94,
+        "h_cells": 1.95,
+        "area_px": 4054,
+        "area_cells": 0.99,
+        "area_pct": 1.18,
+        "median_depth_m": 16.286
+      },
+      {
+        "cx": 409.68179575727675,
+        "cy": 135.59940799210656,
+        "bbox": [
+          382,
+          66,
+          441,
+          190
+        ],
+        "w_px": 60,
+        "h_px": 125,
+        "w_cells": 0.94,
+        "h_cells": 1.95,
+        "area_px": 4054,
+        "area_cells": 0.99,
+        "area_pct": 1.18,
+        "median_depth_m": 16.286
+      },
+      {
+        "cx": 409.68179575727675,
+        "cy": 135.59940799210656,
+        "bbox": [
+          382,
+          66,
+          441,
+          190
+        ],
+        "w_px": 60,
+        "h_px": 125,
+        "w_cells": 0.94,
+        "h_cells": 1.95,
+        "area_px": 4054,
+        "area_cells": 0.99,
+        "area_pct": 1.18,
+        "median_depth_m": 16.286
+      },
+      {
+        "cx": 409.68179575727675,
+        "cy": 135.59940799210656,
+        "bbox": [
+          382,
+          66,
+          441,
+          190
+        ],
+        "w_px": 60,
+        "h_px": 125,
+        "w_cells": 0.94,
+        "h_cells": 1.95,
+        "area_px": 4054,
+        "area_cells": 0.99,
+        "area_pct": 1.18,
+        "median_depth_m": 16.286
+      },
+      {
+        "cx": 410.1971299093656,
+        "cy": 135.40634441087613,
+        "bbox": [
+          382,
+          66,
+          441,
+          190
+        ],
+        "w_px": 60,
+        "h_px": 125,
+        "w_cells": 0.94,
+        "h_cells": 1.95,
+        "area_px": 3972,
+        "area_cells": 0.97,
+        "area_pct": 1.15,
+        "median_depth_m": 16.285
+      }
+    ],
+    "m2b_asura": [
+      {
+        "cx": 155.91065454321546,
+        "cy": 244.33227971511258,
+        "bbox": [
+          33,
+          61,
+          273,
+          419
+        ],
+        "w_px": 241,
+        "h_px": 359,
+        "w_cells": 3.77,
+        "h_cells": 5.61,
+        "area_px": 48721,
+        "area_cells": 11.89,
+        "area_pct": 14.16,
+        "median_depth_m": 5.763
+      },
+      {
+        "cx": 157.59077821567865,
+        "cy": 243.66418900982214,
+        "bbox": [
+          31,
+          62,
+          276,
+          419
+        ],
+        "w_px": 246,
+        "h_px": 358,
+        "w_cells": 3.84,
+        "h_cells": 5.59,
+        "area_px": 48971,
+        "area_cells": 11.96,
+        "area_pct": 14.23,
+        "median_depth_m": 5.767
+      },
+      {
+        "cx": 155.95571484256573,
+        "cy": 242.45653774524666,
+        "bbox": [
+          19,
+          63,
+          294,
+          419
+        ],
+        "w_px": 276,
+        "h_px": 357,
+        "w_cells": 4.31,
+        "h_cells": 5.58,
+        "area_px": 46178,
+        "area_cells": 11.27,
+        "area_pct": 13.42,
+        "median_depth_m": 5.784
+      },
+      {
+        "cx": 160.35865586558657,
+        "cy": 240.44646464646465,
+        "bbox": [
+          22,
+          59,
+          312,
+          419
+        ],
+        "w_px": 291,
+        "h_px": 361,
+        "w_cells": 4.55,
+        "h_cells": 5.64,
+        "area_px": 49995,
+        "area_cells": 12.21,
+        "area_pct": 14.53,
+        "median_depth_m": 5.737
+      },
+      {
+        "cx": 157.78210949008212,
+        "cy": 242.8592328026313,
+        "bbox": [
+          34,
+          60,
+          303,
+          419
+        ],
+        "w_px": 270,
+        "h_px": 360,
+        "w_cells": 4.22,
+        "h_cells": 5.62,
+        "area_px": 49557,
+        "area_cells": 12.1,
+        "area_pct": 14.4,
+        "median_depth_m": 5.763
+      }
+    ],
+    "m2b_mace_head": [
+      {
+        "cx": 305.113482842475,
+        "cy": 170.40975412050798,
+        "bbox": [
+          257,
+          122,
+          353,
+          218
+        ],
+        "w_px": 97,
+        "h_px": 97,
+        "w_cells": 1.52,
+        "h_cells": 1.52,
+        "area_px": 7402,
+        "area_cells": 1.81,
+        "area_pct": 2.15,
+        "median_depth_m": 4.976
+      },
+      {
+        "cx": 321.66601385959626,
+        "cy": 152.50436878577884,
+        "bbox": [
+          276,
+          107,
+          367,
+          198
+        ],
+        "w_px": 92,
+        "h_px": 92,
+        "w_cells": 1.44,
+        "h_cells": 1.44,
+        "area_px": 6638,
+        "area_cells": 1.62,
+        "area_pct": 1.93,
+        "median_depth_m": 5.267
+      },
+      {
+        "cx": 324.7739321289887,
+        "cy": 52.0011818335303,
+        "bbox": [
+          282,
+          9,
+          367,
+          96
+        ],
+        "w_px": 86,
+        "h_px": 88,
+        "w_cells": 1.34,
+        "h_cells": 1.38,
+        "area_px": 5923,
+        "area_cells": 1.45,
+        "area_pct": 1.72,
+        "median_depth_m": 5.636
+      },
+      {
+        "cx": 339.85521830871613,
+        "cy": 384.9948060379808,
+        "bbox": [
+          296,
+          341,
+          383,
+          429
+        ],
+        "w_px": 88,
+        "h_px": 89,
+        "w_cells": 1.38,
+        "h_cells": 1.39,
+        "area_px": 6161,
+        "area_cells": 1.5,
+        "area_pct": 1.79,
+        "median_depth_m": 5.51
+      },
+      {
+        "cx": 343.72019613852285,
+        "cy": 155.18587189702728,
+        "bbox": [
+          298,
+          110,
+          389,
+          200
+        ],
+        "w_px": 92,
+        "h_px": 91,
+        "w_cells": 1.44,
+        "h_cells": 1.42,
+        "area_px": 6526,
+        "area_cells": 1.59,
+        "area_pct": 1.9,
+        "median_depth_m": 5.306
+      }
+    ]
+  },
+  "control_mean_inside_gt_mask": {
+    "m2a_shiva": [
+      0.093,
+      0.093,
+      0.093,
+      0.093,
+      0.0931
+    ],
+    "m2b_asura": [
+      0.6662,
+      0.665,
+      0.664,
+      0.668,
+      0.6655
+    ],
+    "m2b_mace_head": [
+      0.8074,
+      0.7505,
+      0.6869,
+      0.7077,
+      0.7435
+    ]
+  },
+  "control_contrast_vs_ring": {
+    "m2a_shiva": [
+      0.0131,
+      0.0131,
+      0.0131,
+      0.0131,
+      -0.0695
+    ],
+    "m2b_asura": [
+      0.2942,
+      0.336,
+      0.3527,
+      0.3666,
+      0.3529
+    ],
+    "m2b_mace_head": [
+      0.5683,
+      0.651,
+      0.6047,
+      0.1715,
+      0.6224
+    ]
+  },
+  "occluded_frames": {
+    "m2a_shiva": [
+      25,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "m2b_asura": [],
+    "m2b_mace_head": []
+  },
+  "reference_tracking": {
+    "checkpoints": [
+      0,
+      12,
+      24,
+      36,
+      48
+    ],
+    "subjects": {
+      "m2a_shiva": {
+        "role": "secondary",
+        "checks": {
+          "report_only": {
+            "area_px": [
+              334,
+              332,
+              332,
+              334,
+              327
+            ],
+            "cx": [
+              403.61976047904193,
+              403.48192771084337,
+              403.5120481927711,
+              403.52694610778445,
+              403.914373088685
+            ],
+            "gt_area_px": [
+              4054,
+              4054,
+              4054,
+              4054,
+              3972
+            ]
+          }
+        }
+      },
+      "m2b_asura": {
+        "role": "primary",
+        "checks": {
+          "position": {
+            "generated_cx": [
+              155.2196106901402,
+              156.80762357199413,
+              155.11328981282972,
+              159.8783120706575,
+              157.0361623946944
+            ],
+            "generated_cy": [
+              255.11286809746358,
+              254.4465331976021,
+              253.4796328860839,
+              251.51924792577393,
+              253.89375336081736
+            ],
+            "gt_cx": [
+              155.91065454321546,
+              157.59077821567865,
+              155.95571484256573,
+              160.35865586558657,
+              157.78210949008212
+            ],
+            "gt_cy": [
+              244.33227971511258,
+              243.66418900982214,
+              242.45653774524666,
+              240.44646464646465,
+              242.8592328026313
+            ],
+            "displacement_err_px": [
+              0.0,
+              0.1,
+              0.2,
+              0.3,
+              0.3
+            ],
+            "relative_area_err": [
+              0.0,
+              0.002,
+              0.006,
+              0.009,
+              0.005
+            ],
+            "abs_err_px": [
+              10.8,
+              10.8,
+              11.1,
+              11.1,
+              11.1
+            ],
+            "tol_px": 32.0,
+            "area_tol": 0.25,
+            "direction_correct": true,
+            "followed": true
+          }
+        }
+      },
+      "m2b_mace_head": {
+        "role": "primary",
+        "checks": {
+          "timing": {
+            "generated_events": {
+              "apex": 23,
+              "contact": 29,
+              "peak_speed_frame": 25,
+              "peak_speed_px": 119.8,
+              "excursion_px": 333.4,
+              "dx_px": 24.9
+            },
+            "gt_events": {
+              "apex": 23,
+              "contact": 29,
+              "peak_speed_frame": 25,
+              "peak_speed_px": 120.0,
+              "excursion_px": 333.4,
+              "dx_px": 24.7
+            },
+            "detected_frac": 1.0,
+            "apex_offset_frames": 0,
+            "contact_offset_frames": 0,
+            "excursion_frac": 1.0,
+            "dx_check_applicable": false,
+            "dx_ok": true,
+            "tol_frames": 2,
+            "direction_correct": true,
+            "followed": true
+          }
+        }
+      }
+    },
+    "metric_class": "PASS",
+    "note": "metric_class is evidence only; the final class also requires visual agreement"
+  },
+  "gt_events": {
+    "m2b_mace_head": {
+      "apex": 23,
+      "contact": 29,
+      "peak_speed_frame": 25,
+      "peak_speed_px": 120.0,
+      "excursion_px": 333.4,
+      "dx_px": 24.7
+    }
+  },
+  "control_contrast_series_report_only": {
+    "m2b_mace_head": [
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5683,
+      0.5686,
+      0.5729,
+      0.5968,
+      0.6323,
+      0.651,
+      0.6296,
+      0.6094,
+      0.5895,
+      0.5755,
+      0.5671,
+      0.5625,
+      0.5588,
+      0.5601,
+      0.5647,
+      0.5731,
+      0.583,
+      0.6047,
+      0.6848,
+      0.8024,
+      0.6289,
+      0.2985,
+      0.1579,
+      0.1579,
+      0.1579,
+      0.1579,
+      0.1579,
+      0.1579,
+      0.161,
+      0.1715,
+      0.1956,
+      0.2403,
+      0.3163,
+      0.4253,
+      0.5566,
+      0.6505,
+      0.6585,
+      0.6458,
+      0.6372,
+      0.6318,
+      0.6247,
+      0.6224
+    ]
+  },
+  "joints": {
+    "projection_err_px": {
+      "max": 0.791,
+      "median": 0.456,
+      "per_frame": [
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.384,
+        0.377,
+        0.418,
+        0.44,
+        0.334,
+        0.273,
+        0.334,
+        0.443,
+        0.456,
+        0.512,
+        0.599,
+        0.723,
+        0.738,
+        0.791,
+        0.75,
+        0.771,
+        0.729,
+        0.613,
+        0.566,
+        0.378,
+        0.555,
+        0.712,
+        0.594,
+        0.594,
+        0.594,
+        0.594,
+        0.594,
+        0.594,
+        0.659,
+        0.527,
+        0.54,
+        0.641,
+        0.615,
+        0.557,
+        0.362,
+        0.218,
+        0.15,
+        0.162,
+        0.206,
+        0.29,
+        0.255,
+        0.224
+      ]
+    },
+    "stationary_max_move_m": {
+      "root": 0.0,
+      "pelvis": 0.0,
+      "thigh.L": 0.0,
+      "thigh.R": 0.0,
+      "shin.L": 0.0,
+      "shin.R": 0.0
+    },
+    "weapon_height_events_3d": {
+      "apex": 23,
+      "contact": 29,
+      "apex_height_m": 2.9573,
+      "contact_height_m": 0.34
+    },
+    "projection_ok": true,
+    "stationary_ok": true,
+    "passed": true
+  },
+  "timeline_agreement": {
+    "expected": {
+      "apex": 23,
+      "contact": 29
+    },
+    "tol_frames": 1,
+    "observed": {
+      "screen_gt": {
+        "apex": 23,
+        "contact": 29,
+        "offset_frames": {
+          "apex": 0,
+          "contact": 0
+        }
+      },
+      "joints_3d": {
+        "apex": 23,
+        "contact": 29,
+        "offset_frames": {
+          "apex": 0,
+          "contact": 0
+        }
+      }
+    },
+    "passed": true
+  },
+  "gate": {
+    "subjects": {
+      "m2b_asura": {
+        "coverage_ok": true,
+        "travel_cells": 0.03,
+        "travel_ok": true,
+        "contrast_frames": [
+          0,
+          12,
+          24,
+          36,
+          48
+        ],
+        "min_control_contrast": 0.2942,
+        "contrast_ok": true,
+        "not_occluded": true,
+        "depth_trend_m": [
+          5.763,
+          5.767,
+          5.784,
+          5.737,
+          5.763
+        ],
+        "in_frame": true,
+        "ok": true
+      },
+      "m2b_mace_head": {
+        "coverage_ok": true,
+        "travel_cells": 0.6,
+        "travel_ok": true,
+        "contrast_frames": [
+          23,
+          29
+        ],
+        "min_control_contrast": 0.1579,
+        "contrast_ok": true,
+        "not_occluded": true,
+        "depth_trend_m": [
+          4.976,
+          5.267,
+          5.636,
+          5.51,
+          5.306
+        ],
+        "visible_all_frames": true,
+        "in_frame": true,
+        "excursion_cells": 5.21,
+        "excursion_ok": true,
+        "ok": true
+      }
+    },
+    "reference_tracker_reproduces_gt": true,
+    "joints_ok": true,
+    "timeline_ok": true,
+    "passed": true
+  },
+  "static_structure_drift_report_only": {
+    "pixels": 103689,
+    "reference": [
+      0.0,
+      0.0003,
+      0.0036,
+      0.0004,
+      0.0003
+    ]
+  },
+  "event_contact_sheet_frames": [
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ]
+}

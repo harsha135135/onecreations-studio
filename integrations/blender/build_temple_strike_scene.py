@@ -1,7 +1,7 @@
 """Build the M2-B shot: the M2-A temple with a rigged humanoid proxy performing ONE articulated mace strike.
 
     blender -b --factory-startup --python build_temple_strike_scene.py -- --out m2b.blend --spec shot_spec.json \
-        [--strike-frames 6]
+        [--strike-frames 6] [--resolution 512x320]
 
 M2-B changes one axis from M2-A: rigid translation -> articulation. Same temple, camera (static), 512x320, 49 frames
 @ 24 fps. The actor's root and legs are never keyed: no translation, so any movement in the result is articulation.
@@ -17,6 +17,8 @@ M2-B changes one axis from M2-A: rigid translation -> articulation. Same temple,
   with an analytic two-bone IK into FK quaternion keys.
 - --strike-frames N (default 6) sets the apex -> contact duration; the impact hold still ends at frame 35, so the guard,
   wind-up, apex and recovery are unchanged (the M2-B retry used 9: the same strike stretched x1.5 in time, mid key on frame 28.5).
+- --resolution WxH (default 512x320) changes only the output size (horizontal field of view kept); the M2-B
+  same-shot resolution comparison used 768x448 with the original-speed strike.
 - The static ascetic m2a_shiva and the M2-A environment are built by build_temple_shot_scene.py (same oc_ids).
 --spec writes the scene, the choreography (incl. an ActionTimeline, also written as action_timeline.json next to the
 spec) and the pre-registered tracking / gate / classification rules used by tools/admission/control_diagnostic.py.
@@ -285,9 +287,9 @@ def key_poses(rig, keys: dict) -> dict:
     return reached
 
 
-def build(out_path: str, spec_path: str | None, strike_frames: int = DEFAULT_STRIKE_FRAMES) -> None:
+def build(out_path: str, spec_path: str | None, strike_frames: int = DEFAULT_STRIKE_FRAMES, res=RES) -> None:
     keys, events, phases = choreography_frames(strike_frames)
-    scene = temple.setup_scene()
+    scene = temple.setup_scene(tuple(res))
     m = temple.make_materials()
     m.update({k: temple.flat_material(f"m2b_{k}", v) for k, v in ACTOR_COLORS.items()})
     m["gold"].node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 0.6
@@ -312,7 +314,7 @@ def build(out_path: str, spec_path: str | None, strike_frames: int = DEFAULT_STR
             "shot": "m2b_strike",
             "purpose": ("M2-B: M2-A's representative environment and static camera; ONE articulated action (a mace "
                         "strike) by a rigged humanoid proxy whose root and legs never move (rigid -> articulated)"),
-            "frames": FRAMES, "fps": FPS, "resolution": list(RES), "camera": temple.CAMERA,
+            "frames": FRAMES, "fps": FPS, "resolution": list(res), "camera": temple.CAMERA,
             "scene": dict(temple.scene_spec(), shrine_finial="stone_b (gold is unique to the mace head)",
                           actor_colors=ACTOR_COLORS),
             "choreography": {
@@ -375,8 +377,10 @@ def main() -> None:
     p.add_argument("--out", required=True)
     p.add_argument("--spec", default=None)
     p.add_argument("--strike-frames", type=int, default=DEFAULT_STRIKE_FRAMES)
+    p.add_argument("--resolution", default=f"{RES[0]}x{RES[1]}", help="WxH, multiples of 32 for LTX (default 512x320)")
     a = p.parse_args(common.script_args())
-    build(a.out, a.spec, a.strike_frames)
+    w, h = (int(v) for v in a.resolution.lower().split("x"))
+    build(a.out, a.spec, a.strike_frames, (w, h))
 
 
 if __name__ == "__main__":

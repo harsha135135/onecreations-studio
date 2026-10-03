@@ -1,0 +1,121 @@
+{
+ "experiment": "ltx25-m2b-strike-768",
+ "registered_at": "2026-10-03T10:38:26+05:30",
+ "registered_before_generation": true,
+ "question": "Does increasing only spatial output resolution (512x320 -> 768x448) materially improve preservation of the fast-moving mace while retaining the already-proven articulation and timing?",
+ "baseline": "ltx25-m2b-strike (ORIGINAL-SPEED M2-B, 512x320); the slowed retry ltx25-m2b-strike-retry is secondary context only",
+ "changed_variable": "output resolution 512x320 -> 768x448 (scene --resolution 768x448; workflow EmptyLTXVLatentVideo width/height)",
+ "controlled": [
+  "temple",
+  "actor/rig",
+  "original choreography (--strike-frames 6)",
+  "ActionTimeline m2b_mace_strike_v1 1.0.0",
+  "stationary root",
+  "static camera (lens 35 mm, sensor 36 mm, AUTO fit)",
+  "49 frames",
+  "24 fps",
+  "seed 1000",
+  "prompt (M2-A, verbatim)",
+  "8 distilled steps / ManualSigmas / euler_ancestral / CFG 1",
+  "Union IC-LoRA strength 1",
+  "guide strength 1",
+  "first-frame strength 1",
+  "INT8 ConvRot weights (registry hashes)",
+  "depth convention (per-clip min-max disparity, lossless full-range)",
+  "render_reference.py methodology (64 spp OptiX)",
+  "driver-default sysmem",
+  "control_diagnostic pre-registered checks (unchanged spec tracking section)"
+ ],
+ "resolution_derived_consequences": [
+  "aspect 1.600 -> 1.714 with the horizontal FOV kept (AUTO sensor fit): vertical FOV 35.6 -> 33.4 deg; no subject cropping (gate in_frame)",
+  "Union guide grid 8x5 -> 12x7 cells, 64 output px per cell at both (latent W/32 x H/32; guide resized to latent x 32 / 2; dilated x2)",
+  "VAEDecodeTiled official tile 512 / overlap 64: one tile at 512x320, real spatial tiling at 768x448",
+  "per-clip depth normalisation unchanged (near 4.2024 m, far ~23.19 m); background fraction 5.4% -> 4.3% (vertical crop)"
+ ],
+ "geometry_gt": {
+  "512x320": {
+   "head_px": [
+    54,
+    75
+   ],
+   "head_cells": [
+    0.84,
+    1.17
+   ],
+   "peak_px_per_frame": 80.08,
+   "peak_cells_per_frame": 1.251
+  },
+  "768x448": {
+   "head_px": [
+    82,
+    112
+   ],
+   "head_cells": [
+    1.28,
+    1.75
+   ],
+   "peak_px_per_frame": 119.96,
+   "peak_cells_per_frame": 1.874
+  },
+  "note": "speed per frame in head diameters is the same at both sizes; no outcome is predicted"
+ },
+ "metrics": {
+  "retention": "per frame: generated / reference area of the validated 'gold' colour mask (same resolution, same tracker)",
+  "fast_region_output_frames": [
+   24,
+   28
+  ],
+  "worst_region_output_frames": [
+   25,
+   27
+  ],
+  "severe_below": 0.25,
+  "shaft_continuity": "visual, each worst-region frame: continuous / partial / absent (hand-to-head shaft)",
+  "ghost": "visual: a frame in the fast region where the head is semi-transparent (background visible through it)"
+ },
+ "baseline_values_512": {
+  "fast_worst": 0.009,
+  "fast_worst_frame": 25,
+  "fast_median": 0.57,
+  "severe_frames": [
+   25
+  ],
+  "outside_fast_median": 0.864,
+  "fast_retention": {
+   "24": 0.57,
+   "25": 0.009,
+   "26": 0.471,
+   "27": 0.736,
+   "28": 0.784
+  },
+  "shaft_continuity_worst_region": {
+   "25": "absent",
+   "26": "absent",
+   "27": "absent"
+  },
+  "ghost_frames": [
+   25
+  ]
+ },
+ "guards": [
+  "timing check followed (M2-B spec: apex/contact within 2 frames, excursion >= 50%, detected >= 90%)",
+  "position check followed (stationary root)",
+  "weapon arm visibly articulates guard -> wind-up/apex -> strike/contact -> recovery, not worse than 512 (visual)",
+  "temple structure coherent enough to judge (visual; static drift report-only)"
+ ],
+ "classification_rules": {
+  "COMPUTE-NOT-ADMITTED": "checked first: no valid output because of OOM / allocation failure / killed / timeout, or completion with pagefile growth > 1024 MB, or generation wall time > 98 s (3x the 512 baseline 32.6 s) with memory pressure in the monitor. No tuning and no automatic retry.",
+  "REGRESSION": "any guard fails, or fast_median < 0.470 (baseline - 0.10), or >= 2 severe frames in the fast region",
+  "STRONG IMPROVEMENT": "guards hold and all of: fast_worst >= 0.50; fast_median >= 0.75; no severe frame in the fast region; no ghost frame; shaft continuous in >= 2 of the 3 worst-region frames",
+  "MODEST IMPROVEMENT": "guards hold, not STRONG, not REGRESSION, and at least one of: no severe frame in the fast region; fast_median >= 0.670 (baseline + 0.10); shaft continuous in >= 1 worst-region frame",
+  "NO MATERIAL IMPROVEMENT": "guards hold, not REGRESSION, and none of the MODEST conditions",
+  "order": "COMPUTE-NOT-ADMITTED, REGRESSION, STRONG, MODEST, NO MATERIAL IMPROVEMENT"
+ },
+ "report_only": [
+  "retention normalised by each run's outside-fast median",
+  "PSNR vs reference",
+  "static-structure drift",
+  "general visual quality (subject sharpness, temple detail, edge stability, temporal coherence)"
+ ],
+ "budget": "one generation; no second seed, resolution, upscaler, steps or guide-strength change"
+}

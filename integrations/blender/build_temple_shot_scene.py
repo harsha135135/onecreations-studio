@@ -204,15 +204,17 @@ def build_shiva(m):
     return obj
 
 
-def setup_scene():
-    """Clear the file and set the shared M2 render/time settings; returns the scene."""
+def setup_scene(res=RES):
+    """Clear the file and set the shared M2 render/time settings; returns the scene. `res` changes only the output
+    size: the camera keeps its 35 mm lens and 36 mm sensor with AUTO fit (horizontal for landscape), so the horizontal
+    field of view is kept and the vertical one follows the aspect ratio."""
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
     scene = bpy.context.scene
     scene.unit_settings.system, scene.unit_settings.scale_length = "METRIC", 1.0
     scene.render.fps, scene.render.fps_base = FPS, 1.0
     scene.frame_start, scene.frame_end = 1, FRAMES
-    scene.render.resolution_x, scene.render.resolution_y = RES
+    scene.render.resolution_x, scene.render.resolution_y = res
     scene.render.resolution_percentage = 100
     scene.render.pixel_aspect_x = scene.render.pixel_aspect_y = 1.0
     scene.view_settings.view_transform = "Standard"

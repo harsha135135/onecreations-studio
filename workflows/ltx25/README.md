@@ -9,6 +9,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 | `r2_union_depth_api.json` | R2 first frame + depth Union control | `ComfyUI-LTXVideo@3bf3ca62` `example_workflows/2.5/LTX-2.5_ICLoRA_Union_Control_Distilled.json` | see "R2" below |
 | `m2a_temple_api.json` | M2-A representative temple shot | same as R2 | R2D's graph with only the prompt (neutral: environment, style, subjects, lighting; no motion direction or timing) and the output prefix changed |
 | `m2b_strike_api.json` | M2-B articulated strike (and its retry) | same as R2 | M2-A's graph and prompt; only the output prefix changed |
+| `m2b_strike_768_api.json` | M2-B same-shot resolution comparison | same as R2 | `m2b_strike_api.json` with only `EmptyLTXVLatentVideo` 768×448 (and the output prefix) |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
 **R1 keeps the official values:** distilled 8-step `ManualSigmas`, `euler_ancestral`, CFG 1, `LTXVConditioning` at 24 fps, and tiled decode 512/64/128/32.
@@ -61,3 +62,11 @@ Run it with `tools/windows/run_admission.ps1`. Result: **PASS**; see `docs/measu
 - a static camera
 
 Result: **PARTIAL** (both runs). Timing is followed to the frame, but the weapon smears in the fastest strike frames; see `docs/measurements/2026-10-03-m2b-temple-strike.md`.
+
+**M2-B at 768×448** (`m2b_strike_768_api.json`) is node-for-node `m2b_strike_api.json` with only the latent width/height changed. Its inputs come from `build_temple_strike_scene.py --resolution 768x448`, in `G:\onecreations\renders\m2b_strike_768\`.
+
+Two consequences follow from the resolution change and are left at pipeline defaults:
+- **The Union guide grid** becomes 12×7 cells of 64 px (it was 8×5).
+- **The official tiled decode** (tile 512, overlap 64) now really tiles.
+
+The horizontal field of view is kept, so the vertical one narrows with the 1.714 aspect ratio. Result: admitted on the 4070 / 32 GB, but **no material improvement** for the fast weapon; see `docs/measurements/2026-10-03-m2b-resolution-768.md`.
