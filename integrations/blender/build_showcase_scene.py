@@ -133,6 +133,11 @@ def two_bone(s, g, l1, l2, pole):
 # --- the demon ---------------------------------------------------------------------------------------------------
 
 def torso_elements() -> list[dict]:
+    return torso_core_elements() + head_elements() + leg_elements()
+
+
+def torso_core_elements() -> list[dict]:
+    """Pelvis to neck (no head, no legs): shared with the M3-B demon (oc_m3b_characters)."""
     e = ch.ell
     out = [
         e((0, 0.02, 1.16), (0.30, 0.21, 0.17)),                       # pelvis
@@ -150,8 +155,6 @@ def torso_elements() -> list[dict]:
                 e((s * 0.49, 0.0, 2.06), (0.16, 0.15, 0.13))]                               # shoulder mass
         for z in (1.71, 1.61, 1.51):
             out.append(e((s * 0.07, -0.215, z), (0.065, 0.035, 0.045)))                     # abdominals
-    out += head_elements()
-    out += leg_elements()
     return out
 
 

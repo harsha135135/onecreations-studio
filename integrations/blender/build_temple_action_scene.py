@@ -118,7 +118,14 @@ def build_finished_asura(m, rig):
     temple.set_origin(body, (0.0, 0.0, 0.0))
     b(body, rig)
     temple.tag(body, "m3a_asura", 1)
+    shaft, head = build_finished_mace(m, rig)
+    return body, shaft, head
 
+
+def build_finished_mace(m, rig):
+    """The M3-A mace (shared by M3-B unchanged): iron shaft with leather grip bands (pass 9) and a spiked gold head
+    (pass 8, the only gold object), rigidly skinned to the `mace` bone."""
+    sk, b = strike.skin, strike.bind
     gx, gz, ml = 0.68, 0.98, strike.MACE_LENGTH
     shaft_parts = [lk.tapered(strike.SHAFT_R, strike.SHAFT_R, ml, (gx, -(ml / 2 - 0.15), gz), m["iron"],
                               rot=(math.radians(90), 0.0, 0.0), verts=12, subdiv=0)]
@@ -135,7 +142,7 @@ def build_finished_asura(m, rig):
     head = temple.join([sk(p, "mace") for p in head_parts], "m3a_mace_head")
     b(head, rig)
     temple.tag(head, "m3a_mace_head", 8)
-    return body, shaft, head
+    return shaft, head
 
 
 def build_finished_defender(m):
@@ -270,7 +277,10 @@ def proxies() -> list[dict]:
     return out
 
 
-def build(out_path: str, spec_path: str | None) -> dict:
+def build(out_path: str, spec_path: str | None, variant=None) -> dict:
+    """Build the shot. `variant` (M3-B on; default None = M3-A exactly) swaps only the characters and annotates the
+    spec: an object with build_asura(lmat, rig), build_defender(lmat) -> object, shot (str) and spec_hook(spec) ->
+    spec. Environment, banners, look, rig, keys, ActionTimeline, camera move, effect and object ids are unchanged."""
     keys, events, phases = strike.choreography_frames(STRIKE_FRAMES)
     scene = temple.setup_scene()
     m = temple.make_materials()
@@ -279,10 +289,10 @@ def build(out_path: str, spec_path: str | None) -> dict:
     temple.build_environment(m)
     finish_environment(lmat)
     rig = strike.build_rig("m3a_asura_rig")
-    build_finished_asura(lmat, rig)
+    (variant.build_asura if variant else build_finished_asura)(lmat, rig)
     reached = strike.key_poses(rig, keys)
     rig.location = ROOT_AT
-    defender = build_finished_defender(lmat)
+    defender = (variant.build_defender if variant else build_finished_defender)(lmat)
     defender.location = DEFENDER_AT
     defender.rotation_euler = (0.0, 0.0, math.radians(-90))       # face -X, toward the demon
     temple.tag(defender, "m3a_defender", 2)
@@ -334,8 +344,9 @@ def build(out_path: str, spec_path: str | None) -> dict:
     impact_out = impact_frame - scene.frame_start                 # output frame index of the impact beat
     if spec_path:
         common.write_json(os.path.join(os.path.dirname(os.path.abspath(spec_path)), "action_timeline.json"), timeline)
-        common.write_json(spec_path, spec_dict(timeline, reached, keys, events, clearance, move_info, impact_out))
-    print(f"[oc] M3-A temple action scene saved: {out_path} ({move_info})")
+        spec = spec_dict(timeline, reached, keys, events, clearance, move_info, impact_out)
+        common.write_json(spec_path, variant.spec_hook(spec) if variant else spec)
+    print(f"[oc] {variant.shot if variant else 'M3-A'} temple action scene saved: {out_path} ({move_info})")
     return {"clearance": clearance, "move": move_info}
 
 

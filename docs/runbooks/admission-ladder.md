@@ -147,6 +147,10 @@ Per-phase timings for each run are in `admission_records/2026-10-02_<label>_comf
   - `tools/admission/hybrid_composite.py` writes the hybrid, the reference with effects, the A/B/C sheets and the per-frame report.
   - Calibrate the hybrid criterion with a dry run on the blur reference **before** generating.
   - Finished looks need colour rules validated on the finished reference (`crimson`, `gold_deep`, `teal`).
+- First-frame appearance upgrades on an existing shot (M3-B on):
+  - Build the new scene with only the characters changed (`build_temple_action_scene.build(variant=...)`, e.g. `integrations/blender/build_m3b_scene.py`); object ids, rig, keys, camera and effects stay the reference shot's.
+  - Gate the silhouettes against the reference shot's export before rendering anything else: `tools/admission/silhouette_compare.py --reference <M3-A export> --candidate <new export> --gate <pre-registration>` (per-object IoU / centroid / area limits; joints and camera identical).
+  - Hybrid v2 (`ghost_mode: fill_under_layer`) inpaints everything under the layer's footprint except generated actor pixels; calibrate its on-path limit with its own dry run on the blur reference.
 
 ## G2 exit
 

@@ -17,9 +17,12 @@ alpha, Blender frame numbers) from render_layers.py. Method, fixed before any ge
    layer's alpha: holdouts). Effect layers are composited from their ActionTimeline trigger frame.
    --ghost-under-layer (method v2, added after M3-A's v1 result, not pre-registered there): also inpaint generated
    weapon pixels UNDER the layer, so a semi-transparent motion-blurred layer does not show the generated weapon through.
-   Since the showcase this is the manifest field ghost_mode: under_layer (the flag forces it); ghost_colors adds
-   colour rules counted as remnants; protection.include_frames forces frames into the protected set; effect layers
-   with blend: add (light passes) are added, not alpha-composited.
+   Since the showcase this is the manifest field ghost_mode: under_layer (the flag forces it on a v1 manifest);
+   ghost_colors adds colour rules counted as remnants; protection.include_frames forces frames into the protected
+   set; effect layers with blend: add (light passes) are added, not alpha-composited.
+   ghost_mode: fill_under_layer (M3-B hybrid v2, pre-registered before the M3-B generation): under_layer plus every
+   pixel the layer covers at all, whatever its colour, except generated actor pixels (see ghost_mask). Each protected
+   frame also reports unexplained_weapon_px (weapon-coloured composite pixels outside the layer's footprint).
 Outputs: hybrid.mp4 (lossless rgb), composite_report.json, A/B/C contact sheets (A = Blender reference + effects,
 B = raw generated, C = hybrid).
 """
@@ -42,6 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import control_diagnostic as cd  # noqa: E402
 
 BAND_PX, GHOST_DILATE_PX = 14, 2
+FILL_ALPHA_MIN = 2              # fill_under_layer: layer alpha > 2/255 counts as covered
 
 
 def alpha_over(base: np.ndarray, layer_rgba: np.ndarray, gain=(1.0, 1.0, 1.0)) -> np.ndarray:
@@ -68,12 +72,14 @@ def fit_gain(pairs: list[tuple[np.ndarray, np.ndarray]], lo: float = 0.6, hi: fl
     return [round(float(np.clip(v, lo, hi)), 4) for v in np.median(np.stack(ratios), axis=0)]
 
 
-def inpaint(img: np.ndarray, mask: np.ndarray, iters: int = 80) -> np.ndarray:
-    """Fill `mask` pixels by iterated 4-neighbour averaging seeded from the surrounding (unmasked) pixels."""
+def inpaint(img: np.ndarray, mask: np.ndarray, iters: int = 80, exclude_sources: np.ndarray | None = None) -> np.ndarray:
+    """Fill `mask` pixels by iterated 4-neighbour averaging seeded from the surrounding (unmasked) pixels.
+    `exclude_sources` pixels are kept as they are but never seed the fill (e.g. actor pixels next to a weapon streak,
+    so the background estimate under the streak does not bleed actor colour)."""
     if not mask.any():
         return img
     out = img.astype(np.float32).copy()
-    known = ~mask
+    known = ~mask if exclude_sources is None else ~mask & ~exclude_sources
     out[mask] = 0.0
     weight = known.astype(np.float32)
     for _ in range(iters):
@@ -86,6 +92,45 @@ def inpaint(img: np.ndarray, mask: np.ndarray, iters: int = 80) -> np.ndarray:
         out[fill] = acc[fill] / cnt[fill][:, None]
         weight = np.where(fill, 1.0, weight)
     return np.clip(out + 0.5, 0, 255).astype(np.uint8)
+
+
+def weapon_remnants(rgb: np.ndarray, color: str, extra_colors=()) -> np.ndarray:
+    """Pixels of the generated frame that look like the protected weapon (its tracking colour + ghost colours)."""
+    m = cd.color_mask(rgb, color)
+    for extra in extra_colors:
+        m |= cd.color_mask(rgb, extra)
+    return m
+
+
+def ghost_mask(alpha: np.ndarray, remnant: np.ndarray, band: np.ndarray, mode: str,
+               keep: np.ndarray | None = None) -> np.ndarray:
+    """Generated pixels to inpaint before the layer goes over (alpha: the layer's straight alpha, uint8).
+    outside_core (M3-A v1): weapon-coloured remnants in the band where the layer alpha < 77 (0.3).
+    under_layer (M3-A post-hoc v2): weapon-coloured remnants anywhere in the band, under the layer too.
+    fill_under_layer (M3-B v2, pre-registered): under_layer PLUS every pixel the layer covers at all (alpha > 2)
+      whatever its colour; `keep` (generated actor pixels) is never inpainted: they legitimately show through a
+      partial-alpha weapon in front of them, and an actor in front of the weapon is already a holdout (alpha 0).
+      A semi-transparent blur streak can then only ever show a weapon-free estimate of the background through it,
+      never the generated weapon, so a double image is impossible by construction."""
+    if mode == "outside_core":
+        ghost = cd.dilate(remnant & band & (alpha < 77), GHOST_DILATE_PX)
+    elif mode in ("under_layer", "fill_under_layer"):
+        ghost = cd.dilate(remnant & band, GHOST_DILATE_PX)
+        if mode == "fill_under_layer":
+            ghost |= alpha > FILL_ALPHA_MIN
+            if keep is not None:
+                ghost &= ~keep
+    else:
+        raise ValueError(f"unknown ghost mode {mode!r}")
+    return ghost
+
+
+def unexplained_weapon_px(composite: np.ndarray, alpha: np.ndarray, band: np.ndarray, color: str,
+                          extra_colors=()) -> int:
+    """Report-only double-image measure: weapon-coloured composite pixels in the band that the layer does not
+    explain (outside its alpha > 10 footprint dilated by 2 px), i.e. visible generated-weapon remnants."""
+    explained = cd.dilate(alpha > 10, GHOST_DILATE_PX)
+    return int((weapon_remnants(composite, color, extra_colors) & band & ~explained).sum())
 
 
 def authored_fast_frames(centroids: list, widths: list, speed_widths: float, dilate: int) -> list[int]:
@@ -155,7 +200,8 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
     n = min(len(raw), idx.shape[0])
     out = raw[:n].copy()
     report = {"generated": str(generated), "render_dir": str(render_dir), "frames": n,
-              "method": "v2 (ghost under layer)" if ghost_under_layer else "v1 (pre-registered)", "layers": {}}
+              "method": "ghost mode forced to under_layer (--ghost-under-layer)" if ghost_under_layer else
+              "manifest ghost_mode", "layers": {}}
 
     for layer in sorted(manifest.layers, key=lambda ly: ly.order):
         ldir = render_dir / "layers" / layer.id
@@ -206,20 +252,19 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                     grips[f] = (float(uv[0, 0]) - 0.5, float(uv[0, 1]) - 0.5)
             body = jc.get("body_object", "m3a_asura")
             body_color = tracking["subjects"].get(body, {}).get("color", "crimson")
-            under_layer = ghost_under_layer or layer.ghost_mode == "under_layer"
+            mode = "under_layer" if ghost_under_layer and layer.ghost_mode == "outside_core" else layer.ghost_mode
             per_frame = {}
             for f in protected:
                 lay = layers_cache[f]
                 base = out[f]
                 ghost = np.zeros(base.shape[:2], bool)
                 if layer.ghost_suppression:
-                    under = np.ones(base.shape[:2], bool) if under_layer else (lay[..., 3] < 77)
-                    remnant = cd.color_mask(base, color)
-                    for extra in layer.ghost_colors:
-                        remnant |= cd.color_mask(base, extra)
-                    ghost = cd.dilate(remnant & band[f] & under, GHOST_DILATE_PX)
-                    base = inpaint(base, ghost)
+                    remnant = weapon_remnants(base, color, layer.ghost_colors)
+                    keep = cd.color_mask(raw[f], body_color)
+                    ghost = ghost_mask(lay[..., 3], remnant, band[f], mode, keep)
+                    base = inpaint(base, ghost, exclude_sources=keep if mode == "fill_under_layer" else None)
                 out[f] = alpha_over(base, lay, gain)
+                unexplained = unexplained_weapon_px(out[f], lay[..., 3], band[f], color, layer.ghost_colors)
                 comp = cd.mask_stats(cd.color_mask(out[f], color) & band[f])
                 refb = cd.mask_stats(cd.color_mask(blur[f], color) & band[f])
                 err = (round(math.dist((comp["cx"], comp["cy"]), cents[f]), 1) if comp and cents[f] else None)
@@ -227,12 +272,13 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                          if comp and refb else None)
                 per_frame[f] = {"retention_vs_blur": ret_blur[f], "retention_vs_sharp": ret_sharp[f],
                                 "ghost_px_inpainted": int(ghost.sum()), "layer_alpha_px": int((lay[..., 3] > 10).sum()),
+                                "unexplained_weapon_px_report_only": unexplained,
                                 "composite_vs_blur_reference_centroid_px": err_b,
                                 "composite_vs_sharp_gt_centroid_px_report_only": err,
                                 "grip_to_generated_hand_px": nearest_distance(grips[f], cd.color_mask(raw[f], body_color))}
             entry.update(color=color, band_px=BAND_PX, retention_vs_blur=ret_blur, retention_vs_sharp=ret_sharp,
                          authored_fast_frames=authored, low_retention_frames=low, protected_frames=protected,
-                         ghost_mode="under_layer" if under_layer else "outside_core",
+                         ghost_mode=mode,
                          ghost_colors=list(layer.ghost_colors), grade_gain=gain, per_frame=per_frame)
         else:
             start = trigger_frame(timeline, layer.trigger.phase, layer.trigger.edge, fps)

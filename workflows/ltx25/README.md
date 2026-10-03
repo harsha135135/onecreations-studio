@@ -11,6 +11,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 | `m2b_strike_api.json` | M2-B articulated strike (and its retry) | same as R2 | M2-A's graph and prompt; only the output prefix changed |
 | `m2c_camera_api.json` | M2-C authored camera move | same as R2 | M2-A's graph and prompt (verbatim); only the output prefix changed |
 | `m3a_action_api.json` | M3-A controlled cinematic appearance | same as R2 | `m2b_strike_api.json` with only the prompt (cinematic appearance; no choreography or camera words, tested) and the output prefix changed |
+| `m3b_character_api.json` | M3-B character / first-frame upgrade | same as R2 | `m3a_action_api.json` with only the output prefix and two node titles changed (prompt verbatim) |
 | `m2b_strike_768_api.json` | M2-B same-shot resolution comparison | same as R2 | `m2b_strike_api.json` with only `EmptyLTXVLatentVideo` 768×448 (and the output prefix) |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
@@ -89,3 +90,5 @@ Result: **PASS**; see `docs/measurements/2026-10-03-m2c-camera.md`.
 - deterministic layers (mace, dust), composited after generation by `tools/admission/hybrid_composite.py`
 
 Result: **PARTIAL** (CONTROL PASS, APPEARANCE PARTIAL, hybrid v1 not fully usable); see `docs/measurements/2026-10-03-m3a-controlled-appearance.md`.
+
+**M3-B** (`m3b_character_api.json`) is node-for-node M3-A: same prompt, seed, steps, strengths and size; only the output prefix (and two node titles) differ. The only input change is the first frame and the control rendered from `integrations/blender/build_m3b_scene.py` (the M3-A scene with the continuous characters of `oc_m3b_characters.py`), in `G:\onecreations\renders\m3b_action\`. Pre-registration: `admission_records/2026-10-03_ltx25-m3b-character_preregistration.json`. Not run yet.

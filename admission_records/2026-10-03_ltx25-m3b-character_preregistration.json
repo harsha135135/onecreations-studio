@@ -1,0 +1,76 @@
+{
+ "experiment": "ltx25-m3b-character",
+ "registered_at": "2026-10-03T19:15:21+05:30",
+ "registered_before_generation": true,
+ "registered_where": "cloud container (Linux, no GPU, no Blender; Blender downloads blocked by the network policy). Written before ANY M3-B scene build, render, layer, dry run or generation exists: nothing in this file is a measurement. The thresholds are proposed and fixed now; they are not tuned on M3-B data.",
+ "question": "On the unchanged M3-A shot, does a finished-character Blender first frame (continuous sculpted bodies, layered costume and armour, readable faces) make the characters read as finished characters in the LTX-2.5 output, while control is kept, and does the pre-registered hybrid v2 make the weapon layer usable without a double image?",
+ "design": {
+  "unchanged_from_m3a": "the M2-A temple and its M3-A finish (oc_lookdev materials, dusk world, bounded haze 0.006, three-point lights, AgX High Contrast, exposure -0.3); banners and their passes; the M2-B / M3-A rig m3a_asura_rig, its keys and root (-1.8, -4.0); the original-speed strike; ActionTimeline m3a_mace_slam_v1 (apex 23, contact 29); CameraMotion m3a_orbit_push_in_v1 (24 deg orbit, 8.4 -> 7.0 m, 35 mm); the defender's placement (0.95, -4.55), yaw -90 deg, and static defensive pose with the trident on the M3-A diagonal; the M3-A mace (geometry, materials, passes 8 / 9); the impact_dust effect and its ActionTimeline trigger; object ids and pass indices; colour/tracking rules and every control check and tolerance in the M3-A spec; 512x320x49 @24 fps; the LTX graph and settings",
+  "changed": "only the two characters' geometry and materials (integrations/blender/oc_m3b_characters.py, built by integrations/blender/build_m3b_scene.py through build_temple_action_scene.build(variant=...)), and, after generation, the compositor's ghost rule (hybrid v2, below)",
+  "ltx_config": "512x320x49 @24 fps, 8 distilled steps, seed 1000, INT8 ConvRot + Union IC-LoRA 1, guide 1, first-frame 1, corrected depth control, driver-default sysmem; workflows/ltx25/m3b_character_api.json differs from m3a_action_api.json only in two node titles and the output prefix: the prompt is the M3-A prompt verbatim (its character description already matches the M3-B costume)",
+  "appearance_source": "route A as in M3-A: a finished Blender render of the same scene that produces the depth control (render_reference.py --samples 256); no local image model, no download",
+  "object_ids": "the M3-A oc_ids are kept for the same actors (m3a_asura, m3a_defender, m3a_mace_head, m3a_mace_shaft) so the M3-A spec's tracking, joints and layer sections apply unchanged; the shot id is m3b_action"
+ },
+ "pre_generation_gates": {
+  "rule": "every gate below must pass before the one generation; a failing gate is fixed in the scene or tooling and re-run before generation (recorded, as in M3-A). The generation is not started while any gate fails.",
+  "1_tests": "uv run pytest -q (all) and -m blender, including tests/test_blender_m3b_scene.py, on the Windows desktop with Blender 4.5.14",
+  "2_silhouette": "tools/admission/silhouette_compare.py, M3-B export vs the M3-A export (G:/onecreations/renders/m3a_action/export), every frame, limits in silhouette_gate below; joints and camera must be identical",
+  "3_first_frame_alignment": "first_frame.png bit-identical to frame 0 of the M3-B Blender reference (max difference 0) and rendered from the same .blend, camera and frame as the passes; alignment sheet with object-index outlines on the beauty render and on the depth control",
+  "4_first_frame_appearance_ceiling": "visual, on first_frame.png and a 2x crop of each character: both read as finished characters (continuous anatomy with no visible ball joints or capsule segments, readable head/face silhouette, layered costume and armour, believable proportion) and sit in the scene's light (contact shadows, rim/key separation). If not, the first frame is not a usable appearance ceiling: fix the modelling before generating",
+  "5_joint_projection": "control_diagnostic inspect --spec: projected mace tail within 3.0 px of the head's object-index centroid, stationary bones <= 1 mm (M3-A limits)",
+  "6_timeline": "GT screen events and 3D joint events = ActionTimeline (apex 23, contact 29), tolerance 1 frame (M3-A: 0/0)",
+  "7_camera_and_clearance": "camera contract <= 1e-3 m / 0.05 deg with the lens fixed; clearance >= 1.0 m with the AABB proxies OK",
+  "8_trackers_on_reference": "every registered tracker reproduces GT on the M3-B finished reference within the spec tolerances (mace timing, demon position, landmark trajectories, parallax)",
+  "9_colour_rules": "on the M3-B finished reference: crimson finds the demon, gold_deep finds the mace head in 49/49 frames, teal finds the far banner; the new characters add no weapon colour: (gold_deep | ember) pixels on demon + defender object-index pixels <= 0.5 % of their area in every frame, and crimson pixels on the defender <= 0.5 % of its area",
+  "10_occlusion_layer": "render_layers.py mace_protect: layer (alpha > 128) vs visible mace pixels IoU >= 0.94 in every frame (M3-A measured 0.941-0.996) and layer alpha > 128 on demon-body pixels <= 14 px per frame (M3-A at most 14)",
+  "11_hybrid_v2_dry_run": "hybrid_composite.py with the M3-B manifest (ghost_mode fill_under_layer) and the blur-matched reference as the generated video: per protected frame, the composite's weapon centroid vs the blur reference's = the v2 calibration (its on-path limit is calibration + 3 px); unexplained_weapon_px must be 0 in every protected frame; the dry-run composite is inspected on the zoom sheet for halos"
+ },
+ "silhouette_gate": {
+  "objects": {
+   "m3a_asura": {"min_iou": 0.80, "max_centroid_px": 6.0, "area_ratio": [0.85, 1.20]},
+   "m3a_defender": {"min_iou": 0.70, "max_centroid_px": 6.0, "area_ratio": [0.80, 1.25]},
+   "m3a_mace_head": {"min_iou": 0.97, "max_centroid_px": 1.0, "area_ratio": [0.97, 1.03]},
+   "m3a_mace_shaft": {"min_iou": 0.80, "max_centroid_px": 3.0, "area_ratio": [0.80, 1.25]},
+   "m3a_lm_near": {"min_iou": 0.98, "max_centroid_px": 1.0, "area_ratio": [0.98, 1.02]},
+   "m3a_lm_mid": {"min_iou": 0.98, "max_centroid_px": 1.0, "area_ratio": [0.98, 1.02]},
+   "m3a_lm_far": {"min_iou": 0.98, "max_centroid_px": 1.0, "area_ratio": [0.98, 1.02]}
+  },
+  "max_joint_diff_m": 1e-6,
+  "max_camera_diff": 1e-6,
+  "rationale": "proposed, not data-derived. Actors: the same body masses on the same rig and placement, new surface and costume; a 6 px centroid tolerance is ~0.1 Union guide cell (64 px) and 1/5 of the M3-A demon position tolerance (32 px). The defender's limit is lower because a thin trident and a smaller, re-proportioned head move a larger share of a smaller mask. The mace head is unchanged geometry (only its occluders change); the shaft's grip is now wrapped by a continuous fist. Banners are untouched (only character occlusion could change them). Joints and camera must be identical: same rig, keys and CameraMotion."
+ },
+ "hybrid_v2": {
+  "manifest": "layers mace_protect: ghost_suppression true, ghost_mode fill_under_layer, ghost_colors [ember]; protection rule unchanged from M3-A (authored speed >= 0.5 head widths, dilated 1 frame, UNION raw retention vs the blur reference < 0.5)",
+  "method": "tools/admission/hybrid_composite.py ghost_mask(mode=fill_under_layer): before the alpha-over in each protected frame, inpaint (a) weapon-coloured raw pixels (gold_deep | ember) anywhere in the band around the authored path, dilated 2 px, and (b) EVERY raw pixel the layer covers at all (alpha > 2/255), whatever its colour, except raw actor pixels (crimson), which are neither inpainted nor used as inpainting sources. A semi-transparent motion-blur streak can then only show a weapon-free background estimate through it, so the M3-A double image is prevented by construction; an actor in front of the weapon is already a holdout (alpha 0) and is never touched",
+  "validated_before_generation_by": "tests/test_hybrid_composite.py: a synthetic protected frame with a raw gold blob and a raw smear that no colour rule detects under the streak, an actor in front of the weapon, the generated hand under the streak and a stray remnant outside the layer. v1 (outside_core) keeps both remnants (double image), colour-only removal (M3-A post-hoc v2) misses the undetected smear, fill_under_layer reproduces the authored truth within 6/255 under the whole streak, keeps the occluding actor and the hand bit-exact, leaves pixels outside band and layer bit-exact, and its dry run on the truth is within 6/255",
+  "usable": "in EVERY protected frame: the mace is present, solid and on the authored path (composite weapon centroid within (v2 dry-run error + 3 px) of the blur-matched reference's), attached (projected grip within 12 px of generated crimson hand pixels), correctly occluded (layer alpha 0 where the demon's fist is in front of the shaft; the composite keeps the raw pixels there), and with no visible double image, halo or raw weapon remnant on the per-frame zoom sheet (A/B/C, f22-f30). unexplained_weapon_px is report-only. Frame-level evidence (per-frame table + zoom sheet) is required; usability is classified independently of CONTROL and APPEARANCE"
+ },
+ "occlusion_case": {
+  "in_scene": "actor in front of weapon: the demon's continuous weapon fist wraps the shaft at the grip in every frame, including the protected f23-f29, so the shaft is occluded by the actor in front of it; measured on the layer render (alpha on demon pixels) and on the hybrid (raw demon pixels kept where the layer alpha is 0)",
+  "not_exercised": "the mace HEAD passing behind an actor: the head is never occluded in the M3-A GT (M3-A section 21) and producing it would need a different defender position or strike path, i.e. a composition / choreography change that this experiment excludes. Deferred to the two-character parry",
+  "synthetic": "tests/test_hybrid_composite.py test_v2_keeps_occluding_actor_hand_and_unprotected_pixels"
+ },
+ "classification": {
+  "control_pass": "unchanged registered checks on the RAW LTX output: mace timing (apex/contact within 2 frames, excursion >= 50 %), demon position (displacement from f0 within 32 px of GT, area within 25 %), the three landmark trajectories and NEAR/FAR parallax (M2-C rules), AND visually: the authored action stays readable, the weapon arm visibly articulates through every phase, the impact lands on the authored beat, the camera progression is coherent and the environment stays coherent. (M3-A's control_pass sentence mentioned 'approach'; its registered checks were position only, as are these: not a weakening.)",
+  "control_partial": "the action is readable and timed but a non-critical control element degrades (a landmark, framing, parallax magnitude), or articulation is weakened",
+  "control_fail": "the action, timing or camera becomes unusable or contradicted",
+  "appearance_pass": "visual, at matched beats against ltx25-m3a-action (raw) and the M2 blockouts: in the raw M3-B output the characters read as finished characters rather than primitive or toy-like figures (continuous anatomy, readable head/face silhouette, layered costume and armour) at guard 4, wind-up 14, apex 23, impact 29, hold 32, recovery 40 and final 48 (the weapon in f24-28 is judged by the hybrid axis), the finished look persists through the shot without collapsing toward the blockout, the M3-A environment look (light, haze, materials) is not regressed, identity and materials stay consistent (no costume, colour or face drift), and the result is temporally coherent enough to be useful. Pre-generation gate 4 must have passed",
+  "appearance_partial": "the characters improve over M3-A but still read partly as primitive or toy-like in the generated output, or the improvement collapses / drifts during motion, or identity or materials drift",
+  "appearance_fail": "no material improvement over M3-A's characters, or the improvement destroys structure",
+  "report_only_metrics": "per inspected frame: actor detail ratio (|Laplacian| raw / reference in the object masks), actor mean colour raw vs reference, PSNR vs reference, the same as M3-A for comparison; no numeric cinematic score",
+  "full_pass": "CONTROL PASS + APPEARANCE PASS + hybrid v2 usable through the protected interval",
+  "owner_playback": "not required for classification; recorded separately if given"
+ },
+ "generation_budget_and_retry": {
+  "generations": "exactly one M3-B generation, then at most one retry",
+  "retry_allowed_only_if": "the class is not FULL PASS AND one specific observed failure has a single, evidence-driven, generation-side mitigation from this list: (a) an input-pipeline defect found after the run (wrong or mismatched first frame, control or workflow file; encoding error) -> re-run with the corrected input only; (b) the raw output contradicts a specific phrase of the prompt's character description that the M3-B costume no longer matches -> edit that phrase only",
+  "never_a_retry": "a seed change, steps, guide or first-frame strength, resolution, or prompt changes to chase the weapon or the general look; scene / modelling changes (they are a new experiment); compositor changes (deterministic, re-run on the same raw output and labelled post-hoc)",
+  "none_after": "a FULL PASS"
+ },
+ "evaluation_evidence": {
+  "appearance_frames": {"guard": 4, "wind-up": 14, "apex": 23, "fast swing": [25, 26], "pre-impact": 28, "impact": 29, "hold": 32, "recovery": 40, "final": 48},
+  "sheets": "A/B/C key frames and strike strip (Blender reference + effects / raw / hybrid v2), M3-A raw vs M3-B raw at matched beats, first-frame character crops, mace zoom f22-f30 (sharp / blur reference / raw / hybrid v2)",
+  "resources": "monitor.py telemetry as in M3-A: generation time and phases, peak VRAM, minimum free RAM, commit peak, pagefile growth, PCIe gen/width; storage before and after"
+ },
+ "budget": "Rs 0: no training, cloud, paid API, downloads (models, upscalers, assets, weights, datasets) or new models; no cache or data deletion without the owner"
+}

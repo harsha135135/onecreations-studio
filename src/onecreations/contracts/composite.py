@@ -56,9 +56,11 @@ class CompositeLayer(Model):
     grade: Literal["none", "per_channel_gain"] = "none"
     ghost_suppression: bool = Field(default=False, description="inpaint raw generated remnants of the protected "
                                                                "object near its authored path in protected frames")
-    ghost_mode: Literal["outside_core", "under_layer"] = Field(default="outside_core", description=(
-        "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's "
-        "partial alpha, so a semi-transparent motion-blurred weapon never shows the raw one through"))
+    ghost_mode: Literal["outside_core", "under_layer", "fill_under_layer"] = Field(default="outside_core", description=(
+        "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (M3-A post-hoc v2): "
+        "weapon-coloured remnants also under the layer's partial alpha; fill_under_layer (M3-B v2): under_layer plus "
+        "every pixel the layer covers at all, whatever its colour, except generated actor pixels, so a "
+        "semi-transparent motion-blurred weapon can never show the raw one through"))
     ghost_colors: list[str] = Field(default=[], description="extra colour rules counted as raw remnants (e.g. ember "
                                                             "for an orange-tinted raw weapon)")
     blend: Literal["over", "add"] = "over"

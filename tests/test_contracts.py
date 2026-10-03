@@ -179,5 +179,16 @@ def test_composite_manifest_showcase_fields():
                                             ).layers[0].ghost_mode == "outside_core"     # M3-A v1 default
 
 
+def test_composite_manifest_m3b_hybrid_v2_mode():
+    spec = json.loads((ROOT / "admission_records/2026-10-03_ltx25-m3a-action_shot_spec.json").read_text())
+    raw = spec["layers"]
+    v2 = dict(raw["layers"][0], ghost_mode="fill_under_layer", ghost_colors=["ember"])
+    m = CompositeManifest.model_validate(dict(raw, id="m3b_layers_v2", shot="m3b_action", layers=[v2, raw["layers"][1]]))
+    assert m.layers[0].ghost_mode == "fill_under_layer" and m.layers[0].protection == \
+        CompositeManifest.model_validate(raw).layers[0].protection          # protection rule unchanged from M3-A
+    with pytest.raises(ValidationError):
+        CompositeManifest.model_validate(dict(raw, layers=[dict(v2, ghost_mode="everything")]))
+
+
 def test_committed_schemas_are_current():
     assert stale_schemas() == [], "run: uv run onecreations schemas export"

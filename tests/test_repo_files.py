@@ -37,3 +37,31 @@ def test_m2c_prompt_has_no_camera_motion_words():
     assert prompt == wf["m2a_temple_api.json"]["4"]["inputs"]["text"]
     banned = ("camera", "orbit", "dolly", "push", "pan ", "panning", "tracking", "circl", "approach", "parallax", "zoom")
     assert not [w for w in banned if w in prompt.lower()]
+
+
+def test_m3b_workflow_is_m3a_with_only_the_output_prefix_changed():
+    # M3-B changes only the first frame / control inputs: the graph, prompt, seed, steps and strengths are M3-A's
+    import json
+
+    a, b = (json.loads((ROOT / "workflows" / "ltx25" / n).read_text(encoding="utf-8"))
+            for n in ("m3a_action_api.json", "m3b_character_api.json"))
+    assert a.keys() == b.keys()
+    changed = [k for k in a if a[k]["class_type"] != b[k]["class_type"] or a[k]["inputs"] != b[k]["inputs"]]
+    assert changed == ["15"]
+    assert b["15"]["inputs"] == dict(a["15"]["inputs"], filename_prefix="ltx25_m3b/ltx25_m3b")
+
+
+def test_m3b_preregistration_is_complete_and_loadable():
+    import json
+
+    from tools.admission import silhouette_compare
+
+    path = ROOT / "admission_records" / "2026-10-03_ltx25-m3b-character_preregistration.json"
+    pre = json.loads(path.read_text(encoding="utf-8"))
+    assert pre["registered_before_generation"] is True
+    gate = silhouette_compare.load_gate(path)
+    assert {"m3a_asura", "m3a_defender", "m3a_mace_head", "m3a_mace_shaft"} <= set(gate["objects"])
+    assert all({"min_iou", "max_centroid_px", "area_ratio"} <= set(v) for v in gate["objects"].values())
+    assert "fill_under_layer" in pre["hybrid_v2"]["manifest"]
+    assert {"control_pass", "appearance_pass", "full_pass"} <= set(pre["classification"])
+    assert "seed" in pre["generation_budget_and_retry"]["never_a_retry"]
