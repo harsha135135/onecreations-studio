@@ -108,6 +108,12 @@ The values are content_sha256 `1c853bef…b53985`, camera samples `38ee76b4…52
 - Rebuilding the scene from its script and then exporting gives bit-identical depth and object index, and identical camera, object and probe arrays. The normal pass differs by float32 noise (|Δ| ≤ 1.5e-5), so the content hash changes.
 - Depth controls derive from depth only, so they are unaffected.
 
+**Camera import → export in a real scene** (M2-C, 2026-10-03):
+- An authored `CameraMotion` (`CameraTrajectory` npz, one sample per frame, fixed 35 mm, SHA-256 pinned in the manifest) was keyed onto the scene camera by `oc_import_camera` and exported by `oc_export`.
+- The export reproduces it within 4.8e-7 m and 2.6e-5°, with the lens fixed and t = k/24 exact.
+- Camera clearance was checked two ways: exact Blender closest-point distances, and `camera.retarget.clearance_report` on AABB proxies.
+- Details: `docs/measurements/2026-10-03-m2c-camera.md`.
+
 **Joints in a real scene** (M2-B, 2026-10-03): `joints.npz` from a rigidly skinned 16-bone rig is consistent with the render.
 - The weapon bone's tail, projected with `geometry.intrinsics.project`, lands within 0.57 px (median 0.30) of the weapon object's object-index centroid (pixel centres at +0.5).
 - Unkeyed bones move 0.0 m.

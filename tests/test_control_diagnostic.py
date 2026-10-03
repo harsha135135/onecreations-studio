@@ -200,3 +200,71 @@ def test_joint_checks_and_timeline_agreement():
     ok = cd.timeline_agreement(expected, {"a": {"apex": 23, "contact": 30}}, 1)
     bad = cd.timeline_agreement(expected, {"a": {"apex": 23, "contact": 31}, "b": None}, 1)
     assert ok["passed"] and not bad["passed"] and bad["observed"]["b"] is None
+
+
+def test_m2c_landmark_colour_masks():
+    # rendered M2-C values (reference): green, magenta, cyan banners; ash-blue ascetic, sunlit stone, sky, crimson, gold
+    px = np.array([[(75, 202, 71), (230, 66, 177), (64, 193, 183), (153, 176, 190), (200, 170, 130), (190, 170, 150),
+                    (225, 81, 68), (230, 180, 60)]], np.uint8)
+    assert cd.color_mask(px, "green").tolist() == [[True] + [False] * 7]
+    assert cd.color_mask(px, "magenta").tolist() == [[False, True] + [False] * 6]
+    assert cd.color_mask(px, "cyan").tolist() == [[False, False, True] + [False] * 5]
+
+
+def landmark(points):
+    return [{"cx": float(x), "cy": float(y), "area_px": 900} for x, y in points]
+
+
+def test_trajectory_check_direction_magnitude_stall_and_jump():
+    n = 25
+    cps = cd.checkpoint_frames(n)
+    gt = landmark([(100 + 4 * i, 80 - 1 * i) for i in range(n)])               # moves +96, -24 px
+    p = {"min_cos": 0.9, "mag_ratio": [0.6, 1.6], "cp_err_frac": 0.3, "cp_err_min_px": 16, "reversal_tol": 0.1,
+         "jump_factor": 3.0, "jump_px": 12, "progress_tol": 0.25}
+    short = cd.check_trajectory(landmark([(100 + 3.6 * i, 80 - 0.9 * i) for i in range(n)]), gt, cps, p)
+    assert short["followed"] and short["magnitude_ratio"] == pytest.approx(0.9, abs=1e-3) and short["cos"] > 0.999
+    backwards = cd.check_trajectory(landmark([(100 - 4 * i, 80 + i) for i in range(n)]), gt, cps, p)
+    assert backwards["followed"] is False and backwards["direction_correct"] is False
+    stall = cd.check_trajectory(landmark([(100 + 4 * min(i, 6), 80 - min(i, 6)) for i in range(n - 1)]
+                                         + [(196, 56)]), gt, cps, p)      # stops at 25 %, then one jump to the end
+    assert stall["followed"] is False and max(v for v in stall["progress_lag"] if v is not None) > 0.25
+    assert stall["max_step_px"] > stall["jump_limit_px"]
+    lost = cd.check_trajectory(landmark([(100 + 4 * i, 80 - i) for i in range(n)])[:10] + [None] * (n - 10), gt, cps, p)
+    assert lost["followed"] is None                                          # metric unavailable, not a verdict
+
+
+def test_parallax_check_orders_and_ratios():
+    n = 25
+
+    def lm(dx):
+        return landmark([(50 + dx * i / (n - 1), 60) for i in range(n)])
+
+    gt = {"near": lm(50), "mid": lm(80), "far": lm(115)}
+    layers = ["near", "mid", "far"]
+    same = cd.check_parallax({k: lm(0.9 * d) for k, d in (("near", 50), ("mid", 80), ("far", 115))}, gt, layers,
+                             {"min_gt_separation": 1.25, "ratio_tol": 1.35})
+    assert same["followed"] and same["order_agrees"] and same["normalised_generated"]["near"] == pytest.approx(0.435, abs=1e-3)
+    swapped = cd.check_parallax({"near": lm(115), "mid": lm(80), "far": lm(50)}, gt, layers, {})
+    assert swapped["order_agrees"] is False and swapped["followed"] is False
+    flat = cd.check_parallax({"near": lm(80), "mid": lm(85), "far": lm(90)}, gt, layers, {"ratio_tol": 1.35})
+    assert flat["order_agrees"] is True and flat["followed"] is False        # right order, parallax far too weak
+
+
+def test_camera_contract_and_visibility_timeline():
+    from fractions import Fraction
+
+    t = np.arange(5) / 24
+    authored = {"t": t, "position": np.zeros((5, 3)), "quaternion_wxyz": np.tile([1.0, 0, 0, 0], (5, 1)),
+                "lens_mm": np.full(5, 35.0)}
+    ok = cd.camera_contract(dict(authored), authored, Fraction(24), {"max_position_err_m": 1e-3, "max_angle_err_deg": 0.05})
+    assert ok["passed"] and ok["lens_fixed"]
+    moved = dict(authored, position=authored["position"] + [0, 0, 0.01])
+    assert cd.camera_contract(moved, authored, Fraction(24), {})["passed"] is False
+    zoom = dict(authored, lens_mm=np.linspace(35, 40, 5))
+    assert cd.camera_contract(zoom, authored, Fraction(24), {})["lens_fixed"] is False
+    tl = cd.visibility_timeline([70, 75, 80, 95, 100, 100], 0.9)
+    assert tl["hidden_frames"] == [0, 1, 2] and tl["hidden_intervals"] == [[0, 2]]
+    cmp = cd.compare_timelines(tl, cd.visibility_timeline([70, 80, 100, 100, 100, 100], 0.9))
+    assert cmp == {"hidden_iou": round(2 / 3, 3), "first_hidden_offset": 0, "last_hidden_offset": -1}
+    assert cd._occlusion_fracs({"subjects": ["a"], "visible_frac": 0.4}) == {"a": 0.4}
+    assert cd._occlusion_fracs({"subjects": {"a": 0.9}}) == {"a": 0.9}

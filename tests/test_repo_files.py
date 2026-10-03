@@ -25,3 +25,15 @@ def test_powershell_scripts_are_ascii():
     assert {p.name for p in scripts} >= {"check_env.ps1", "oc_env.ps1"}
     for p in scripts:
         p.read_bytes().decode("ascii")
+
+
+def test_m2c_prompt_has_no_camera_motion_words():
+    # M2-C's camera motion must come from the control path, not text: the M2-A prompt, verbatim
+    import json
+
+    wf = {name: json.loads((ROOT / "workflows" / "ltx25" / name).read_text(encoding="utf-8"))
+          for name in ("m2a_temple_api.json", "m2c_camera_api.json")}
+    prompt = wf["m2c_camera_api.json"]["4"]["inputs"]["text"]
+    assert prompt == wf["m2a_temple_api.json"]["4"]["inputs"]["text"]
+    banned = ("camera", "orbit", "dolly", "push", "pan ", "panning", "tracking", "circl", "approach", "parallax", "zoom")
+    assert not [w for w in banned if w in prompt.lower()]

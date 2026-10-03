@@ -20,6 +20,11 @@ Deliberately simple evidence, no learned metric:
   follow GT) and `timing` (a weapon's apex and contact frames, excursion and swing direction vs GT; M2-B);
 - with a "joints" section (M2-B): the weapon bone's projected tail vs its object-index centroid, stationary bones,
   and agreement of the exported motion's events with the ActionTimeline phase boundaries;
+- under a moving camera (M2-C): `trajectory` (a static landmark's screen path vs GT: direction, magnitude, checkpoint
+  error, monotone progress, no jumps), a shot-level `parallax` check (order and pairwise ratios of the landmarks'
+  displacements), the camera contract (exported samples vs the authored CameraMotion), clearance (exact Blender
+  distances + camera.retarget.clearance_report on proxies) and a report-only occlusion/reveal timeline. Generated
+  viewpoint evidence is image-space only: no camera pose is inferred from the generated video;
 - static-structure drift (mean |frame_t - frame_0| over static structures away from subjects) — REPORT-ONLY:
   lighting, texture, shadow or generative appearance changes must not fail coherence on their own.
 Writes <out-dir>/<mode>.json and a contact sheet PNG (rows: reference, control[, generated]) at 0/25/50/75/100 %,
@@ -93,8 +98,9 @@ def mask_stats(mask: np.ndarray) -> dict | None:
 
 
 def color_mask(rgb: np.ndarray, color: str) -> np.ndarray:
-    """Plain RGB-dominance masks for flat red / blue / gold subjects (uint8 HxWx3). `gold` needs strong R and G
-    over B (b < 0.55 g), which keeps warm sunlit stone (b ~ 0.75 g) out."""
+    """Plain RGB-dominance masks for flat subjects (uint8 HxWx3). `gold` needs strong R and G over B (b < 0.55 g),
+    which keeps warm sunlit stone (b ~ 0.75 g) out; `green`, `magenta` and `cyan` are the M2-C landmark banners
+    (`cyan` needs g ~ b and both well above r, which keeps the ash-blue ascetic, b > 1.15 g and g < 2.5 r, out)."""
     c = rgb.astype(np.float32)
     r, g, b = c[..., 0], c[..., 1], c[..., 2]
     if color == "red":
@@ -103,6 +109,12 @@ def color_mask(rgb: np.ndarray, color: str) -> np.ndarray:
         return (b > 80) & (b > 1.4 * r) & (b > 1.15 * g)
     if color == "gold":
         return (r > 100) & (g > 60) & (r >= g) & (g > 0.45 * r) & (b < 0.55 * g)
+    if color == "green":
+        return (g > 70) & (g > 1.5 * r) & (g > 1.8 * b)
+    if color == "magenta":
+        return (r > 80) & (b > 60) & (r > 1.6 * g) & (b > 1.4 * g)
+    if color == "cyan":
+        return (g > 60) & (b > 50) & (g > 2.5 * r) & (b > 2.5 * r) & (g < 1.6 * b) & (b < 1.15 * g)
     raise ValueError(f"unknown colour {color!r}")
 
 
@@ -311,7 +323,150 @@ def check_timing(gen: list, gt: list, cps: list[int], params: dict) -> dict:
                               and exc_frac >= float(params.get("min_excursion_frac", 0.5))))
 
 
-CHECKS = {"lateral": check_lateral, "approach": check_approach, "position": check_position, "timing": check_timing}
+def _xy(track: list, f: int):
+    s = track[f] if 0 <= f < len(track) else None
+    return None if s is None else np.array([s["cx"], s["cy"]], dtype=np.float64)
+
+
+def check_trajectory(gen: list, gt: list, cps: list[int], params: dict) -> dict:
+    """A STATIC landmark under camera motion: its screen path (displacement from frame 0) follows GT.
+
+    direction: cosine of the total displacement vs GT; magnitude: |gen| / |GT|; checkpoint error of the displacement
+    vector; progress = displacement projected on the GT direction / |GT| per frame: monotone (no backward step above
+    reversal_tol), within progress_tol of GT at the checkpoints (catches stalls and lags), and no single-frame jump
+    above max(jump_factor x the largest GT step, largest GT step + jump_px) (catches cuts)."""
+    n = min(len(gen), len(gt))
+    detected = sum(_xy(gen, f) is not None for f in range(n)) / max(n, 1)
+    g0, t0, gn, tn = _xy(gen, 0), _xy(gt, 0), _xy(gen, n - 1), _xy(gt, n - 1)
+    out = {"detected_frac": round(detected, 3)}
+    if t0 is None or tn is None:
+        return dict(out, followed=None, reason="landmark not visible in GT at the first/last frame")
+    if g0 is None or gn is None or detected < float(params.get("min_detect_frac", 0.9)):
+        return dict(out, followed=None, reason="not detected in enough frames (colour metric unavailable)")
+    d_gt, d_gen = tn - t0, gn - g0
+    m_gt, m_gen = float(np.linalg.norm(d_gt)), float(np.linalg.norm(d_gen))
+    if m_gt < 1e-6:
+        return dict(out, followed=None, reason="landmark does not move in GT")
+    cos = float(d_gen @ d_gt / (m_gen * m_gt)) if m_gen > 1e-6 else 0.0
+    unit = d_gt / m_gt
+
+    def progress(track, origin):
+        return [None if _xy(track, f) is None else round(float((_xy(track, f) - origin) @ unit / m_gt), 4)
+                for f in range(n)]
+
+    p_gt, p_gen = progress(gt, t0), progress(gen, g0)
+    det = [f for f in range(n) if p_gen[f] is not None]
+    reversal = max([p_gen[a] - p_gen[b] for a, b in zip(det, det[1:])] + [0.0])
+    gen_steps = [float(np.linalg.norm(_xy(gen, b) - _xy(gen, a))) for a, b in zip(det, det[1:]) if b == a + 1]
+    gt_steps = [float(np.linalg.norm(_xy(gt, f + 1) - _xy(gt, f))) for f in range(n - 1)
+                if _xy(gt, f) is not None and _xy(gt, f + 1) is not None]
+    max_gt = max(gt_steps) if gt_steps else 0.0
+    jump_limit = max(float(params.get("jump_factor", 3.0)) * max_gt, max_gt + float(params.get("jump_px", 12.0)))
+    max_step = max(gen_steps) if gen_steps else 0.0
+    cp_err = [None if _xy(gen, f) is None or _xy(gt, f) is None
+              else round(float(np.linalg.norm((_xy(gen, f) - g0) - (_xy(gt, f) - t0))), 1) for f in cps]
+    err_limit = max(float(params.get("cp_err_min_px", 16.0)), float(params.get("cp_err_frac", 0.3)) * m_gt)
+    lag = [None if p_gen[f] is None or p_gt[f] is None else round(abs(p_gen[f] - p_gt[f]), 3) for f in cps]
+    lo, hi = params.get("mag_ratio", [0.6, 1.6])
+    ok = (cos >= float(params.get("min_cos", 0.9)) and lo <= m_gen / m_gt <= hi
+          and all(e is not None and e <= err_limit for e in cp_err)
+          and reversal <= float(params.get("reversal_tol", 0.1)) and max_step <= jump_limit
+          and all(v is not None and v <= float(params.get("progress_tol", 0.25)) for v in lag))
+    return dict(out, gt_displacement_px=[round(v, 1) for v in d_gt], generated_displacement_px=[round(v, 1) for v in d_gen],
+                gt_magnitude_px=round(m_gt, 1), generated_magnitude_px=round(m_gen, 1), cos=round(cos, 4),
+                magnitude_ratio=round(m_gen / m_gt, 3), checkpoint_err_px=cp_err, checkpoint_err_limit_px=round(err_limit, 1),
+                progress_gt=[p_gt[f] for f in cps], progress_generated=[p_gen[f] for f in cps], progress_lag=lag,
+                max_reversal=round(reversal, 4), max_step_px=round(max_step, 1), jump_limit_px=round(jump_limit, 1),
+                direction_correct=bool(cos >= 0.7), followed=bool(ok))
+
+
+def check_parallax(gen: dict, gt: dict, layers: list[str], params: dict) -> dict:
+    """Shot-level depth-dependent parallax: the order of the landmarks' total screen displacements and their pairwise
+    ratios vs GT. Pairs whose GT magnitudes differ by less than min_gt_separation are not order-checked."""
+    def mag(track):
+        a, b = _xy(track, 0), _xy(track, len(track) - 1)
+        return None if a is None or b is None else float(np.linalg.norm(b - a))
+
+    m_gt = {oc: mag(gt[oc]) for oc in layers}
+    m_gen = {oc: mag(gen[oc]) for oc in layers}
+    out = {"layers": layers, "gt_magnitude_px": {k: None if v is None else round(v, 1) for k, v in m_gt.items()},
+           "generated_magnitude_px": {k: None if v is None else round(v, 1) for k, v in m_gen.items()}}
+    if any(v is None for v in list(m_gt.values()) + list(m_gen.values())):
+        return dict(out, followed=None, reason="a layer is missing at the first/last frame")
+    sep, tol = float(params.get("min_gt_separation", 1.25)), float(params.get("ratio_tol", 1.35))
+    ref = max(layers, key=lambda k: m_gt[k])
+    pairs = []
+    for i, a in enumerate(layers):
+        for b in layers[i + 1:]:
+            hi_, lo_ = (a, b) if m_gt[a] >= m_gt[b] else (b, a)
+            r_gt = m_gt[hi_] / m_gt[lo_] if m_gt[lo_] > 0 else float("inf")
+            r_gen = m_gen[hi_] / m_gen[lo_] if m_gen[lo_] > 0 else float("inf")
+            ordered = r_gt < sep or m_gen[hi_] > m_gen[lo_]
+            ratio_err = max(r_gen / r_gt, r_gt / r_gen) if r_gen not in (0.0, float("inf")) else float("inf")
+            pairs.append({"larger_in_gt": hi_, "smaller_in_gt": lo_, "gt_ratio": round(r_gt, 3), "generated_ratio": round(r_gen, 3),
+                          "order_checked": r_gt >= sep, "order_agrees": bool(ordered), "ratio_err": round(ratio_err, 3),
+                          "ratio_ok": bool(ratio_err <= tol)})
+    order_ok = all(p["order_agrees"] for p in pairs)
+    return dict(out, normalised_gt={k: round(m_gt[k] / m_gt[ref], 3) for k in layers},
+                normalised_generated={k: round(m_gen[k] / m_gen[ref], 3) if m_gen[ref] else None for k in layers},
+                pairs=pairs, order_agrees=bool(order_ok), direction_correct=bool(order_ok),
+                followed=bool(order_ok and all(p["ratio_ok"] for p in pairs)))
+
+
+def camera_contract(exported: dict, authored: dict, fps: Fraction, cfg: dict) -> dict:
+    """Exported camera samples (oc_export camera_samples.npz) reproduce the authored CameraMotion samples."""
+    from onecreations.geometry import quat
+
+    n = len(authored["t"])
+    if len(exported["t"]) != n:
+        return {"passed": False, "reason": f"{len(exported['t'])} exported samples vs {n} authored"}
+    t_expected = np.array([float(Fraction(k) / fps) for k in range(n)])
+    t_err = float(max(np.abs(exported["t"] - authored["t"]).max(), np.abs(exported["t"] - t_expected).max()))
+    pos_err = float(np.linalg.norm(exported["position"] - authored["position"], axis=1).max())
+    ang_err = max(math.degrees(quat.angle_between(a, b)) for a, b in zip(exported["quaternion_wxyz"],
+                                                                         authored["quaternion_wxyz"]))
+    lens_e, lens_a = np.asarray(exported["lens_mm"]), np.asarray(authored.get("lens_mm", exported["lens_mm"]))
+    lens_fixed = float(np.ptp(lens_e)) <= 1e-9
+    lens_err = float(np.abs(lens_e - lens_a).max())
+    ok = (t_err <= 1e-9 and pos_err <= float(cfg.get("max_position_err_m", 1e-3))
+          and ang_err <= float(cfg.get("max_angle_err_deg", 0.05)) and lens_fixed and lens_err <= 1e-6)
+    return {"samples": n, "max_time_err_s": t_err, "max_position_err_m": pos_err, "max_angle_err_deg": round(ang_err, 6),
+            "lens_mm": float(lens_e[0]), "lens_fixed": lens_fixed, "max_lens_err_mm": lens_err, "passed": bool(ok)}
+
+
+def visibility_timeline(areas: list, visible_frac: float) -> dict:
+    """Visible-area series (relative to its own maximum) and the frames/intervals where it is hidden (< visible_frac)."""
+    vals = [a or 0 for a in areas]
+    peak = max(vals) if vals else 0
+    rel = [round(v / peak, 3) if peak else 0.0 for v in vals]
+    hidden = [f for f, v in enumerate(rel) if v < visible_frac]
+    intervals = []
+    for f in hidden:
+        if intervals and f == intervals[-1][1] + 1:
+            intervals[-1][1] = f
+        else:
+            intervals.append([f, f])
+    return {"relative_visible_area": rel, "hidden_frames": hidden, "hidden_intervals": intervals}
+
+
+def _occlusion_fracs(cfg: dict) -> dict[str, float]:
+    """occlusion_reveal.subjects: a list (one visible_frac for all) or {oc_id: visible_frac}."""
+    subj = cfg["subjects"]
+    if isinstance(subj, dict):
+        return {k: float(v) for k, v in subj.items()}
+    return {k: float(cfg.get("visible_frac", 0.5)) for k in subj}
+
+
+def compare_timelines(gt_tl: dict, other: dict) -> dict:
+    a, b = set(gt_tl["hidden_frames"]), set(other["hidden_frames"])
+    union = a | b
+    return {"hidden_iou": round(len(a & b) / len(union), 3) if union else 1.0,
+            "first_hidden_offset": (min(b) - min(a)) if a and b else None,
+            "last_hidden_offset": (max(b) - max(a)) if a and b else None}
+
+
+CHECKS = {"lateral": check_lateral, "approach": check_approach, "position": check_position, "timing": check_timing,
+          "trajectory": check_trajectory}
 
 
 def classify(gen: dict, gt: dict, n_frames: int, tracking: dict) -> dict:
@@ -332,6 +487,11 @@ def classify(gen: dict, gt: dict, n_frames: int, tracking: dict) -> dict:
                 followed.append(r.get("followed"))
                 directions.append(r.get("direction_correct", False))
         res["subjects"][oc] = sub
+    if tracking.get("parallax"):
+        par = check_parallax(gen, gt, tracking["parallax"]["layers"], tracking["parallax"])
+        res["parallax"] = par
+        followed.append(par.get("followed"))
+        directions.append(par.get("direction_correct", False))
     if not followed or None in followed:
         res["metric_class"] = None
     elif all(followed):
@@ -516,12 +676,23 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
                 "depth_trend_m": [r["median_depth_m"] if r else None for r in rows],
             }
             required = ["coverage_ok", "travel_ok", "contrast_ok", "not_occluded"]
+            if "min_visible_area_frac" in g:          # partial occlusion allowed (e.g. a landmark revealed by the move)
+                areas = [r["area_px"] if r else 0 for r in gt[oc]]
+                c["min_visible_area_frac"] = round(min(areas) / max(areas), 3) if max(areas) else 0.0
+                c["visible_area_ok"] = c["min_visible_area_frac"] >= g["min_visible_area_frac"]
+                required[required.index("not_occluded")] = "visible_area_ok"
             if g.get("require_visible_all_frames"):
                 c["visible_all_frames"] = all(r is not None for r in gt[oc])
                 required.append("visible_all_frames")
             if g.get("require_in_frame"):
                 c["in_frame"] = all(in_frame(r, width, height) for r in gt[oc] if r is not None)
                 required.append("in_frame")
+            if "min_displacement_px" in g:
+                a, b = _xy(gt[oc], 0), _xy(gt[oc], n - 1)
+                disp = float(np.linalg.norm(b - a)) if a is not None and b is not None else None
+                c["gt_displacement_px"] = round(disp, 1) if disp is not None else None
+                c["displacement_ok"] = disp is not None and disp >= g["min_displacement_px"]
+                required.append("displacement_ok")
             if "min_excursion_cells" in g:
                 ev = gt_events.get(oc)
                 exc = ev["excursion_px"] / GUIDE_CELL_PX if ev and ev["excursion_px"] is not None else None
@@ -553,8 +724,47 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
             report["timeline_agreement"] = timeline_agreement(expected, observed, int(tc.get("tol_frames", 1)))
             gate["timeline_ok"] = report["timeline_agreement"]["passed"]
             passed = passed and gate["timeline_ok"]
+        if tracking.get("parallax"):
+            layers = tracking["parallax"]["layers"]
+            ends = {oc: (_xy(gt[oc], 0), _xy(gt[oc], n - 1)) for oc in layers}
+            mags = {oc: float(np.linalg.norm(b - a)) if a is not None and b is not None else None
+                    for oc, (a, b) in ends.items()}
+            ordered = sorted(layers, key=lambda k: mags[k] or 0.0)
+            seps = [round(mags[b] / mags[a], 3) if mags[a] else None for a, b in zip(ordered, ordered[1:])]
+            sig_ok = all(v is not None and v >= float(tracking["parallax"].get("min_gt_separation", 1.25)) for v in seps)
+            gate["parallax_signal"] = {"gt_magnitude_px": {k: round(v, 1) if v else v for k, v in mags.items()},
+                                       "gt_order_small_to_large": ordered, "adjacent_ratios": seps, "ok": sig_ok}
+            passed = passed and sig_ok
+        if tracking.get("camera_contract") and spec:
+            cc = tracking["camera_contract"]
+            with np.load(Path(spec).parent / cc["samples"], allow_pickle=False) as z:
+                authored = {k: z[k] for k in z.files if k != "meta_json"}
+            rate = bundle.manifest.shot.output_fps
+            report["camera_contract"] = camera_contract(bundle.camera_arrays(), authored, Fraction(rate.num, rate.den), cc)
+            gate["camera_contract_ok"] = report["camera_contract"]["passed"]
+            passed = passed and gate["camera_contract_ok"]
+        if tracking.get("clearance") and spec_doc and spec_doc.get("camera_clearance"):
+            from onecreations.camera.retarget import clearance_report, proxies_from_dicts
+            from onecreations.camera.trajectory import CameraTrajectory
+
+            cc = tracking.get("camera_contract", {})
+            traj = CameraTrajectory.load_npz(Path(spec).parent / cc.get("samples", "camera_motion.npz"))
+            minimum = float(tracking["clearance"]["min_m"])
+            proxy_rep = clearance_report(traj, proxies_from_dicts(spec_doc.get("clearance_proxies", [])), minimum)
+            exact = spec_doc["camera_clearance"]
+            report["clearance"] = {"exact_blender": exact, "proxies": proxy_rep}
+            gate["clearance_ok"] = bool(exact.get("ok") and exact.get("min_distance_m", 0) >= minimum and proxy_rep["ok"])
+            passed = passed and gate["clearance_ok"]
         gate["passed"] = passed
         report["gate"] = gate
+    if tracking.get("occlusion_reveal"):
+        oc_cfg = tracking["occlusion_reveal"]
+        fracs = _occlusion_fracs(oc_cfg)
+        ref_tracks = track_colors(ref, {oc: subjects[oc] for oc in fracs})
+        report["occlusion_reveal_report_only"] = {
+            oc: {"visible_frac": frac, "gt": visibility_timeline([r["area_px"] if r else 0 for r in gt[oc]], frac),
+                 "reference_tracked": visibility_timeline([r["area_px"] if r else 0 for r in ref_tracks[oc]], frac)}
+            for oc, frac in fracs.items()}
 
     # report-only coherence evidence: static structures away from every subject's bbox (all frames)
     static_ids = [index_of[s] for s in tracking["static_structures"] if s in index_of]
@@ -585,6 +795,12 @@ def run(mode: str, bundle_dir: Path, control: Path, reference: Path, out_dir: Pa
             _series(tracked[oc], "area_px", cps), _series(gt[oc], "area_px", cps))] for oc in subjects}
         report["static_structure_drift_report_only"]["generated"] = static_drift(gen, static_mask, cps)
         report["comparison"] = classify(tracked, gt, n, tracking)
+        if tracking.get("occlusion_reveal"):
+            for oc, entry in report["occlusion_reveal_report_only"].items():
+                entry["generated_tracked"] = visibility_timeline([r["area_px"] if r else 0 for r in tracked[oc]],
+                                                                 entry["visible_frac"])
+                entry["generated_vs_gt"] = compare_timelines(entry["gt"], entry["generated_tracked"])
+                entry["reference_vs_gt"] = compare_timelines(entry["gt"], entry["reference_tracked"])
         rows.append(gen)
     out_dir.mkdir(parents=True, exist_ok=True)
     contact_sheet(rows, cps, out_dir / f"{mode}_contact_sheet.png")

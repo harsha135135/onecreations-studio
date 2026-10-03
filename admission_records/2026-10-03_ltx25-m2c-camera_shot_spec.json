@@ -1,0 +1,621 @@
+{
+  "blender": "4.5.14 LTS",
+  "camera": {
+    "lens_mm": 35.0,
+    "location": [
+      0.0,
+      -10.0,
+      2.2
+    ],
+    "rotation_euler_deg": [
+      84.0,
+      0.0,
+      0.0
+    ],
+    "sensor_mm": 36.0
+  },
+  "camera_clearance": {
+    "camera_height_m": [
+      3.3,
+      3.6
+    ],
+    "min_distance_m": 3.3,
+    "min_distance_m_per_object": {
+      "m2a_colonnade": 6.9054,
+      "m2a_floor": 3.3,
+      "m2a_rubble": 11.3402,
+      "m2a_shiva": 15.848,
+      "m2a_shrine": 14.6949,
+      "m2a_walls": 6.4567,
+      "m2c_asura": 5.6647,
+      "m2c_lm_far": 15.724,
+      "m2c_lm_mid": 11.2768,
+      "m2c_lm_near": 9.0534
+    },
+    "minimum_required_m": 1.0,
+    "nearest_object": "m2a_floor",
+    "ok": true
+  },
+  "choreography": {
+    "camera_motion": {
+      "manifest": "camera_motion.json",
+      "samples": "camera_motion.npz"
+    },
+    "camera_move": {
+      "azimuth_deg": [
+        -13.0,
+        11.0
+      ],
+      "camera_end_m": [
+        3.1449,
+        -9.3898,
+        3.3
+      ],
+      "camera_start_m": [
+        0.3129,
+        -10.8078,
+        3.6
+      ],
+      "chord_m": 3.1813,
+      "clip_end": 300.0,
+      "clip_start": 0.1,
+      "ease_linear_mix": 0.5,
+      "height_m": [
+        3.6,
+        3.3
+      ],
+      "lens_mm": 35.0,
+      "orbit_deg": 24.0,
+      "path_m": 3.2159,
+      "peak_speed_m_s": 2.074,
+      "radius_m": [
+        7.5,
+        6.0
+      ],
+      "sensor_fit": "AUTO",
+      "sensor_mm": 36.0,
+      "target": [
+        2.0,
+        -3.5,
+        1.55
+      ],
+      "yaw_offset_deg": 12.0
+    },
+    "m2c_asura": {
+      "at": [
+        2.0,
+        -3.5,
+        0.0
+      ],
+      "motion": "static (no keys)"
+    }
+  },
+  "classification": {
+    "fail": "scene effectively static, camera direction contradicted, apparent motion mainly from morphing, relative parallax substantially wrong, too incoherent to evaluate, or major unexplained reversals/cuts",
+    "owner_playback": "not required for classification; recorded separately if given",
+    "partial": "camera direction correct for the landmarks but parallax magnitude/order weakened, or framing follows but architecture deforms materially, or the motion stalls/jitters, or some depth layers follow while others morph, or not controlled enough for production use",
+    "pass": "every landmark trajectory followed (direction cos >= 0.9 vs GT, magnitude 0.6-1.6x, checkpoint error <= max(16 px, 0.3 x GT displacement), monotone progress, no jump, progress within 0.25 of GT at the checkpoints) AND parallax order of the landmark displacements = GT with pairwise ratios within x/1.35 AND subject framing followed (position + approach) AND visual inspection agrees it reads as an authored viewpoint change with coherent architecture, not scene morphing",
+    "retry": "at most one evidence-driven retry, only after PARTIAL or FAIL; none after a PASS"
+  },
+  "clearance_proxies": [
+    {
+      "id": "floor",
+      "max": [
+        60,
+        80,
+        0.0
+      ],
+      "min": [
+        -60,
+        -40,
+        -1.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_-2.0",
+      "max": [
+        -2.65,
+        -1.45,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        -2.55,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+0.5",
+      "max": [
+        -2.65,
+        1.05,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        -0.05,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+3.0",
+      "max": [
+        -2.65,
+        3.55,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        2.45,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+5.5",
+      "max": [
+        -2.65,
+        6.05,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        4.95,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_-2.0",
+      "max": [
+        3.75,
+        -1.45,
+        4.5
+      ],
+      "min": [
+        2.65,
+        -2.55,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+0.5",
+      "max": [
+        3.75,
+        1.05,
+        4.5
+      ],
+      "min": [
+        2.65,
+        -0.05,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+3.0",
+      "max": [
+        3.75,
+        3.55,
+        4.5
+      ],
+      "min": [
+        2.65,
+        2.45,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+5.5",
+      "max": [
+        3.75,
+        6.05,
+        4.5
+      ],
+      "min": [
+        2.65,
+        4.95,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_left",
+      "max": [
+        -6.7,
+        16.0,
+        3.5
+      ],
+      "min": [
+        -7.3,
+        -4.0,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_right",
+      "max": [
+        7.3,
+        16.0,
+        3.5
+      ],
+      "min": [
+        6.7,
+        -4.0,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_back",
+      "max": [
+        7.3,
+        13.8,
+        5.0
+      ],
+      "min": [
+        -7.3,
+        13.2,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "shrine",
+      "max": [
+        4.5,
+        11.0,
+        9.0
+      ],
+      "min": [
+        -4.5,
+        4.6,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "actor",
+      "max": [
+        3.35,
+        -2.9,
+        3.2
+      ],
+      "min": [
+        1.1,
+        -4.1,
+        0.0
+      ],
+      "type": "aabb"
+    }
+  ],
+  "fps": 24,
+  "frames": 49,
+  "purpose": "M2-C: M2-A's representative temple and rigid humanoid proxy (static); ONE authored moving camera (orbit + push-in, fixed lens); static camera -> moving camera is the only new axis",
+  "resolution": [
+    512,
+    320
+  ],
+  "scene": {
+    "actor_at": [
+      2.0,
+      -3.5,
+      0.0
+    ],
+    "banner_colors": {
+      "cyan": [
+        0.02,
+        0.55,
+        0.62
+      ],
+      "green": [
+        0.03,
+        0.55,
+        0.05
+      ],
+      "magenta": [
+        0.65,
+        0.03,
+        0.55
+      ]
+    },
+    "banners": [
+      {
+        "center": [
+          -3.2,
+          -2.36,
+          2.6
+        ],
+        "color": "green",
+        "facing": "-Y",
+        "oc_id": "m2c_lm_near",
+        "pass_index": 10,
+        "size": [
+          0.5,
+          1.3
+        ]
+      },
+      {
+        "center": [
+          -3.2,
+          0.14,
+          2.6
+        ],
+        "color": "magenta",
+        "facing": "-Y",
+        "oc_id": "m2c_lm_mid",
+        "pass_index": 11,
+        "size": [
+          0.6,
+          1.5
+        ]
+      },
+      {
+        "center": [
+          -3.2,
+          5.14,
+          2.6
+        ],
+        "color": "cyan",
+        "facing": "-Y",
+        "oc_id": "m2c_lm_far",
+        "pass_index": 12,
+        "size": [
+          0.62,
+          1.6
+        ]
+      }
+    ],
+    "colors": {
+      "asura_cloth": [
+        0.45,
+        0.04,
+        0.04
+      ],
+      "asura_skin": [
+        0.62,
+        0.06,
+        0.05
+      ],
+      "gold": [
+        0.85,
+        0.62,
+        0.2
+      ],
+      "iron": [
+        0.25,
+        0.25,
+        0.27
+      ],
+      "mortar": [
+        0.22,
+        0.2,
+        0.17
+      ],
+      "shiva_skin": [
+        0.25,
+        0.45,
+        0.78
+      ],
+      "shrine_dark": [
+        0.12,
+        0.1,
+        0.08
+      ],
+      "stone_a": [
+        0.55,
+        0.5,
+        0.42
+      ],
+      "stone_b": [
+        0.4,
+        0.36,
+        0.3
+      ],
+      "white_cloth": [
+        0.85,
+        0.83,
+        0.78
+      ]
+    },
+    "pillars": {
+      "x": 3.2,
+      "ys": [
+        -2.0,
+        0.5,
+        3.0,
+        5.5
+      ]
+    },
+    "platform": {
+      "center": [
+        0.0,
+        8.5,
+        0.6
+      ],
+      "size": [
+        9.0,
+        5.0,
+        1.2
+      ]
+    },
+    "rubble_seed": 7,
+    "shiva_at": [
+      0.5,
+      6.6,
+      1.2
+    ],
+    "sky": [
+      0.6,
+      0.5,
+      0.42
+    ],
+    "sun": {
+      "color": [
+        1.0,
+        0.84,
+        0.68
+      ],
+      "energy": 4.0,
+      "rotation_euler_deg": [
+        62,
+        0,
+        -38
+      ]
+    }
+  },
+  "shot": "m2c_camera",
+  "tracking": {
+    "camera_contract": {
+      "max_angle_err_deg": 0.05,
+      "max_position_err_m": 0.001,
+      "samples": "camera_motion.npz"
+    },
+    "clearance": {
+      "min_m": 1.0
+    },
+    "gate": {
+      "min_area_cells": 2.0,
+      "min_control_contrast": 0.08,
+      "min_height_cells": 2.0,
+      "min_width_cells": 1.5,
+      "require_in_frame": true
+    },
+    "ground": [
+      "m2a_floor"
+    ],
+    "notes": "static-structure drift is not meaningful under a moving camera (omitted). Landmark banners are thin cloth on architecture: the depth control carries the pillar shafts they hang on, so their own control contrast is not gated. Landmarks may be partly occluded (visible area >= 70% of their maximum): the far banner is partly behind the third pillar early in the move and revealed by it, which is the occlusion/reveal evidence (report-only). Generated viewpoint evidence is image-space only (landmark trajectories, parallax, framing, occlusion); no camera pose is inferred.",
+    "occlusion_reveal": {
+      "subjects": {
+        "m2a_shiva": 0.5,
+        "m2c_lm_far": 0.9
+      }
+    },
+    "parallax": {
+      "layers": [
+        "m2c_lm_near",
+        "m2c_lm_mid",
+        "m2c_lm_far"
+      ],
+      "min_gt_separation": 1.25,
+      "ratio_tol": 1.35
+    },
+    "static_structures": [],
+    "subjects": {
+      "m2a_shiva": {
+        "checks": {
+          "report_only": {}
+        },
+        "color": "blue",
+        "role": "secondary"
+      },
+      "m2c_asura": {
+        "checks": {
+          "approach": {
+            "min_gain_frac": 0.5,
+            "monotone_tol": 0.15
+          },
+          "position": {
+            "area_tol": 0.25,
+            "tol_px": 32
+          }
+        },
+        "color": "red",
+        "role": "primary"
+      },
+      "m2c_lm_far": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "cyan",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "layer": "far",
+        "role": "primary"
+      },
+      "m2c_lm_mid": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "magenta",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "layer": "mid",
+        "role": "primary"
+      },
+      "m2c_lm_near": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "green",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "layer": "near",
+        "role": "primary"
+      }
+    }
+  }
+}

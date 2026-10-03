@@ -1,0 +1,44 @@
+{
+  "control_render": "23a943d9c3bd9b2482e14b35fc86e8c521be3cdc72442729110abd415ef13e2c",
+  "generation": "28b92b45b7feb784d08c0047be2dcfe80253b93ca4d3232fdc6c853e1afe297d",
+  "inputs": {
+    "control_render": {
+      "scene": "40e8717a8edd7bb6619f5a71e75974741f0b13ebf870d6c3d6b1551be526d47e",
+      "camera": "c496d9d77cf1945414b093dacfc3a9c4449cb17e1c4b3e6134331baa3cbcbeaa",
+      "choreography": "5befaf0abbec0c5a850fe30c7164cbd45ff64b5c6c7035e72a242b5736983529",
+      "timewarp": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "49/24",
+          "49/24"
+        ]
+      ],
+      "control_export_settings": "d87fe40a35aee26816dc42332c78faa35c3f64dd82c51574e6d62bc312c26f8b"
+    },
+    "generation": {
+      "control_render": "23a943d9c3bd9b2482e14b35fc86e8c521be3cdc72442729110abd415ef13e2c",
+      "references": {
+        "first_frame": "d9e43de3ad0c9638c4877e8aa1664aa2b6291ba5ee1f6c6fabd649b51628cfab"
+      },
+      "backend_profile": "2e082cbdd7c62ce7c2994031cbff0baf1fc2238cb351fa8750f59bd7fd8139d7",
+      "prompt": [
+        "Cinematic shot of an ancient Indian stone temple courtyard at dusk: carved stone pillars, a raised shrine with a stepped tower, worn stone floor tiles. A towering crimson-skinned demon warrior with a heavy golden mace is in the courtyard; a pale blue-skinned ascetic with a trident is on the shrine steps. Warm low sunlight, long shadows.",
+        ""
+      ],
+      "seed": 1000,
+      "generation_settings": "33ac28f5972b5c091ebf3abab5a53ebbb76fa37ef91e4bb44b3b62f600659fb2"
+    }
+  },
+  "provenance": "computed",
+  "sources": {
+    "spec": "G:\\onecreations\\renders\\m2c_camera\\shot_spec.json",
+    "bundle": "G:\\onecreations\\renders\\m2c_camera\\export",
+    "bundle_content_sha256": "97f6654a7b9d0611517de73573d1d4df9e23a2ad24d665e64817617aa17ba38a",
+    "workflow": "workflows\\ltx25\\m2c_camera_api.json",
+    "workflow_sha256": "b7e001812ab2ae2194b8d40e6dd034392c70c7092f351ed67db072dddf4c4daf",
+    "first_frame_sha256": "d9e43de3ad0c9638c4877e8aa1664aa2b6291ba5ee1f6c6fabd649b51628cfab"
+  }
+}

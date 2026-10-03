@@ -1,0 +1,35 @@
+{
+  "constraints": {
+    "minimum_clearance_m": 1.0,
+    "preserve_roll": true
+  },
+  "coordinate_system": "blender_z_up",
+  "duration": "49/24",
+  "id": "m2c_orbit_push_in_v1",
+  "intrinsics": {
+    "clip_end": 300.0,
+    "clip_start": 0.1,
+    "lens_mm": 35.0,
+    "resolution_percentage": 100,
+    "resolution_x": 512,
+    "resolution_y": 320,
+    "sensor_fit": "AUTO",
+    "sensor_height_mm": 24.0,
+    "sensor_width_mm": 36.0
+  },
+  "pose_convention": "camera_to_world",
+  "provenance": {
+    "confidence": "verified_in_scene",
+    "notes": "M2-C orbit + push-in, look-at with a constant yaw framing offset",
+    "scale": "metric_verified",
+    "source": "authored"
+  },
+  "rotation_format": "quaternion_wxyz",
+  "schema_version": 1,
+  "target_bindings": [
+    "m2c_asura.chest"
+  ],
+  "trajectory": "camera_motion.npz",
+  "trajectory_sha256": "edb594f68ae8ab59c1b5331b9f555fcbc1aa8a0f282860f123f221e9be4a1ee6",
+  "units": "meters"
+}

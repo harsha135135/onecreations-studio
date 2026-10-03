@@ -1,0 +1,17 @@
+{
+  "convention": "inverse planar depth, per-clip min-max normalization (VDA gray), near=white, background=black, 8-bit gray, lossless full-range H.264",
+  "inv_depth_lo": 0.04066980189947759,
+  "inv_depth_hi": 0.19551518619630445,
+  "near_m": 5.114692211151123,
+  "far_m": 24.588268280029297,
+  "background_fraction": 0.011659832389987246,
+  "lo_pct": 0.0,
+  "hi_pct": 100.0,
+  "source_bundle": "G:\\onecreations\\renders\\m2c_camera\\export",
+  "source_content_sha256": "97f6654a7b9d0611517de73573d1d4df9e23a2ad24d665e64817617aa17ba38a",
+  "frames": 49,
+  "width": 512,
+  "height": 320,
+  "fps": "24/1",
+  "video": "depth_control.mp4"
+}
