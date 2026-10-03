@@ -1,0 +1,889 @@
+{
+  "blender": "4.5.14 LTS",
+  "camera": {
+    "lens_mm": 35.0,
+    "location": [
+      0.0,
+      -10.0,
+      2.2
+    ],
+    "rotation_euler_deg": [
+      84.0,
+      0.0,
+      0.0
+    ],
+    "sensor_mm": 36.0
+  },
+  "camera_clearance": {
+    "camera_height_m": [
+      3.3,
+      3.6
+    ],
+    "min_distance_m": 3.3,
+    "min_distance_m_per_object": {
+      "m2a_colonnade": 8.791,
+      "m2a_floor": 3.3,
+      "m2a_rubble": 13.6959,
+      "m2a_shrine": 16.2759,
+      "m2a_walls": 9.3169,
+      "m3a_asura": 7.0926,
+      "m3a_defender": 5.7552,
+      "m3a_lm_far": 16.356,
+      "m3a_lm_mid": 13.9174,
+      "m3a_lm_near": 9.3772,
+      "m3a_mace_head": 6.0939,
+      "m3a_mace_shaft": 6.593
+    },
+    "minimum_required_m": 1.0,
+    "nearest_object": "m2a_floor",
+    "ok": true
+  },
+  "choreography": {
+    "action_timeline": {
+      "actors": {
+        "asura": "m3a_asura",
+        "defender": "m3a_defender"
+      },
+      "contacts": [],
+      "duration": "49/24",
+      "id": "m3a_mace_slam_v1",
+      "phases": [
+        {
+          "actor": "asura",
+          "end": "7/24",
+          "id": "guard",
+          "kind": "idle",
+          "start": "0"
+        },
+        {
+          "actor": "asura",
+          "end": "23/24",
+          "id": "windup",
+          "kind": "other",
+          "start": "7/24"
+        },
+        {
+          "actor": "asura",
+          "end": "29/24",
+          "id": "strike",
+          "kind": "strike",
+          "start": "23/24"
+        },
+        {
+          "actor": "asura",
+          "end": "17/12",
+          "id": "impact",
+          "kind": "impact",
+          "start": "29/24"
+        },
+        {
+          "actor": "asura",
+          "end": "2",
+          "id": "recovery",
+          "kind": "recovery",
+          "start": "17/12"
+        },
+        {
+          "actor": "defender",
+          "end": "2",
+          "id": "defender_hold",
+          "kind": "defense",
+          "start": "0"
+        }
+      ],
+      "schema_version": 1,
+      "version": "1.0.0"
+    },
+    "camera_motion": {
+      "manifest": "camera_motion.json",
+      "samples": "camera_motion.npz"
+    },
+    "camera_move": {
+      "azimuth_deg": [
+        -12.0,
+        12.0
+      ],
+      "camera_end_m": [
+        0.6054,
+        -11.047,
+        3.3
+      ],
+      "camera_start_m": [
+        -2.5965,
+        -12.4164,
+        3.6
+      ],
+      "chord_m": 3.4953,
+      "clip_end": 300.0,
+      "clip_start": 0.1,
+      "ease_linear_mix": 0.5,
+      "height_m": [
+        3.6,
+        3.3
+      ],
+      "lens_mm": 35.0,
+      "orbit_deg": 24.0,
+      "path_m": 3.5295,
+      "peak_speed_m_s": 2.2749,
+      "radius_m": [
+        8.4,
+        7.0
+      ],
+      "sensor_fit": "AUTO",
+      "sensor_mm": 36.0,
+      "target": [
+        -0.85,
+        -4.2,
+        1.6
+      ],
+      "yaw_offset_deg": 0.0
+    },
+    "impact_output_frame": 29,
+    "m3a_asura": {
+      "events_blender_frame": {
+        "apex": 24,
+        "contact": 30
+      },
+      "keys": {
+        "1": {
+          "easing": "AUTO",
+          "interpolation": "BEZIER",
+          "pose": "guard"
+        },
+        "24": {
+          "easing": "EASE_IN",
+          "interpolation": "QUAD",
+          "pose": "apex"
+        },
+        "27": {
+          "easing": "AUTO",
+          "interpolation": "LINEAR",
+          "pose": "mid"
+        },
+        "30": {
+          "easing": "AUTO",
+          "interpolation": "LINEAR",
+          "pose": "contact"
+        },
+        "35": {
+          "easing": "AUTO",
+          "interpolation": "BEZIER",
+          "pose": "contact"
+        },
+        "49": {
+          "easing": "AUTO",
+          "interpolation": "BEZIER",
+          "pose": "recovery"
+        },
+        "8": {
+          "easing": "AUTO",
+          "interpolation": "BEZIER",
+          "pose": "guard"
+        }
+      },
+      "reached_rig_space": {
+        "apex": {
+          "grip": [
+            0.95,
+            0.05,
+            1.85
+          ],
+          "mace_head_centre": [
+            1.2384,
+            0.1653,
+            2.9573
+          ]
+        },
+        "contact": {
+          "grip": [
+            1.0458,
+            -0.1268,
+            1.4026
+          ],
+          "mace_head_centre": [
+            1.45,
+            -0.3,
+            0.34
+          ]
+        },
+        "guard": {
+          "grip": [
+            0.6,
+            -0.4,
+            1.15
+          ],
+          "mace_head_centre": [
+            1.2539,
+            -0.7671,
+            2.0219
+          ]
+        },
+        "mid": {
+          "grip": [
+            0.95,
+            -0.45,
+            1.75
+          ],
+          "mace_head_centre": [
+            1.4691,
+            -1.4652,
+            1.9
+          ]
+        },
+        "recovery": {
+          "grip": [
+            0.75,
+            -0.15,
+            1.3
+          ],
+          "mace_head_centre": [
+            1.5046,
+            -0.4244,
+            2.1232
+          ]
+        }
+      },
+      "rig": "m3a_asura_rig",
+      "root_at": [
+        -1.8,
+        -4.0,
+        0.0
+      ],
+      "source": "build_temple_strike_scene POSES/KEYS (M2-B, --strike-frames 6)"
+    },
+    "m3a_defender": {
+      "at": [
+        0.95,
+        -4.55,
+        0.0
+      ],
+      "motion": "static (defensive stance)"
+    }
+  },
+  "classification": {
+    "appearance_fail": "appearance not materially improved, or improvement destroys structure",
+    "appearance_partial": "appearance improves but collapses toward blockout during motion, or identity/material consistency drifts, or the transformation is weak",
+    "appearance_pass": "visual, vs the closest controlled blockout baselines (ltx25-m2b-strike for the action, ltx25-m2c-camera for the camera move) at matched beats: materially more finished; the characters no longer read primarily as primitive geometry; temple material/lighting richness materially improved; the improved look persists through most of the shot (guard, wind-up, apex, fast swing, impact, hold, recovery, final frame); temporally coherent enough to be useful",
+    "control_fail": "the action, timing or camera becomes unusable or contradicted",
+    "control_partial": "the action is readable and timed but a non-critical control element degrades (a landmark, framing, parallax magnitude), or articulation is weakened",
+    "control_pass": "timing (mace apex/contact within 2 frames, excursion >= 50%) AND position + approach (demon framing) AND every landmark trajectory + parallax (M2-C rules) followed on the RAW LTX output, AND visually: the authored action stays readable, the weapon arm visibly articulates through every phase, the impact lands on the authored beat, the camera progression is coherent and the environment stays coherent",
+    "full_pass": "CONTROL PASS + APPEARANCE PASS + hybrid usable through the critical interval",
+    "hybrid_usable": "the protected mace is present, solid, on the authored path, attached to the generated hand (projected grip within 12 px of generated crimson hand pixels) and correctly occluded in every protected frame, with no obvious halo or double image. On-path: per protected frame, the composite's tracked weapon centroid is within (dry-run error + 3 px) of the blur-matched reference's, where the dry run composites the same layer over the blur-matched reference itself (the tool's own error on the authored truth, up to 5.7 px at the fastest frame from thresholding a blur streak). Centroid vs the sharp object-index GT is report-only (motion blur biases it by up to 6.4 px)",
+    "owner_playback": "not required for classification; recorded separately if given",
+    "retry": "at most one evidence-driven retry, only if the integration class is not FULL PASS and one dominant, fixable cause is identified; none after a FULL PASS"
+  },
+  "clearance_proxies": [
+    {
+      "id": "floor",
+      "max": [
+        60,
+        80,
+        0.0
+      ],
+      "min": [
+        -60,
+        -40,
+        -1.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_-2.0",
+      "max": [
+        -2.65,
+        -1.45,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        -2.55,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+0.5",
+      "max": [
+        -2.65,
+        1.05,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        -0.05,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+3.0",
+      "max": [
+        -2.65,
+        3.55,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        2.45,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_-3.2_+5.5",
+      "max": [
+        -2.65,
+        6.05,
+        4.5
+      ],
+      "min": [
+        -3.75,
+        4.95,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_-2.0",
+      "max": [
+        3.75,
+        -1.45,
+        4.5
+      ],
+      "min": [
+        2.65,
+        -2.55,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+0.5",
+      "max": [
+        3.75,
+        1.05,
+        4.5
+      ],
+      "min": [
+        2.65,
+        -0.05,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+3.0",
+      "max": [
+        3.75,
+        3.55,
+        4.5
+      ],
+      "min": [
+        2.65,
+        2.45,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "pillar_+3.2_+5.5",
+      "max": [
+        3.75,
+        6.05,
+        4.5
+      ],
+      "min": [
+        2.65,
+        4.95,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_left",
+      "max": [
+        -6.7,
+        16.0,
+        3.5
+      ],
+      "min": [
+        -7.3,
+        -4.0,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_right",
+      "max": [
+        7.3,
+        16.0,
+        3.5
+      ],
+      "min": [
+        6.7,
+        -4.0,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "wall_back",
+      "max": [
+        7.3,
+        13.8,
+        5.0
+      ],
+      "min": [
+        -7.3,
+        13.2,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "shrine",
+      "max": [
+        4.5,
+        11.0,
+        9.0
+      ],
+      "min": [
+        -4.5,
+        4.6,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "asura",
+      "max": [
+        0.1,
+        -3.0,
+        3.6
+      ],
+      "min": [
+        -2.7,
+        -5.7,
+        0.0
+      ],
+      "type": "aabb"
+    },
+    {
+      "id": "defender",
+      "max": [
+        1.55,
+        -3.95,
+        2.9
+      ],
+      "min": [
+        0.35,
+        -5.75,
+        0.0
+      ],
+      "type": "aabb"
+    }
+  ],
+  "fps": 24,
+  "frames": 49,
+  "layers": {
+    "id": "m3a_layers_v1",
+    "layers": [
+      {
+        "ghost_suppression": true,
+        "grade": "per_channel_gain",
+        "id": "mace_protect",
+        "kind": "protected_geometry",
+        "objects": [
+          "m3a_mace_head",
+          "m3a_mace_shaft"
+        ],
+        "occlusion": "holdout",
+        "order": 0,
+        "protection": {
+          "authored_speed_widths": 0.5,
+          "dilate_frames": 1,
+          "raw_retention_below": 0.5,
+          "track_object": "m3a_mace_head"
+        },
+        "render": {
+          "holdout_others": true,
+          "motion_blur_shutter": 0.5,
+          "samples": 64
+        }
+      },
+      {
+        "collections": [
+          "fx_impact"
+        ],
+        "duration_frames": 14,
+        "id": "impact_dust",
+        "kind": "effect",
+        "occlusion": "holdout",
+        "order": 1,
+        "render": {
+          "holdout_others": true,
+          "motion_blur_shutter": 0.5,
+          "samples": 64
+        },
+        "trigger": {
+          "edge": "start",
+          "phase": "impact",
+          "timeline": "m3a_mace_slam_v1"
+        }
+      }
+    ],
+    "schema_version": 1,
+    "shot": "m3a_action"
+  },
+  "purpose": "M3-A: first controlled-cinematic integration shot. The M2-B strike (original speed) on a finished demon, a static finished ascetic at the impact location, an M2-C-type camera move, a finished procedural look; raw LTX + a deterministic hybrid layer for the weapon + one ActionTimeline-triggered impact effect",
+  "resolution": [
+    512,
+    320
+  ],
+  "scene": {
+    "banners": [
+      {
+        "center": [
+          -3.2,
+          -2.36,
+          3.25
+        ],
+        "color": "green",
+        "oc_id": "m3a_lm_near",
+        "pass_index": 10,
+        "size": [
+          0.5,
+          0.9
+        ],
+        "yaw_deg": 0.0
+      },
+      {
+        "center": [
+          3.2,
+          2.64,
+          3.25
+        ],
+        "color": "magenta",
+        "oc_id": "m3a_lm_mid",
+        "pass_index": 11,
+        "size": [
+          0.62,
+          1.2
+        ],
+        "yaw_deg": -12.0
+      },
+      {
+        "center": [
+          3.2,
+          5.14,
+          3.25
+        ],
+        "color": "cyan",
+        "oc_id": "m3a_lm_far",
+        "pass_index": 12,
+        "size": [
+          0.66,
+          1.4
+        ],
+        "yaw_deg": -14.5
+      }
+    ],
+    "colors": {
+      "asura_cloth": [
+        0.45,
+        0.04,
+        0.04
+      ],
+      "asura_skin": [
+        0.62,
+        0.06,
+        0.05
+      ],
+      "gold": [
+        0.85,
+        0.62,
+        0.2
+      ],
+      "iron": [
+        0.25,
+        0.25,
+        0.27
+      ],
+      "mortar": [
+        0.22,
+        0.2,
+        0.17
+      ],
+      "shiva_skin": [
+        0.25,
+        0.45,
+        0.78
+      ],
+      "shrine_dark": [
+        0.12,
+        0.1,
+        0.08
+      ],
+      "stone_a": [
+        0.55,
+        0.5,
+        0.42
+      ],
+      "stone_b": [
+        0.4,
+        0.36,
+        0.3
+      ],
+      "white_cloth": [
+        0.85,
+        0.83,
+        0.78
+      ]
+    },
+    "defender_at": [
+      0.95,
+      -4.55,
+      0.0
+    ],
+    "defender_yaw_deg": -90,
+    "impact_point": [
+      -0.35,
+      -4.3,
+      0.0
+    ],
+    "look": "oc_lookdev finished (procedural PBR, dusk world, bounded haze 0.006, AgX High Contrast, exposure -0.3)",
+    "pillars": {
+      "x": 3.2,
+      "ys": [
+        -2.0,
+        0.5,
+        3.0,
+        5.5
+      ]
+    },
+    "platform": {
+      "center": [
+        0.0,
+        8.5,
+        0.6
+      ],
+      "size": [
+        9.0,
+        5.0,
+        1.2
+      ]
+    },
+    "root_at": [
+      -1.8,
+      -4.0,
+      0.0
+    ],
+    "rubble_seed": 7,
+    "shiva_at": [
+      0.5,
+      6.6,
+      1.2
+    ],
+    "sky": [
+      0.6,
+      0.5,
+      0.42
+    ],
+    "sun": {
+      "color": [
+        1.0,
+        0.84,
+        0.68
+      ],
+      "energy": 4.0,
+      "rotation_euler_deg": [
+        62,
+        0,
+        -38
+      ]
+    }
+  },
+  "shot": "m3a_action",
+  "tracking": {
+    "camera_contract": {
+      "max_angle_err_deg": 0.05,
+      "max_position_err_m": 0.001,
+      "samples": "camera_motion.npz"
+    },
+    "clearance": {
+      "min_m": 1.0
+    },
+    "gate": {
+      "min_area_cells": 2.0,
+      "min_control_contrast": 0.08,
+      "min_height_cells": 2.0,
+      "min_width_cells": 1.5,
+      "require_in_frame": true
+    },
+    "ground": [
+      "m2a_floor"
+    ],
+    "joints": {
+      "max_projection_err_px": 3.0,
+      "max_stationary_m": 0.001,
+      "rig": "m3a_asura_rig",
+      "stationary_bones": [
+        "root",
+        "pelvis",
+        "thigh.L",
+        "thigh.R",
+        "shin.L",
+        "shin.R"
+      ],
+      "weapon_bone": "mace",
+      "weapon_object": "m3a_mace_head"
+    },
+    "notes": "finished look: colour rules are validated on the finished Blender reference before the run; static-structure drift omitted (moving camera). The demon's framing uses `position` (displacement from frame 0 + relative area within 25%) only: on the finished reference the red-mask area does not reproduce the GT push-in growth (x1.11 vs x1.27, armour/harness/arm occlusion), so `approach` was removed before any generation",
+    "parallax": {
+      "layers": [
+        "m3a_lm_near",
+        "m3a_lm_far"
+      ],
+      "min_gt_separation": 1.25,
+      "ratio_tol": 1.35
+    },
+    "static_structures": [],
+    "subjects": {
+      "m3a_asura": {
+        "checks": {
+          "position": {
+            "area_tol": 0.25,
+            "tol_px": 32
+          }
+        },
+        "color": "crimson",
+        "ignore_occluders": [
+          "m3a_mace_head",
+          "m3a_mace_shaft"
+        ],
+        "role": "primary"
+      },
+      "m3a_defender": {
+        "checks": {
+          "report_only": {}
+        },
+        "color": "blue",
+        "role": "secondary"
+      },
+      "m3a_lm_far": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "teal",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "role": "primary"
+      },
+      "m3a_lm_mid": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "magenta",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "role": "primary"
+      },
+      "m3a_lm_near": {
+        "checks": {
+          "trajectory": {
+            "cp_err_frac": 0.3,
+            "cp_err_min_px": 16,
+            "jump_factor": 3.0,
+            "jump_px": 12,
+            "mag_ratio": [
+              0.6,
+              1.6
+            ],
+            "min_cos": 0.9,
+            "progress_tol": 0.25,
+            "reversal_tol": 0.1
+          }
+        },
+        "color": "green",
+        "gate": {
+          "min_area_cells": 0.1,
+          "min_control_contrast": -1.0,
+          "min_displacement_px": 24,
+          "min_height_cells": 0.5,
+          "min_visible_area_frac": 0.7,
+          "min_width_cells": 0.25,
+          "require_visible_all_frames": true
+        },
+        "role": "primary"
+      },
+      "m3a_mace_head": {
+        "checks": {
+          "timing": {
+            "min_detect_frac": 0.9,
+            "min_dx_px": 32,
+            "min_excursion_frac": 0.5,
+            "stop_px": 4,
+            "tol_frames": 2
+          }
+        },
+        "color": "gold_deep",
+        "gate": {
+          "contrast_frames": "events",
+          "min_area_cells": 0.25,
+          "min_excursion_cells": 2.0,
+          "min_height_cells": 0.6,
+          "min_width_cells": 0.6,
+          "require_visible_all_frames": true
+        },
+        "ignore_occluders": [
+          "m3a_mace_shaft"
+        ],
+        "role": "primary"
+      }
+    },
+    "timeline": {
+      "apex_after_phase": "windup",
+      "contact_after_phase": "strike",
+      "tol_frames": 1
+    }
+  }
+}

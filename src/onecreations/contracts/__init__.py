@@ -4,6 +4,7 @@ from onecreations.contracts.action import ActionTimeline, ContactInterval, Phase
 from onecreations.contracts.assets import AssetRef, CharacterAsset, Project
 from onecreations.contracts.backend import FrameCountRule, ModelBackend
 from onecreations.contracts.camera import CameraIntrinsicsModel, CameraMotion
+from onecreations.contracts.composite import CompositeLayer, CompositeManifest
 from onecreations.contracts.export import ExportManifest
 from onecreations.contracts.records import AdmissionRecord, ExperimentRecord
 from onecreations.contracts.shot import GenerationSpec, Shot
@@ -21,10 +22,11 @@ CONTRACTS = {
     "experiment_record": ExperimentRecord,
     "admission_record": AdmissionRecord,
     "export_manifest": ExportManifest,
+    "composite_manifest": CompositeManifest,
 }
 
 __all__ = [
     "CONTRACTS", "ActionTimeline", "AdmissionRecord", "AssetRef", "CameraIntrinsicsModel", "CameraMotion",
-    "CharacterAsset", "ContactInterval", "ExperimentRecord", "ExportManifest", "FrameCountRule", "GenerationSpec",
-    "ModelBackend", "Phase", "Project", "Shot", "TimeWarpModel", "VFXEvent",
+    "CharacterAsset", "CompositeLayer", "CompositeManifest", "ContactInterval", "ExperimentRecord", "ExportManifest",
+    "FrameCountRule", "GenerationSpec", "ModelBackend", "Phase", "Project", "Shot", "TimeWarpModel", "VFXEvent",
 ]

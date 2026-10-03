@@ -1,0 +1,44 @@
+{
+  "control_render": "78533586c072063512e86719a6c84a8fd56921ec66bf00c4dcd3caac15441110",
+  "generation": "fda30137f6254bc670abd2679726fe96a0655209f92c0a9d83360f00912efbad",
+  "inputs": {
+    "control_render": {
+      "scene": "834baae3fc5eb23db991bf423c1c7ac58edd4c77dc65e6002d4792bc4d084a4b",
+      "camera": "2889f81494dc29388d391dedabe408b2269b4cabf1fe495bf777a88616be795e",
+      "choreography": "7c2c73739b976f807eceb2d501c6ef1254d2773dde1aaa9e3d5a2cac099ef4a5",
+      "timewarp": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "49/24",
+          "49/24"
+        ]
+      ],
+      "control_export_settings": "d87fe40a35aee26816dc42332c78faa35c3f64dd82c51574e6d62bc312c26f8b"
+    },
+    "generation": {
+      "control_render": "78533586c072063512e86719a6c84a8fd56921ec66bf00c4dcd3caac15441110",
+      "references": {
+        "first_frame": "1a98274a1cc6e508df62b4c45d937945e37663ab58dade8a46e2712baf6604dd"
+      },
+      "backend_profile": "2e082cbdd7c62ce7c2994031cbff0baf1fc2238cb351fa8750f59bd7fd8139d7",
+      "prompt": [
+        "Cinematic fantasy film still of an ancient Indian stone temple courtyard at golden hour: weathered carved stone pillars, a stepped shrine tower, worn cracked flagstones, soft volumetric haze and drifting dust in warm low sunlight with long shadows. A towering crimson-skinned demon warrior with curved ivory horns, tusks and glowing eyes wears spiked dark iron pauldrons, a leather harness and a red cloth skirt and holds a heavy golden spiked mace. Facing him stands a pale ash-blue skinned ascetic in a white dhoti with a dark topknot, holding an iron trident. Highly detailed textures, dramatic cinematic lighting, subtle film grain.",
+        ""
+      ],
+      "seed": 1000,
+      "generation_settings": "1fec585e8094595e53f948094c72819ca2e900cab358a22316aa4c8e87de1cfa"
+    }
+  },
+  "provenance": "computed",
+  "sources": {
+    "spec": "G:\\onecreations\\renders\\m3a_action\\shot_spec.json",
+    "bundle": "G:\\onecreations\\renders\\m3a_action\\export",
+    "bundle_content_sha256": "1fbaaf197b07c26518fb09a44cabfa4f0348afa18be1383716fe7eacdab9f5f0",
+    "workflow": "workflows\\ltx25\\m3a_action_api.json",
+    "workflow_sha256": "36bc5c95c92b3c9a883918f20321b30e5f9f7fd3481d2783aa074ab145c74bde",
+    "first_frame_sha256": "1a98274a1cc6e508df62b4c45d937945e37663ab58dade8a46e2712baf6604dd"
+  }
+}

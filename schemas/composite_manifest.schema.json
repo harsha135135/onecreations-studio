@@ -1,0 +1,267 @@
+{
+  "$defs": {
+    "CompositeLayer": {
+      "additionalProperties": false,
+      "properties": {
+        "collections": {
+          "default": [],
+          "description": "view-layer collections enabled for this layer only",
+          "items": {
+            "type": "string"
+          },
+          "title": "Collections",
+          "type": "array"
+        },
+        "duration_frames": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Frames"
+        },
+        "ghost_suppression": {
+          "default": false,
+          "description": "inpaint raw generated remnants of the protected object near its authored path in protected frames",
+          "title": "Ghost Suppression",
+          "type": "boolean"
+        },
+        "grade": {
+          "default": "none",
+          "enum": [
+            "none",
+            "per_channel_gain"
+          ],
+          "title": "Grade",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "protected_geometry",
+            "effect"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "objects": {
+          "default": [],
+          "description": "oc_ids rendered visible in this layer",
+          "items": {
+            "type": "string"
+          },
+          "title": "Objects",
+          "type": "array"
+        },
+        "occlusion": {
+          "const": "holdout",
+          "default": "holdout",
+          "title": "Occlusion",
+          "type": "string"
+        },
+        "order": {
+          "default": 0,
+          "description": "compositing order (lower first)",
+          "title": "Order",
+          "type": "integer"
+        },
+        "protection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProtectionRule"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "render": {
+          "$ref": "#/$defs/LayerRender",
+          "default": {
+            "holdout_others": true,
+            "motion_blur_shutter": 0.5,
+            "samples": 64
+          }
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LayerTrigger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "CompositeLayer",
+      "type": "object"
+    },
+    "LayerRender": {
+      "additionalProperties": false,
+      "description": "How render_layers.py renders a layer: listed objects/collections visible, every other mesh a holdout (it\nstill occludes and casts shadows but renders as transparent), transparent film, optional Blender motion blur.",
+      "properties": {
+        "holdout_others": {
+          "default": true,
+          "title": "Holdout Others",
+          "type": "boolean"
+        },
+        "motion_blur_shutter": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 0.5,
+          "description": "frames; 0.5 = 180 deg shutter",
+          "title": "Motion Blur Shutter"
+        },
+        "samples": {
+          "default": 64,
+          "exclusiveMinimum": 0,
+          "title": "Samples",
+          "type": "integer"
+        }
+      },
+      "title": "LayerRender",
+      "type": "object"
+    },
+    "LayerTrigger": {
+      "additionalProperties": false,
+      "description": "An effect starts at an ActionTimeline phase boundary (never chosen by the generative model).",
+      "properties": {
+        "edge": {
+          "default": "start",
+          "enum": [
+            "start",
+            "end"
+          ],
+          "title": "Edge",
+          "type": "string"
+        },
+        "phase": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Phase",
+          "type": "string"
+        },
+        "timeline": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Timeline",
+          "type": "string"
+        }
+      },
+      "required": [
+        "timeline",
+        "phase"
+      ],
+      "title": "LayerTrigger",
+      "type": "object"
+    },
+    "ProtectionRule": {
+      "additionalProperties": false,
+      "description": "Which output frames a protected-geometry layer replaces. Union of: frames where the authored speed of the\ntracked object (into or out of the frame) is >= authored_speed_widths x its own width (from ground truth),\ndilated by dilate_frames; and frames where the raw generated retention (vs the matched motion-blur reference) is\nbelow raw_retention_below.",
+      "properties": {
+        "authored_speed_widths": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authored Speed Widths"
+        },
+        "dilate_frames": {
+          "default": 1,
+          "minimum": 0,
+          "title": "Dilate Frames",
+          "type": "integer"
+        },
+        "raw_retention_below": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Retention Below"
+        },
+        "track_object": {
+          "title": "Track Object",
+          "type": "string"
+        }
+      },
+      "required": [
+        "track_object"
+      ],
+      "title": "ProtectionRule",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/composite_manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "layers": {
+      "items": {
+        "$ref": "#/$defs/CompositeLayer"
+      },
+      "minItems": 1,
+      "title": "Layers",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "shot": {
+      "title": "Shot",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "shot",
+    "layers"
+  ],
+  "title": "CompositeManifest",
+  "type": "object"
+}

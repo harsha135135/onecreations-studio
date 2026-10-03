@@ -10,6 +10,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 | `m2a_temple_api.json` | M2-A representative temple shot | same as R2 | R2D's graph with only the prompt (neutral: environment, style, subjects, lighting; no motion direction or timing) and the output prefix changed |
 | `m2b_strike_api.json` | M2-B articulated strike (and its retry) | same as R2 | M2-A's graph and prompt; only the output prefix changed |
 | `m2c_camera_api.json` | M2-C authored camera move | same as R2 | M2-A's graph and prompt (verbatim); only the output prefix changed |
+| `m3a_action_api.json` | M3-A controlled cinematic appearance | same as R2 | `m2b_strike_api.json` with only the prompt (cinematic appearance; no choreography or camera words, tested) and the output prefix changed |
 | `m2b_strike_768_api.json` | M2-B same-shot resolution comparison | same as R2 | `m2b_strike_api.json` with only `EmptyLTXVLatentVideo` 768×448 (and the output prefix) |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 
@@ -79,3 +80,12 @@ The horizontal field of view is kept, so the vertical one narrows with the 1.714
 - one authored `CameraMotion` (orbit + push-in, fixed 35 mm), keyed by `oc_import_camera`
 
 Result: **PASS**; see `docs/measurements/2026-10-03-m2c-camera.md`.
+
+**M3-A** (`m3a_action_api.json`) is node-for-node M2-B at 512×320 (8 steps, seed 1000, guide 1, first-frame 1). Only the prompt changes: it describes the cinematic look and has no choreography or camera words (word-boundary test). The new appearance signal comes from the **finished Blender first frame**, not from model settings. Inputs come from `integrations/blender/build_temple_action_scene.py` (look: `oc_lookdev.py`), in `G:\onecreations\renders\m3a_action\`:
+- the M2-A temple, finished
+- the M2-B strike at original speed on a finished demon
+- a static finished ascetic
+- an M2-C-type orbit + push-in
+- deterministic layers (mace, dust), composited after generation by `tools/admission/hybrid_composite.py`
+
+Result: **PARTIAL** (CONTROL PASS, APPEARANCE PARTIAL, hybrid v1 not fully usable); see `docs/measurements/2026-10-03-m3a-controlled-appearance.md`.

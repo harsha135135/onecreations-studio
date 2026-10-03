@@ -1,0 +1,93 @@
+{
+ "experiment": "ltx25-m3a-action",
+ "registered_at": "2026-10-03T15:17:43+05:30",
+ "registered_before_generation": true,
+ "question": "Can the pipeline substantially improve cinematic appearance while preserving the motion, timing, geometry and camera control already demonstrated by the diagnostic stages?",
+ "integration_test": "not a one-variable admission test: finished look + articulation + camera move + hybrid weapon + one effect",
+ "ltx_config": "512x320x49 @24 fps, 8 distilled steps, seed 1000, INT8 ConvRot + Union IC-LoRA 1, guide 1, first-frame 1, corrected depth control, driver-default sysmem; workflows/ltx25/m3a_action_api.json differs from m2b_strike_api.json only in the prompt (cinematic appearance, no choreography/camera words) and the output prefix",
+ "appearance_source": "route A: finished Blender render (integrations/blender/oc_lookdev.py: procedural PBR materials, dusk world, bounded haze, three-point lighting, AgX High Contrast) of the same scene that produces the depth control; no local image model exists (G:/onecreations/models/flux and /wan are empty)",
+ "classification": {
+  "appearance_fail": "appearance not materially improved, or improvement destroys structure",
+  "appearance_partial": "appearance improves but collapses toward blockout during motion, or identity/material consistency drifts, or the transformation is weak",
+  "appearance_pass": "visual, vs the closest controlled blockout baselines (ltx25-m2b-strike for the action, ltx25-m2c-camera for the camera move) at matched beats: materially more finished; the characters no longer read primarily as primitive geometry; temple material/lighting richness materially improved; the improved look persists through most of the shot (guard, wind-up, apex, fast swing, impact, hold, recovery, final frame); temporally coherent enough to be useful",
+  "control_fail": "the action, timing or camera becomes unusable or contradicted",
+  "control_partial": "the action is readable and timed but a non-critical control element degrades (a landmark, framing, parallax magnitude), or articulation is weakened",
+  "control_pass": "timing (mace apex/contact within 2 frames, excursion >= 50%) AND position + approach (demon framing) AND every landmark trajectory + parallax (M2-C rules) followed on the RAW LTX output, AND visually: the authored action stays readable, the weapon arm visibly articulates through every phase, the impact lands on the authored beat, the camera progression is coherent and the environment stays coherent",
+  "full_pass": "CONTROL PASS + APPEARANCE PASS + hybrid usable through the critical interval",
+  "hybrid_usable": "the protected mace is present, solid, on the authored path, attached to the generated hand (projected grip within 12 px of generated crimson hand pixels) and correctly occluded in every protected frame, with no obvious halo or double image. On-path: per protected frame, the composite's tracked weapon centroid is within (dry-run error + 3 px) of the blur-matched reference's, where the dry run composites the same layer over the blur-matched reference itself (the tool's own error on the authored truth, up to 5.7 px at the fastest frame from thresholding a blur streak). Centroid vs the sharp object-index GT is report-only (motion blur biases it by up to 6.4 px)",
+  "owner_playback": "not required for classification; recorded separately if given",
+  "retry": "at most one evidence-driven retry, only if the integration class is not FULL PASS and one dominant, fixable cause is identified; none after a FULL PASS"
+ },
+ "control_checks": "spec tracking section (timing, position, landmark trajectories, parallax near/far) on the RAW LTX output",
+ "protected_interval": {
+  "rule": {
+   "authored_speed_widths": 0.5,
+   "dilate_frames": 1,
+   "raw_retention_below": 0.5,
+   "track_object": "m3a_mace_head"
+  },
+  "authored_frames_from_gt": [
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29
+  ],
+  "plus": "frames whose raw retention vs the motion-blur reference < 0.5 (data-driven, any frame)"
+ },
+ "hybrid_on_path_calibration_px": {
+  "23": 0.1,
+  "24": 0.6,
+  "25": 1.5,
+  "26": 5.7,
+  "27": 1.2,
+  "28": 1.0,
+  "29": 0.3
+ },
+ "motion_blur_evidence_pre_run": {
+  "retention_of_the_blur_reference_vs_sharp": {
+   "22": 0.997,
+   "23": 0.976,
+   "24": 0.872,
+   "25": 0.535,
+   "26": 0.29,
+   "27": 0.662,
+   "28": 0.937,
+   "29": 0.982,
+   "30": 0.994,
+   "31": 1.001
+  },
+  "note": "legitimate 180 deg blur alone reduces the sharp-referenced gold-mask area to ~0.29 at the fastest frame"
+ },
+ "appearance_evaluation": {
+  "frames": {
+   "guard": 4,
+   "wind-up": 14,
+   "apex": 23,
+   "fast swing": [
+    25,
+    26
+   ],
+   "pre-impact": 28,
+   "impact": 29,
+   "hold": 32,
+   "recovery": 40,
+   "final": 48
+  },
+  "baselines": {
+   "action": "ltx25-m2b-strike (raw, blockout, static camera, same strike)",
+   "camera": "ltx25-m2c-camera (raw, blockout, orbit + push-in, static subject)"
+  },
+  "evidence": "A/B/C contact sheets (Blender reference + effects / raw / hybrid) and blockout-vs-finished sheets at matched beats",
+  "report_only_metrics": [
+   "detail ratio: Laplacian energy of raw frames / finished reference, per frame, in the actor and environment masks",
+   "colour persistence: mean colour of the actor's object-index mask, raw vs reference, per frame",
+   "PSNR vs the finished reference"
+  ],
+  "no_numeric_cinematic_score": true
+ },
+ "retry": "at most one evidence-driven retry, only if the integration class is not FULL PASS and one dominant, fixable cause is identified; none after a FULL PASS",
+ "budget": "one generation (+ at most one evidence-driven retry); no training, cloud, downloads or new models"
+}

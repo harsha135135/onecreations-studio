@@ -212,9 +212,14 @@ def export(args) -> str:
 
     exr_dir = os.path.join(out_dir, "_exr")
     fo = None
+    excluded_volumes = []
     if args.passes:
         os.makedirs(exr_dir, exist_ok=True)
         fo = setup_passes(scene, exr_dir, args.samples)
+        for o in scene.objects:                       # passes are geometric: volume-only helpers would scatter rays
+            if common.is_volume_only(o) and not o.hide_render:
+                o.hide_render = True
+                excluded_volumes.append(o.name)
 
     cam_rows = {k: [] for k in ("c2w", "lens_mm", "shift_x", "shift_y")}
     obj_rows = {str(o["oc_id"]): [] for o in tagged}
@@ -321,6 +326,8 @@ def export(args) -> str:
             "normal_space": "world",
             "object_index_map": {str(o["oc_id"]): int(o.pass_index) for o in meshes if o.pass_index},
         }
+        if excluded_volumes:
+            manifest["passes"]["excluded_volume_objects"] = sorted(excluded_volumes)
         if not args.keep_exr:
             shutil.rmtree(exr_dir, ignore_errors=True)
     manifest["content_sha256"] = hashing.content_hash(manifest)

@@ -169,9 +169,9 @@ def build_actor(m, rig):
     return body, shaft, head
 
 
-def build_rig():
-    arm = bpy.data.armatures.new("m2b_asura_rig")
-    rig = bpy.data.objects.new("m2b_asura_rig", arm)
+def build_rig(rig_name: str = "m2b_asura_rig"):
+    arm = bpy.data.armatures.new(rig_name)
+    rig = bpy.data.objects.new(rig_name, arm)
     bpy.context.scene.collection.objects.link(rig)
     bpy.context.view_layer.objects.active = rig
     bpy.ops.object.mode_set(mode="EDIT")
@@ -187,7 +187,7 @@ def build_rig():
     bpy.ops.object.mode_set(mode="OBJECT")
     for pb in rig.pose.bones:
         pb.rotation_mode = "QUATERNION"
-    temple.tag(rig, "m2b_asura_rig")
+    temple.tag(rig, rig_name)
     return rig
 
 

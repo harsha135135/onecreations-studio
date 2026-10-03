@@ -211,6 +211,18 @@ def test_m2c_landmark_colour_masks():
     assert cd.color_mask(px, "cyan").tolist() == [[False, False, True] + [False] * 5]
 
 
+def test_m3a_finished_look_colour_masks():
+    # rendered M3-A finished reference (object-index medians): crimson skin, dark-gold mace head (two samples), teal
+    # banner, magenta banner, green banner, ash-blue ascetic, flagstones, sunlit stone, a warm highlight on the mace
+    px = np.array([[(159, 48, 25), (132, 79, 13), (130, 78, 7), (153, 210, 198), (222, 101, 164), (99, 190, 70),
+                    (145, 150, 152), (129, 95, 64), (200, 170, 130), (162, 105, 37)]], np.uint8)
+    assert cd.color_mask(px, "crimson").tolist() == [[True] + [False] * 9]
+    assert cd.color_mask(px, "gold_deep").tolist() == [[False, True, True] + [False] * 7]
+    assert cd.color_mask(px, "teal").tolist() == [[False, False, False, True] + [False] * 6]
+    # why the blockout rules were replaced: `red` also fires on the dark-gold mace, `cyan` misses the finished teal
+    assert cd.color_mask(px, "red")[0, 1:3].all() and not cd.color_mask(px, "cyan").any()
+
+
 def landmark(points):
     return [{"cx": float(x), "cy": float(y), "area_px": 900} for x, y in points]
 

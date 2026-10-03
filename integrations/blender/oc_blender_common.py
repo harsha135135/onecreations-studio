@@ -86,6 +86,18 @@ def save_arrays(path: str, arrays: dict) -> dict:
     return {"file": os.path.basename(path), "digest": hashing.array_digest(arrays), "keys": sorted(arrays)}
 
 
+def is_volume_only(obj) -> bool:
+    """A mesh whose every material has a volume but no surface shader (e.g. a haze box): not scene geometry."""
+    mats = [s.material for s in getattr(obj, "material_slots", []) if s.material]
+    if obj.type != "MESH" or not mats:
+        return False
+    for mat in mats:
+        out = next((n for n in mat.node_tree.nodes if n.type == "OUTPUT_MATERIAL"), None) if mat.use_nodes else None
+        if out is None or out.inputs["Surface"].is_linked or not out.inputs["Volume"].is_linked:
+            return False
+    return True
+
+
 def tagged_objects(scene, types=None) -> list:
     """Objects carrying an `oc_id` custom property, sorted by oc_id for deterministic output."""
     objs = [o for o in scene.objects if "oc_id" in o.keys() and (types is None or o.type in types)]

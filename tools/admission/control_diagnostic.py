@@ -115,6 +115,13 @@ def color_mask(rgb: np.ndarray, color: str) -> np.ndarray:
         return (r > 80) & (b > 60) & (r > 1.6 * g) & (b > 1.4 * g)
     if color == "cyan":
         return (g > 60) & (b > 50) & (g > 2.5 * r) & (b > 2.5 * r) & (g < 1.6 * b) & (b < 1.15 * g)
+    # finished-look rules (M3-A: procedural PBR + AgX), tuned on the finished Blender reference before any generation
+    if color == "crimson":                       # demon skin/cloth; excludes dark finished gold (r/g ~ 1.7)
+        return (r > 70) & (r > 2.2 * g) & (r > 2.2 * b)
+    if color == "gold_deep":                     # dark metallic gold; excludes warm sunlit stone (b ~ 0.5 g)
+        return (r > 90) & (g > 45) & (r >= g) & (g > 0.45 * r) & (b < 0.3 * g)
+    if color == "teal":                          # AgX-desaturated cyan cloth; excludes the grey-blue ascetic
+        return (g > 100) & (b > 90) & (g - r > 40) & (b - r > 30) & (g < 1.35 * b) & (b < 1.2 * g)
     raise ValueError(f"unknown colour {color!r}")
 
 

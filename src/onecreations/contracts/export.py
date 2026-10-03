@@ -85,6 +85,9 @@ class ExportPasses(Model):
     depth: DepthCheck
     normal_space: Literal["world"] = "world"
     object_index_map: dict[str, int]
+    excluded_volume_objects: list[str] = Field(
+        default=[], description="volume-only helpers (e.g. a haze box) hidden while rendering the geometric passes; "
+                                "written only when non-empty")
 
 
 class ExportManifest(Model):

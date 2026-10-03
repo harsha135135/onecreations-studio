@@ -36,6 +36,7 @@ a test fails if they drift). Unknown fields are errors, so typos in hand-written
 | `ExperimentRecord` | `contracts/records.py` | Validates `training/**/experiment-card*.yaml` |
 | `AdmissionRecord` | `contracts/records.py` | Validates `admission_records/records.jsonl` lines from `tools/admission/monitor.py` |
 | `ExportManifest` | `contracts/export.py` | Blender export bundle (below) |
+| `CompositeManifest` | `contracts/composite.py` | M3-A on: deterministic layers rendered from the authored scene and combined with a generated video. Each layer is `protected_geometry` (with a `ProtectionRule`: authored speed in own widths, dilation, raw-retention floor) or an `effect` (with a `LayerTrigger` on an `ActionTimeline` phase edge and a duration). It also records render settings (holdouts, motion-blur shutter, samples), `occlusion: holdout`, grading and ghost suppression. It lives in the scene spec's `layers` section, is rendered by `integrations/blender/render_layers.py` and applied by `tools/admission/hybrid_composite.py` |
 
 ## Shot validation (`onecreations validate-shot PROJECT_DIR`)
 
@@ -74,6 +75,10 @@ Produced by `integrations/blender/oc_export.py` (or `onecreations blender export
 
 Pass rendering: Cycles CPU, 1 sample, seed 0, pixel filter width 0.01, no denoising or motion blur, so every pixel
 is one ray through (nearly) its centre. That makes the index and depth passes exact per pixel (not antialiased, v1 §10).
+Volume-only helpers (meshes whose materials have a volume and no surface shader, e.g. the M3-A haze box) are hidden
+while the passes render, because a volume scatters 1-spp rays into speckle. They are listed in
+`passes.excluded_volume_objects`, which is written only when non-empty, so bundles of scenes without volumes are unchanged
+(M3-A, 2026-10-03; Blender-tested).
 
 ### Measured on the Mac (Blender 4.5.14 LTS, macOS arm64, diagnostic scene, 160×90)
 

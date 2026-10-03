@@ -7,8 +7,8 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from onecreations.contracts import (ActionTimeline, AdmissionRecord, CameraMotion, CharacterAsset, ExperimentRecord,
-                                    Shot, TimeWarpModel, VFXEvent)
+from onecreations.contracts import (ActionTimeline, AdmissionRecord, CameraMotion, CharacterAsset, CompositeManifest,
+                                    ExperimentRecord, Shot, TimeWarpModel, VFXEvent)
 from onecreations.contracts.schema_export import stale_schemas
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -139,6 +139,23 @@ def test_rejections():
         hero["weapon_sockets"][0]["bone"] = "DEF-hand.R"
         hero["weapon_sockets"][0]["transform"] = [[1, 0, 0]]
         CharacterAsset.model_validate(hero)
+
+
+def test_composite_manifest_m3a_record_and_rejections():
+    spec = json.loads((ROOT / "admission_records/2026-10-03_ltx25-m3a-action_shot_spec.json").read_text())
+    m = CompositeManifest.model_validate(spec["layers"])
+    mace, dust = m.layers
+    assert mace.protection.track_object == "m3a_mace_head" and mace.render.motion_blur_shutter == 0.5
+    assert dust.trigger.timeline == "m3a_mace_slam_v1" and dust.trigger.phase == "impact" and dust.duration_frames == 14
+    raw = spec["layers"]
+    with pytest.raises(ValidationError, match="protection rule"):
+        CompositeManifest.model_validate(dict(raw, layers=[dict(raw["layers"][0], protection=None)]))
+    with pytest.raises(ValidationError, match="trigger and a duration"):
+        CompositeManifest.model_validate(dict(raw, layers=[dict(raw["layers"][1], duration_frames=None)]))
+    with pytest.raises(ValidationError, match="nothing to render"):
+        CompositeManifest.model_validate(dict(raw, layers=[dict(raw["layers"][1], collections=[])]))
+    with pytest.raises(ValidationError, match="duplicate layer ids"):
+        CompositeManifest.model_validate(dict(raw, layers=[raw["layers"][0], raw["layers"][0]]))
 
 
 def test_committed_schemas_are_current():

@@ -1,0 +1,17 @@
+{
+  "convention": "inverse planar depth, per-clip min-max normalization (VDA gray), near=white, background=black, 8-bit gray, lossless full-range H.264",
+  "inv_depth_lo": 0.03718701688753362,
+  "inv_depth_hi": 0.17658921723513832,
+  "near_m": 5.662859916687012,
+  "far_m": 26.891105651855465,
+  "background_fraction": 0.0354396275111607,
+  "lo_pct": 0.0,
+  "hi_pct": 100.0,
+  "source_bundle": "G:\\onecreations\\renders\\m3a_action\\export",
+  "source_content_sha256": "1fbaaf197b07c26518fb09a44cabfa4f0348afa18be1383716fe7eacdab9f5f0",
+  "frames": 49,
+  "width": 512,
+  "height": 320,
+  "fps": "24/1",
+  "video": "depth_control.mp4"
+}
