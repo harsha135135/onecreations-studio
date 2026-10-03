@@ -122,6 +122,8 @@ def color_mask(rgb: np.ndarray, color: str) -> np.ndarray:
         return (r > 90) & (g > 45) & (r >= g) & (g > 0.45 * r) & (b < 0.3 * g)
     if color == "teal":                          # AgX-desaturated cyan cloth; excludes the grey-blue ascetic
         return (g > 100) & (b > 90) & (g - r > 40) & (b - r > 30) & (g < 1.35 * b) & (b < 1.2 * g)
+    if color == "ember":                         # orange-tinted raw weapon remnants (M3-A f26-27: ~(188, 124, 56));
+        return (r > 110) & (r > 1.25 * g) & (r < 2.2 * g) & (b < 0.6 * g)   # compositor ghost colour, band-limited
     raise ValueError(f"unknown colour {color!r}")
 
 

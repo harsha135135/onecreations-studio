@@ -17,6 +17,9 @@ alpha, Blender frame numbers) from render_layers.py. Method, fixed before any ge
    layer's alpha: holdouts). Effect layers are composited from their ActionTimeline trigger frame.
    --ghost-under-layer (method v2, added after M3-A's v1 result, not pre-registered there): also inpaint generated
    weapon pixels UNDER the layer, so a semi-transparent motion-blurred layer does not show the generated weapon through.
+   Since the showcase this is the manifest field ghost_mode: under_layer (the flag forces it); ghost_colors adds
+   colour rules counted as remnants; protection.include_frames forces frames into the protected set; effect layers
+   with blend: add (light passes) are added, not alpha-composited.
 Outputs: hybrid.mp4 (lossless rgb), composite_report.json, A/B/C contact sheets (A = Blender reference + effects,
 B = raw generated, C = hybrid).
 """
@@ -46,6 +49,15 @@ def alpha_over(base: np.ndarray, layer_rgba: np.ndarray, gain=(1.0, 1.0, 1.0)) -
     a = layer_rgba[..., 3:4].astype(np.float32) / 255.0
     rgb = np.clip(layer_rgba[..., :3].astype(np.float32) * np.asarray(gain, np.float32), 0, 255)
     return np.clip(rgb * a + base.astype(np.float32) * (1.0 - a) + 0.5, 0, 255).astype(np.uint8)
+
+
+def add_light(base: np.ndarray, layer_rgba: np.ndarray, gain: float = 1.0) -> np.ndarray:
+    """Additive light pass: out = base + gain * layer.rgb (clipped)."""
+    return np.clip(base.astype(np.float32) + gain * layer_rgba[..., :3].astype(np.float32) + 0.5, 0, 255).astype(np.uint8)
+
+
+def apply_effect(base: np.ndarray, layer_rgba: np.ndarray, blend: str) -> np.ndarray:
+    return add_light(base, layer_rgba) if blend == "add" else alpha_over(base, layer_rgba)
 
 
 def fit_gain(pairs: list[tuple[np.ndarray, np.ndarray]], lo: float = 0.6, hi: float = 1.6) -> list[float]:
@@ -166,7 +178,8 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             ret_sharp = [round(area(raw, f) / max(area(sharp, f), 1), 3) for f in range(n)]
             authored = authored_fast_frames(cents, widths, rule.authored_speed_widths or 1e9, rule.dilate_frames)
             low = [f for f in range(n) if rule.raw_retention_below and ret_blur[f] < rule.raw_retention_below]
-            protected = sorted(set(authored) | set(low))
+            protected = sorted(set(authored) | set(low) | {f for f in rule.include_frames if 0 <= f < n})
+            unreliable = set(authored) | set(low)
             missing = [f for f in protected if f not in frames_rgba]
             if missing:
                 raise FileNotFoundError(f"layer {layer.id}: no render for protected frames {missing}")
@@ -175,7 +188,7 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             if layer.grade == "per_channel_gain":
                 pairs = []
                 for f in range(n):
-                    if f in protected or ret_blur[f] < 0.8 or f not in layers_cache:
+                    if f in unreliable or ret_blur[f] < 0.8 or f not in layers_cache:
                         continue
                     sel = (layers_cache[f][..., 3] >= 242) & cd.color_mask(raw[f], color) & band[f]
                     pairs.append((raw[f][sel].astype(np.float32), layers_cache[f][..., :3][sel].astype(np.float32)))
@@ -191,15 +204,20 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                 for f in range(n):
                     uv, _ = project(heads[f, wi][None], cam["c2w"][f], bundle.K())
                     grips[f] = (float(uv[0, 0]) - 0.5, float(uv[0, 1]) - 0.5)
-            body_color = tracking["subjects"].get("m3a_asura", {}).get("color", "crimson")
+            body = jc.get("body_object", "m3a_asura")
+            body_color = tracking["subjects"].get(body, {}).get("color", "crimson")
+            under_layer = ghost_under_layer or layer.ghost_mode == "under_layer"
             per_frame = {}
             for f in protected:
                 lay = layers_cache[f]
                 base = out[f]
                 ghost = np.zeros(base.shape[:2], bool)
                 if layer.ghost_suppression:
-                    under = np.ones(base.shape[:2], bool) if ghost_under_layer else (lay[..., 3] < 77)
-                    ghost = cd.dilate(cd.color_mask(base, color) & band[f] & under, GHOST_DILATE_PX)
+                    under = np.ones(base.shape[:2], bool) if under_layer else (lay[..., 3] < 77)
+                    remnant = cd.color_mask(base, color)
+                    for extra in layer.ghost_colors:
+                        remnant |= cd.color_mask(base, extra)
+                    ghost = cd.dilate(remnant & band[f] & under, GHOST_DILATE_PX)
                     base = inpaint(base, ghost)
                 out[f] = alpha_over(base, lay, gain)
                 comp = cd.mask_stats(cd.color_mask(out[f], color) & band[f])
@@ -214,7 +232,8 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                                 "grip_to_generated_hand_px": nearest_distance(grips[f], cd.color_mask(raw[f], body_color))}
             entry.update(color=color, band_px=BAND_PX, retention_vs_blur=ret_blur, retention_vs_sharp=ret_sharp,
                          authored_fast_frames=authored, low_retention_frames=low, protected_frames=protected,
-                         grade_gain=gain, per_frame=per_frame)
+                         ghost_mode="under_layer" if under_layer else "outside_core",
+                         ghost_colors=list(layer.ghost_colors), grade_gain=gain, per_frame=per_frame)
         else:
             start = trigger_frame(timeline, layer.trigger.phase, layer.trigger.edge, fps)
             frames = [f for f in range(start, start + layer.duration_frames) if f < n]
@@ -222,9 +241,9 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             if missing:
                 raise FileNotFoundError(f"layer {layer.id}: no render for frames {missing}")
             for f in frames:
-                out[f] = alpha_over(out[f], _png_rgba(frames_rgba[f]))
+                out[f] = apply_effect(out[f], _png_rgba(frames_rgba[f]), layer.blend)
             entry.update(trigger={"timeline": layer.trigger.timeline, "phase": layer.trigger.phase,
-                                  "edge": layer.trigger.edge, "output_frame": start}, frames=frames)
+                                  "edge": layer.trigger.edge, "output_frame": start}, frames=frames, blend=layer.blend)
         report["layers"][layer.id] = entry
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -234,7 +253,8 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
     for lid, entry in report["layers"].items():
         if entry["kind"] == "effect":
             for f in entry["frames"]:
-                truth[f] = alpha_over(truth[f], _png_rgba(render_dir / "layers" / lid / f"f_{f + 1:04d}.png"))
+                truth[f] = apply_effect(truth[f], _png_rgba(render_dir / "layers" / lid / f"f_{f + 1:04d}.png"),
+                                        entry.get("blend", "over"))
     _encode(truth, out_dir / "reference_with_effects.mp4")
     report["outputs"] = {"hybrid": "hybrid.mp4", "reference_with_effects": "reference_with_effects.mp4"}
     (out_dir / "composite_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8")

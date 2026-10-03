@@ -158,5 +158,26 @@ def test_composite_manifest_m3a_record_and_rejections():
         CompositeManifest.model_validate(dict(raw, layers=[raw["layers"][0], raw["layers"][0]]))
 
 
+def test_composite_manifest_showcase_fields():
+    base = {"schema_version": 1, "id": "sc", "shot": "showcase", "layers": [
+        {"id": "mace", "kind": "protected_geometry", "objects": ["head"], "ghost_suppression": True,
+         "ghost_mode": "under_layer", "ghost_colors": ["ember"],
+         "protection": {"track_object": "head", "include_frames": [0, 1, 2]}},
+        {"id": "flash", "kind": "effect", "collections": ["fx_flash"], "blend": "add",
+         "render": {"light_only": ["fx_flash_light"], "motion_blur_shutter": None},
+         "trigger": {"timeline": "t", "phase": "impact"}, "duration_frames": 5}]}
+    m = CompositeManifest.model_validate(base)
+    assert m.layers[0].ghost_mode == "under_layer" and m.layers[0].protection.include_frames == [0, 1, 2]
+    assert m.layers[1].render.light_only == ["fx_flash_light"] and m.layers[1].blend == "add"
+    over = dict(base["layers"][1], blend="over")
+    with pytest.raises(ValidationError, match="blend 'add'"):
+        CompositeManifest.model_validate(dict(base, layers=[base["layers"][0], over]))
+    with pytest.raises(ValidationError, match="composited 'over'"):
+        CompositeManifest.model_validate(dict(base, layers=[dict(base["layers"][0], blend="add")]))
+    assert CompositeManifest.model_validate(dict(base, layers=[{"id": "x", "kind": "protected_geometry", "objects": ["a"],
+                                                                 "protection": {"track_object": "a"}}])
+                                            ).layers[0].ghost_mode == "outside_core"     # M3-A v1 default
+
+
 def test_committed_schemas_are_current():
     assert stale_schemas() == [], "run: uv run onecreations schemas export"

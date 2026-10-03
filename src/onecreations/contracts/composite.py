@@ -17,6 +17,9 @@ class LayerRender(Model):
     holdout_others: bool = True
     motion_blur_shutter: float | None = Field(default=0.5, gt=0, le=1, description="frames; 0.5 = 180 deg shutter")
     samples: int = Field(default=64, gt=0)
+    light_only: list[str] | None = Field(default=None, description=(
+        "render a LIGHT pass instead: only these lights on, world and emission off, opaque film, every mesh visible "
+        "(composited with blend 'add', e.g. an impact flash lighting the scene)"))
 
 
 class LayerTrigger(Model):
@@ -35,6 +38,8 @@ class ProtectionRule(Model):
     authored_speed_widths: float | None = Field(default=None, gt=0)
     dilate_frames: int = Field(default=1, ge=0)
     raw_retention_below: float | None = Field(default=None, gt=0, le=1)
+    include_frames: list[int] = Field(default=[], description="output frames always protected (e.g. the whole shot, "
+                                                              "so the weapon never switches source mid-shot)")
 
 
 class CompositeLayer(Model):
@@ -51,6 +56,12 @@ class CompositeLayer(Model):
     grade: Literal["none", "per_channel_gain"] = "none"
     ghost_suppression: bool = Field(default=False, description="inpaint raw generated remnants of the protected "
                                                                "object near its authored path in protected frames")
+    ghost_mode: Literal["outside_core", "under_layer"] = Field(default="outside_core", description=(
+        "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's "
+        "partial alpha, so a semi-transparent motion-blurred weapon never shows the raw one through"))
+    ghost_colors: list[str] = Field(default=[], description="extra colour rules counted as raw remnants (e.g. ember "
+                                                            "for an orange-tinted raw weapon)")
+    blend: Literal["over", "add"] = "over"
 
     @model_validator(mode="after")
     def _kind_fields(self) -> "CompositeLayer":
@@ -60,6 +71,10 @@ class CompositeLayer(Model):
             raise ValueError(f"layer {self.id}: protected geometry needs a protection rule")
         if self.kind == "effect" and (self.trigger is None or self.duration_frames is None):
             raise ValueError(f"layer {self.id}: an effect needs a trigger and a duration")
+        if self.kind == "protected_geometry" and self.blend != "over":
+            raise ValueError(f"layer {self.id}: protected geometry is composited 'over'")
+        if self.render.light_only and self.blend != "add":
+            raise ValueError(f"layer {self.id}: a light-only pass is composited with blend 'add'")
         return self
 
 

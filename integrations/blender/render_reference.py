@@ -10,6 +10,8 @@ Blender rendered. A sidecar render_reference.json records the settings, the Blen
 the SHA-256 of both outputs. Needs ffmpeg on PATH. Replaces the ad-hoc reference renders used up to M2-A.
 --motion-blur SHUTTER (frames, centred) renders a matched motion-blur reference instead: DIR/<name>.mp4 + <name>.json,
 no first frame (M3-A: separates legitimate blur of fast motion from generative ghosting).
+--first-frame-samples N (showcase on) re-renders frame 1 alone at N samples as first_frame.png (same scene, camera and
+frame, so the alignment is exact; only the noise differs from the preview's frame 0).
 """
 
 from __future__ import annotations
@@ -53,7 +55,7 @@ def use_gpu(device_type: str) -> list[str]:
 
 
 def render(out_dir: str, samples: int, device_type: str, keep_frames: bool, motion_blur: float | None = None,
-           name: str = "reference_preview") -> dict:
+           name: str = "reference_preview", first_frame_samples: int | None = None) -> dict:
     scene = bpy.context.scene
     devices = use_gpu(device_type)
     scene.render.engine = "CYCLES"
@@ -90,7 +92,16 @@ def render(out_dir: str, samples: int, device_type: str, keep_frames: bool, moti
         raise RuntimeError(f"rendered {len(frames)} frames, expected {expected}")
 
     first = os.path.join(out_dir, "first_frame.png")
-    if not motion_blur:
+    first_seconds = None
+    if not motion_blur and first_frame_samples:
+        scene.cycles.samples = first_frame_samples
+        scene.frame_set(scene.frame_start)
+        scene.render.filepath = first
+        t1 = time.perf_counter()
+        bpy.ops.render.render(write_still=True)
+        first_seconds = round(time.perf_counter() - t1, 1)
+        scene.cycles.samples = samples
+    elif not motion_blur:
         shutil.copyfile(frames[0], first)
     preview = os.path.join(out_dir, f"{name}.mp4")
     exe = shutil.which("ffmpeg")
@@ -115,7 +126,8 @@ def render(out_dir: str, samples: int, device_type: str, keep_frames: bool, moti
             "reference_preview": {"file": f"{name}.mp4", "codec": "libx264rgb -qp 0 (lossless, rgb24)",
                                   "sha256": sha256(preview)}}
     if not motion_blur:
-        meta["first_frame"] = {"file": "first_frame.png", "blender_frame": scene.frame_start, "sha256": sha256(first)}
+        meta["first_frame"] = {"file": "first_frame.png", "blender_frame": scene.frame_start, "sha256": sha256(first),
+                               "samples": first_frame_samples or samples, "render_seconds": first_seconds}
     common.write_json(os.path.join(out_dir, "render_reference.json" if not motion_blur else f"{name}.json"), meta)
     print(f"[oc] reference rendered: {len(frames)} frames in {seconds:.1f} s on {devices} -> {out_dir}")
     return meta
@@ -130,9 +142,11 @@ def main() -> None:
     p.add_argument("--motion-blur", type=float, default=None, help="shutter in frames (e.g. 0.5); default off")
     p.add_argument("--name", default=None, help="output basename (default reference_preview, or "
                                                  "reference_motionblur with --motion-blur)")
+    p.add_argument("--first-frame-samples", type=int, default=None, help="render first_frame.png separately at N "
+                                                                          "samples (default: frame 0 of the preview)")
     a = p.parse_args(common.script_args())
     name = a.name or ("reference_motionblur" if a.motion_blur else "reference_preview")
-    render(a.out_dir, a.samples, a.device, a.keep_frames, a.motion_blur, name)
+    render(a.out_dir, a.samples, a.device, a.keep_frames, a.motion_blur, name, a.first_frame_samples)
 
 
 if __name__ == "__main__":

@@ -413,3 +413,198 @@ def spikes(center, radius, mat, count=10, length=0.17, r=0.06, seed=3):
         az = math.atan2(d[1], d[0])
         out.append(tapered(r, 0.0, length, loc, mat, rot=(0.0, ang, az), verts=12, subdiv=0))
     return out
+
+
+# --- showcase additions (2026-10-03; the M3-A functions above are unchanged) ----------------------------------
+
+
+def creature_skin(name, base, dark, cavity=(0.05, 0.01, 0.008), sss_radius=(1.0, 0.3, 0.15), sss=0.3, rough=0.46,
+                  muscle=4.0, pores=60.0):
+    """Skin with cavity darkening (AO) and a little sheen, for sculpted metaball bodies."""
+    mat, nt, bsdf = _material(name)
+    co = _coords(nt)
+    n1 = _new(nt, "ShaderNodeTexNoise", Scale=muscle, Detail=5.0, Roughness=0.55)
+    n2 = _new(nt, "ShaderNodeTexNoise", Scale=pores, Detail=2.0)
+    for n in (n1, n2):
+        nt.links.new(co, n.inputs["Vector"])
+    col = _ramp(nt, n1.outputs["Fac"], dark, base, (0.3, 0.72))
+    ao = nt.nodes.new("ShaderNodeAmbientOcclusion")
+    ao.inputs["Distance"].default_value = 0.12
+    cav = _ramp(nt, ao.outputs["AO"], cavity, (1.0, 1.0, 1.0), (0.35, 0.95))
+    c = _mul(nt, col.outputs["Color"], cav.outputs["Color"])
+    nt.links.new(c.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Subsurface Weight"].default_value = sss
+    bsdf.inputs["Subsurface Radius"].default_value = sss_radius
+    bsdf.inputs["Subsurface Scale"].default_value = 0.05
+    bsdf.inputs["Roughness"].default_value = rough
+    bsdf.inputs["Sheen Weight"].default_value = 0.15
+    b1 = _bump(nt, n1.outputs["Fac"], 0.3, 0.04)
+    b2 = _bump(nt, n2.outputs["Fac"], 0.1, 0.003, b1.outputs["Normal"])
+    nt.links.new(b2.outputs["Normal"], bsdf.inputs["Normal"])
+    return mat
+
+
+def worn_metal(name, color, wear=(0.55, 0.52, 0.48), rough=(0.32, 0.6), grime=0.45, hammered=25.0):
+    """Dark worn metal: brighter scuffed edges (pointiness), grime in cavities (AO), hammered bump."""
+    mat, nt, bsdf = _material(name)
+    co = _coords(nt)
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    edge = _ramp(nt, geo.outputs["Pointiness"], (0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.52, 0.62))
+    mix = nt.nodes.new("ShaderNodeMixRGB")
+    nt.links.new(edge.outputs["Color"], mix.inputs["Fac"])
+    mix.inputs["Color1"].default_value = (*color, 1.0)
+    mix.inputs["Color2"].default_value = (*wear, 1.0)
+    ao = nt.nodes.new("ShaderNodeAmbientOcclusion")
+    ao.inputs["Distance"].default_value = 0.08
+    g = _ramp(nt, ao.outputs["AO"], (grime, grime * 0.9, grime * 0.8), (1.0, 1.0, 1.0), (0.3, 0.95))
+    c = _mul(nt, mix.outputs["Color"], g.outputs["Color"])
+    nt.links.new(c.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Metallic"].default_value = 1.0
+    n = _new(nt, "ShaderNodeTexNoise", Scale=12.0, Detail=6.0)
+    vor = _new(nt, "ShaderNodeTexVoronoi", Scale=hammered)
+    for t in (n, vor):
+        nt.links.new(co, t.inputs["Vector"])
+    r = _ramp(nt, n.outputs["Fac"], (rough[0],) * 3, (rough[1],) * 3)
+    nt.links.new(r.outputs["Color"], bsdf.inputs["Roughness"])
+    b = _bump(nt, vor.outputs["Distance"], 0.2, 0.008)
+    nt.links.new(b.outputs["Normal"], bsdf.inputs["Normal"])
+    return mat
+
+
+def gradient_bone(name, root, tip, rough=0.42, rings=18.0):
+    """Horn / tusk: colour from `root` to `tip` along the tube's UV V (0 root -> 1 tip), growth rings as bump."""
+    mat, nt, bsdf = _material(name)
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(uv.outputs["UV"], sep.inputs["Vector"])
+    col = _ramp(nt, sep.outputs["Y"], root, tip, (0.05, 0.85))
+    noise = _new(nt, "ShaderNodeTexNoise", Scale=30.0, Detail=4.0)
+    nt.links.new(_coords(nt), noise.inputs["Vector"])
+    streak = _ramp(nt, noise.outputs["Fac"], (0.78, 0.76, 0.72), (1.0, 1.0, 1.0), (0.3, 0.7))
+    c = _mul(nt, col.outputs["Color"], streak.outputs["Color"])
+    nt.links.new(c.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = rough
+    wave = _new(nt, "ShaderNodeTexWave", Scale=rings, Distortion=1.5)
+    wave.bands_direction = "Y"
+    nt.links.new(uv.outputs["UV"], wave.inputs["Vector"])
+    b = _bump(nt, wave.outputs["Fac"], 0.3, 0.006)
+    nt.links.new(b.outputs["Normal"], bsdf.inputs["Normal"])
+    return mat
+
+
+def fire(name, color=(1.0, 0.42, 0.08), core=(1.0, 0.82, 0.45), strength=18.0, scale=4.0, mask=(-0.15, 0.25)):
+    """A still flame: emission from a noise-broken vertical gradient (generated coords, z up), transparent outside."""
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(_coords(nt, "Generated"), sep.inputs["Vector"])
+    noise = _new(nt, "ShaderNodeTexNoise", Scale=scale, Detail=6.0, Distortion=1.2)
+    nt.links.new(_coords(nt), noise.inputs["Vector"])
+    fall = nt.nodes.new("ShaderNodeMath")
+    fall.operation = "SUBTRACT"
+    nt.links.new(noise.outputs["Fac"], fall.inputs[0])
+    nt.links.new(sep.outputs["Z"], fall.inputs[1])
+    mask = _ramp(nt, fall.outputs["Value"], (0.0, 0.0, 0.0), (1.0, 1.0, 1.0), mask)
+    hue = _ramp(nt, fall.outputs["Value"], color, core, (0.0, 0.45))
+    em = nt.nodes.new("ShaderNodeEmission")
+    em.inputs["Strength"].default_value = strength
+    nt.links.new(hue.outputs["Color"], em.inputs["Color"])
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(mask.outputs["Color"], mix.inputs[0])
+    nt.links.new(tr.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(em.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def _unit(v):
+    n = math.sqrt(sum(c * c for c in v))
+    return tuple(c / n for c in v)
+
+
+def dusk_world(scene, horizon=(0.95, 0.42, 0.20), mid=(0.42, 0.26, 0.28), zenith=(0.08, 0.08, 0.13), strength=0.45,
+               sun_dir=(0.46, 0.80, 0.37), glow=(1.0, 0.55, 0.25), glow_power=24.0, glow_strength=2.5):
+    """Low-key dusk sky: warm horizon -> dusky band -> dark zenith, plus a warm glow around `sun_dir` (pointing
+    TOWARD the sun)."""
+    world = scene.world or bpy.data.worlds.new("World")
+    scene.world = world
+    world.use_nodes = True
+    nt = world.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputWorld")
+    bg = nt.nodes.new("ShaderNodeBackground")
+    bg.inputs["Strength"].default_value = strength
+    co = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(co.outputs["Generated"], sep.inputs["Vector"])
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    els = ramp.color_ramp.elements
+    els[0].position, els[0].color = 0.0, (*horizon, 1.0)
+    els[1].position, els[1].color = 0.55, (*zenith, 1.0)
+    band = els.new(0.12)
+    band.color = (*mid, 1.0)
+    nt.links.new(sep.outputs["Z"], ramp.inputs["Fac"])
+    dot = nt.nodes.new("ShaderNodeVectorMath")
+    dot.operation = "DOT_PRODUCT"
+    nt.links.new(co.outputs["Generated"], dot.inputs[0])
+    dot.inputs[1].default_value = _unit(sun_dir)
+    clamp = nt.nodes.new("ShaderNodeMath")
+    clamp.operation = "MAXIMUM"
+    nt.links.new(dot.outputs["Value"], clamp.inputs[0])
+    clamp.inputs[1].default_value = 0.0
+    pw = nt.nodes.new("ShaderNodeMath")
+    pw.operation = "POWER"
+    nt.links.new(clamp.outputs["Value"], pw.inputs[0])
+    pw.inputs[1].default_value = glow_power
+    gs = nt.nodes.new("ShaderNodeMath")
+    gs.operation = "MULTIPLY"
+    nt.links.new(pw.outputs["Value"], gs.inputs[0])
+    gs.inputs[1].default_value = glow_strength
+    add = nt.nodes.new("ShaderNodeMixRGB")
+    add.blend_type = "ADD"
+    nt.links.new(gs.outputs["Value"], add.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], add.inputs["Color1"])
+    add.inputs["Color2"].default_value = (*glow, 1.0)
+    nt.links.new(add.outputs["Color"], bg.inputs["Color"])
+    nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
+    return world
+
+
+def look_euler(direction):
+    """Euler (XYZ) pointing an object's local -Z along `direction` (lights, cameras)."""
+    from mathutils import Vector
+
+    return Vector(direction).to_track_quat("-Z", "Y").to_euler()
+
+
+def area_light(scene, name, location, target, energy, color, size, collection=None):
+    light = bpy.data.objects.new(name, bpy.data.lights.new(name, "AREA"))
+    light.data.energy, light.data.color, light.data.size = energy, color, size
+    light.location = location
+    light.rotation_euler = look_euler([t - l for t, l in zip(target, location)])
+    (collection or scene.collection).objects.link(light)
+    return light
+
+
+def point_light(scene, name, location, energy, color, radius=0.15, collection=None):
+    light = bpy.data.objects.new(name, bpy.data.lights.new(name, "POINT"))
+    light.data.energy, light.data.color, light.data.shadow_soft_size = energy, color, radius
+    light.location = location
+    (collection or scene.collection).objects.link(light)
+    return light
+
+
+def sun_light(scene, name, elevation_deg, heading_deg, energy, color, angle_deg=1.2):
+    """A sun whose light travels at `elevation_deg` below the horizon toward heading `heading_deg` (rotation about
+    world Z of the +Y direction)."""
+    sun = bpy.data.objects.new(name, bpy.data.lights.new(name, "SUN"))
+    sun.data.energy, sun.data.color, sun.data.angle = energy, color, math.radians(angle_deg)
+    sun.rotation_euler = (math.radians(90.0 - elevation_deg), 0.0, math.radians(heading_deg))
+    scene.collection.objects.link(sun)
+    return sun

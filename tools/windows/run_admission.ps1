@@ -7,6 +7,8 @@
 # InputDir must contain first_frame.png, depth_control.mp4 and depth_control.json (make_controls.py sidecar); it is
 # passed to ComfyUI as --input-directory. Their SHA-256 (and the workflow's) are recorded as monitor meta.
 # The fixed generation settings (512x320x49, 8 steps, strengths) live in the workflow and are recorded as meta here.
+# -RecordsDir (default admission_records) sends the monitor's records.jsonl and CSV elsewhere, e.g.
+# admission_records\showcase for showcase runs that are not admission experiments.
 # Kept ASCII-only for Windows PowerShell 5.1. Uses the session-only environment from oc_env.ps1.
 
 param(
@@ -18,7 +20,8 @@ param(
     [string]$Sysmem = "driver-default",
     [string]$ComfyFlags = "",
     [string[]]$Meta = @(),
-    [string]$Notes = "n/a"
+    [string]$Notes = "n/a",
+    [string]$RecordsDir = "admission_records"
 )
 $ErrorActionPreference = "Stop"
 $Repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -50,7 +53,9 @@ $MetaArgs = @("workflow=$Workflow", "workflow_sha256=$(Get-Sha256 $WorkflowPath)
               "comfy_flags=$FlagMeta", "output_dir=$OutDir", "comfy_report=$OutDir\report.json")
 foreach ($m in $Meta) { $MetaArgs += ($m -split ',') }
 
-& uv run python tools\admission\monitor.py --label $Label --interval 1 --out-dir "$Repo\admission_records" `
+$RecordsPath = Join-Path $Repo $RecordsDir
+New-Item -ItemType Directory -Force $RecordsPath | Out-Null
+& uv run python tools\admission\monitor.py --label $Label --interval 1 --out-dir $RecordsPath `
     --meta @MetaArgs --notes $Notes -- `
     "$Repo\.venv\Scripts\python.exe" tools\admission\comfy_run.py --workflow $Workflow `
     --repeat $Repeat --seed "8/noise_seed=$Seed" --timeout 3600 --ready-timeout 900 `

@@ -223,6 +223,14 @@ def test_m3a_finished_look_colour_masks():
     assert cd.color_mask(px, "red")[0, 1:3].all() and not cd.color_mask(px, "cyan").any()
 
 
+def test_ember_rule_catches_orange_raw_remnants_not_stone_or_skin():
+    # M3-A raw f26-27 remnants (warm, just outside gold_deep), dark gold, flagstones, sunlit stone, crimson skin
+    px = np.array([[(188, 124, 56), (149, 93, 45), (132, 79, 13), (129, 95, 64), (200, 170, 130), (159, 48, 25)]],
+                  np.uint8)
+    assert cd.color_mask(px, "ember").tolist() == [[True, True, True, False, False, False]]
+    assert not cd.color_mask(px, "gold_deep")[0, :2].any()      # the remnants that gold_deep alone missed
+
+
 def landmark(points):
     return [{"cx": float(x), "cy": float(y), "area_px": 900} for x, y in points]
 

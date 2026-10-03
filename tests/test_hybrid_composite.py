@@ -52,3 +52,12 @@ def test_authored_protection_trigger_and_attachment():
     mask[20, 30] = True
     assert hc.nearest_distance((26.0, 20.0), mask) == 4.0
     assert hc.nearest_distance((0.0, 0.0), np.zeros((50, 50), bool)) is None
+
+
+def test_additive_light_pass():
+    base = np.full((1, 2, 3), 200, np.uint8)
+    light = np.zeros((1, 2, 4), np.uint8)
+    light[0, 0] = (40, 80, 120, 255)
+    out = hc.apply_effect(base, light, "add")
+    assert out[0, 0].tolist() == [240, 255, 255] and out[0, 1].tolist() == [200, 200, 200]   # clipped at 255
+    assert hc.apply_effect(base, light, "over")[0, 0].tolist() == [40, 80, 120]

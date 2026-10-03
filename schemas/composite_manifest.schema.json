@@ -3,6 +3,15 @@
     "CompositeLayer": {
       "additionalProperties": false,
       "properties": {
+        "blend": {
+          "default": "over",
+          "enum": [
+            "over",
+            "add"
+          ],
+          "title": "Blend",
+          "type": "string"
+        },
         "collections": {
           "default": [],
           "description": "view-layer collections enabled for this layer only",
@@ -24,6 +33,25 @@
           ],
           "default": null,
           "title": "Duration Frames"
+        },
+        "ghost_colors": {
+          "default": [],
+          "description": "extra colour rules counted as raw remnants (e.g. ember for an orange-tinted raw weapon)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ghost Colors",
+          "type": "array"
+        },
+        "ghost_mode": {
+          "default": "outside_core",
+          "description": "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's partial alpha, so a semi-transparent motion-blurred weapon never shows the raw one through",
+          "enum": [
+            "outside_core",
+            "under_layer"
+          ],
+          "title": "Ghost Mode",
+          "type": "string"
         },
         "ghost_suppression": {
           "default": false,
@@ -90,6 +118,7 @@
           "$ref": "#/$defs/LayerRender",
           "default": {
             "holdout_others": true,
+            "light_only": null,
             "motion_blur_shutter": 0.5,
             "samples": 64
           }
@@ -121,6 +150,22 @@
           "default": true,
           "title": "Holdout Others",
           "type": "boolean"
+        },
+        "light_only": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "render a LIGHT pass instead: only these lights on, world and emission off, opaque film, every mesh visible (composited with blend 'add', e.g. an impact flash lighting the scene)",
+          "title": "Light Only"
         },
         "motion_blur_shutter": {
           "anyOf": [
@@ -202,6 +247,15 @@
           "minimum": 0,
           "title": "Dilate Frames",
           "type": "integer"
+        },
+        "include_frames": {
+          "default": [],
+          "description": "output frames always protected (e.g. the whole shot, so the weapon never switches source mid-shot)",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Include Frames",
+          "type": "array"
         },
         "raw_retention_below": {
           "anyOf": [
