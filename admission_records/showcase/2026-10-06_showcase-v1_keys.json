@@ -1,0 +1,44 @@
+{
+  "control_render": "812d35191bf30a0f36bcc2b30b8a27669fb93c5571f01e6861b28edc97b918b2",
+  "generation": "ef0a395a5ed32f78db531f10ebc3ae594f444487ef676a0fe533620efcc6b1c7",
+  "inputs": {
+    "control_render": {
+      "scene": "f492208b67e6bc1409831144bacd1d5c1aa8452cc7a19ef38aa08886e325de10",
+      "camera": "6875ec55bef0078e5a0b924f33f904111892f457cf760b3a9b528a0a33f19947",
+      "choreography": "31b9b3e3bb5219e736e809bd678ea931f1f3a043cea9a36660d8a0432c251364",
+      "timewarp": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "49/24",
+          "49/24"
+        ]
+      ],
+      "control_export_settings": "9187cb24faa8b40e1cf42826e5bb9be31b8b92146ef58318ece3a7f3f03f93ae"
+    },
+    "generation": {
+      "control_render": "812d35191bf30a0f36bcc2b30b8a27669fb93c5571f01e6861b28edc97b918b2",
+      "references": {
+        "first_frame": "fe9850d0ca9e16b4c0814f50516aab904d38eef40a2c0c3e8872249e1e9c364f"
+      },
+      "backend_profile": "2e082cbdd7c62ce7c2994031cbff0baf1fc2238cb351fa8750f59bd7fd8139d7",
+      "prompt": [
+        "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears heavy layered black iron pauldrons with spikes, crossed leather chest straps with a bronze medallion, a leather belt, a dark loincloth with leather tassets and iron greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain.",
+        ""
+      ],
+      "seed": 1000,
+      "generation_settings": "4dcc8aaab3e1ea53cad7e3db150bdb1f948f5217ad4c6ecde03fd1e1dbf53f16"
+    }
+  },
+  "provenance": "computed",
+  "sources": {
+    "spec": "G:\\onecreations\\renders\\showcase_v1\\shot_spec_generation.json",
+    "bundle": "G:\\onecreations\\renders\\showcase_v1\\export",
+    "bundle_content_sha256": "2bcd76405d0775fc002941642932eabd1f36db70933cda14993caac24f76f494",
+    "workflow": "workflows\\ltx25\\showcase_v1_api.json",
+    "workflow_sha256": "9d08be3077904c4fd3d892d78f319a091a9a4f33b427aa2ed119cd22f5fc4989",
+    "first_frame_sha256": "fe9850d0ca9e16b4c0814f50516aab904d38eef40a2c0c3e8872249e1e9c364f"
+  }
+}

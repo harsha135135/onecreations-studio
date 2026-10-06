@@ -1,0 +1,36 @@
+{
+  "constraints": {
+    "minimum_clearance_m": 1.0,
+    "preserve_roll": true
+  },
+  "coordinate_system": "blender_z_up",
+  "duration": "49/24",
+  "id": "showcase_orbit_push_in_v1",
+  "intrinsics": {
+    "clip_end": 300.0,
+    "clip_start": 0.1,
+    "lens_mm": 32.0,
+    "resolution_percentage": 100,
+    "resolution_x": 768,
+    "resolution_y": 448,
+    "sensor_fit": "AUTO",
+    "sensor_height_mm": 24.0,
+    "sensor_width_mm": 36.0
+  },
+  "pose_convention": "camera_to_world",
+  "provenance": {
+    "confidence": "verified_in_scene",
+    "notes": "showcase v1: M2-C/M3-A-family orbit + push-in, recomposed for 768x448",
+    "scale": "metric_verified",
+    "source": "authored"
+  },
+  "rotation_format": "quaternion_wxyz",
+  "schema_version": 1,
+  "target_bindings": [
+    "sc_asura.chest",
+    "impact_point"
+  ],
+  "trajectory": "camera_motion.npz",
+  "trajectory_sha256": "70c866a919366dfe011afe1e3e38a3fc7551603e22d21a326b69a2e9af16f85d",
+  "units": "meters"
+}

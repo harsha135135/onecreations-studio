@@ -140,6 +140,7 @@ Per-phase timings for each run are in `admission_records/2026-10-02_<label>_comf
 - Moving-camera shots (M2-C on): the scene spec's `tracking` adds static landmarks with `trajectory` checks, a shot-level `parallax` check, the camera contract (exported vs authored `CameraMotion`) and clearance (exact Blender distances + `camera.retarget.clearance_report`); generated viewpoint evidence is image-space only.
 - Same-shot comparisons across output sizes: `tools/admission/resolution_compare.py` reports the guide grid, the weapon's size and motion in px and in guide cells, and the per-frame generated/reference retention (M2-B 768×448, 2026-10-03).
 - From M2-B on, `first_frame.png` and `reference_preview.mp4` come from `integrations/blender/render_reference.py` (Cycles OptiX, 64 spp, seed 0, lossless preview, sidecar with hashes).
+- Showcase runs (not admission experiments): `run_admission.ps1 -RecordsDir admission_records\showcase` keeps their telemetry out of the admission `records.jsonl`; see `docs/measurements/2026-10-03-showcase-v1.md`.
 - Integration shots (M3-A on):
   - Classification is two-axis (CONTROL on the raw output, APPEARANCE vs the blockout baselines) plus hybrid usability, all pre-registered in the spec.
   - Deterministic layers are declared in the spec's `layers` section (`CompositeManifest`) and rendered with `integrations/blender/render_layers.py` (holdouts, transparent film, motion blur).

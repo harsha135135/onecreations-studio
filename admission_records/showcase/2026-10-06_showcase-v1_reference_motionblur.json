@@ -1,0 +1,35 @@
+{
+  "adaptive_sampling": false,
+  "blender": "4.5.14 LTS",
+  "denoiser": "OPENIMAGEDENOISE (CPU)",
+  "device": "OPTIX",
+  "devices_used": [
+    "NVIDIA GeForce RTX 4070 (OPTIX)"
+  ],
+  "engine": "CYCLES",
+  "exposure": -0.699999988079,
+  "fps": "24/1",
+  "frames": [
+    1,
+    49
+  ],
+  "look": "AgX - High Contrast",
+  "motion_blur": {
+    "position": "CENTER",
+    "shutter": 0.5
+  },
+  "reference_preview": {
+    "codec": "libx264rgb -qp 0 (lossless, rgb24)",
+    "file": "reference_motionblur.mp4",
+    "sha256": "78ffbdc58507a44e311c1e86a930f019a1a9a68f7fe7bd83ab548e21f365c428"
+  },
+  "render_seconds": 263.7,
+  "resolution": [
+    768,
+    448
+  ],
+  "samples": 256,
+  "seed": 0,
+  "source_file": "showcase_v1.blend",
+  "view_transform": "AgX"
+}

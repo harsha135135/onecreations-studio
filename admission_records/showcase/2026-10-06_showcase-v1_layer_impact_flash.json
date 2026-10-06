@@ -1,0 +1,45 @@
+{
+  "blender": "4.5.14 LTS",
+  "denoiser": "OPENIMAGEDENOISE (CPU)",
+  "devices_used": [
+    "NVIDIA GeForce RTX 4070 (OPTIX)"
+  ],
+  "emission": "0",
+  "exposure": -0.699999988079,
+  "files": 5,
+  "film_transparent": false,
+  "frames": [
+    30,
+    34
+  ],
+  "kind": "effect",
+  "layer": "impact_flash",
+  "light_pass": true,
+  "lights_off": [
+    "sc_coolrim",
+    "sc_fill",
+    "sc_fire_light0",
+    "sc_fire_light1",
+    "sc_fire_light2",
+    "sc_fire_light3",
+    "sc_firekey",
+    "sc_sanctum",
+    "sc_sun"
+  ],
+  "lights_on": [
+    "fx_flash_light"
+  ],
+  "look": "AgX - High Contrast",
+  "motion_blur_position": null,
+  "motion_blur_shutter": null,
+  "render_seconds": 8.9,
+  "samples": 96,
+  "scene_frames": [
+    1,
+    49
+  ],
+  "seed": 0,
+  "source_file": "showcase_v1.blend",
+  "view_transform": "AgX",
+  "world": "strength 0"
+}

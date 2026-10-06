@@ -61,3 +61,12 @@ def test_additive_light_pass():
     out = hc.apply_effect(base, light, "add")
     assert out[0, 0].tolist() == [240, 255, 255] and out[0, 1].tolist() == [200, 200, 200]   # clipped at 255
     assert hc.apply_effect(base, light, "over")[0, 0].tolist() == [40, 80, 120]
+
+
+def test_soften_premultiplied_keeps_colour_and_spreads_alpha():
+    layer = np.zeros((9, 9, 4), np.uint8)
+    layer[4, 4] = (200, 100, 50, 255)
+    out = hc.soften(layer, 1.0)
+    assert out[4, 4, 3] < 255 and out[4, 5, 3] > 0 and out[0, 0, 3] == 0
+    assert out[4, 5, :3].tolist() == [200, 100, 50]            # no dark fringe: colour kept where alpha spreads
+    assert np.array_equal(hc.soften(layer, 0.0), layer)

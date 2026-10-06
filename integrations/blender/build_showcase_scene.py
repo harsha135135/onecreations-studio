@@ -504,6 +504,7 @@ def upgrade_temple(m, scene):
             flames.append(fl)
         flame = temple.join(flames, f"sc_flame{k}")
         flame.visible_shadow = False
+        flame["oc_exclude_from_passes"] = True                    # transparent flame: no meaningful depth
         lights.append(lk.point_light(scene, f"sc_fire_light{k}", (bx, by, 1.75), LOOK["fire"], (1.0, 0.45, 0.16),
                                      radius=0.25))
     tag_all(braziers, "sc_braziers", 14)
@@ -524,9 +525,14 @@ def upgrade_temple(m, scene):
         if abs(abs(x) - temple.PILLAR_X) < 0.7 and -2.6 < y < 6.1:
             continue
         r = rng.uniform(0.04, 0.16)
-        st = ch.metaball_mesh(f"sc_stone{len(stones)}", [ch.ell((x, y, r * 0.35), (r, r * rng.uniform(0.6, 1.0), r * 0.55),
-                                                                rot_deg=(0, 0, rng.uniform(0, 180)))],
-                              m["stone"], resolution=max(0.012, r / 5), smooth_iters=1)
+        bpy.ops.mesh.primitive_ico_sphere_add(radius=1.0, subdivisions=1, location=(x, y, r * 0.3))
+        st = bpy.context.active_object
+        for v in st.data.vertices:                                  # angular rubble, not pebbles
+            v.co *= rng.uniform(0.65, 1.2)
+        st.scale = (r, r * rng.uniform(0.6, 1.0), r * rng.uniform(0.4, 0.7))
+        st.rotation_euler = (rng.uniform(-0.3, 0.3), rng.uniform(-0.3, 0.3), rng.uniform(0, math.pi))
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+        st.data.materials.append(m["stone"])
         stones.append(st)
     tag_all(stones, "sc_debris", 16)
     door_y = py + 0.6 - 1.8 - 0.05
@@ -576,8 +582,8 @@ def _dust_volume():
         nt.nodes.remove(n)
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     vol = nt.nodes.new("ShaderNodeVolumePrincipled")
-    vol.inputs["Color"].default_value = (0.50, 0.42, 0.33, 1.0)
-    vol.inputs["Anisotropy"].default_value = 0.3
+    vol.inputs["Color"].default_value = (0.84, 0.74, 0.60, 1.0)          # light dust that catches the backlight
+    vol.inputs["Anisotropy"].default_value = 0.5
     noise = nt.nodes.new("ShaderNodeTexNoise")
     noise.inputs["Scale"].default_value = 3.5
     noise.inputs["Detail"].default_value = 6.0
@@ -597,6 +603,12 @@ def _dust_volume():
     nt.links.new(shaped.outputs["Value"], dens.inputs[0])
     dens.name = "fx_density"
     nt.links.new(dens.outputs["Value"], vol.inputs["Density"])
+    glow = nt.nodes.new("ShaderNodeMath")                 # faint warm self-light ~ density (ambient + fire bounce)
+    glow.operation = "MULTIPLY"
+    nt.links.new(dens.outputs["Value"], glow.inputs[0])
+    glow.inputs[1].default_value = 0.22
+    vol.inputs["Emission Color"].default_value = (1.0, 0.78, 0.55, 1.0)
+    nt.links.new(glow.outputs["Value"], vol.inputs["Emission Strength"])
     nt.links.new(vol.outputs["Volume"], out.inputs["Volume"])
     return mat, dens.inputs[1]
 
@@ -710,7 +722,7 @@ def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
 
     for f in range(scene.frame_start, scene.frame_end + 1):
         t = (f - start_frame) / FPS
-        dens.default_value = 0.0 if t < 0 else 9.0 * math.exp(-t / 0.55)
+        dens.default_value = 0.0 if t < 0 else 1.6 * math.exp(-t / 0.6)
         dens.keyframe_insert("default_value", frame=f)
         crack_on.default_value = 0.0 if t < 0 else 1.0
         crack_on.keyframe_insert("default_value", frame=f)
@@ -760,13 +772,14 @@ def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
             for kp in fc.keyframe_points:
                 kp.interpolation = "CONSTANT"
     bpy.context.view_layer.layer_collection.children["fx_impact"].exclude = True
+    scene.cycles.volume_bounces = 2                       # light dust volumes need multiple scattering
 
     flash = bpy.data.collections.new("fx_flash")
     scene.collection.children.link(flash)
     light = lk.point_light(scene, "fx_flash_light", (px, py, 0.4), 0.0, (1.0, 0.62, 0.32), radius=0.3, collection=flash)
     for f in range(scene.frame_start, scene.frame_end + 1):
         k = f - start_frame
-        light.data.energy = {0: 5000.0, 1: 2400.0, 2: 900.0, 3: 300.0, 4: 80.0}.get(k, 0.0)
+        light.data.energy = {0: 2200.0, 1: 1100.0, 2: 420.0, 3: 140.0, 4: 40.0}.get(k, 0.0)
         light.data.keyframe_insert("energy", frame=f)
     for fc in light.data.animation_data.action.fcurves:
         for kp in fc.keyframe_points:
@@ -789,12 +802,15 @@ def proxies() -> list[dict]:
 
 def layers_manifest() -> dict:
     blur = {"holdout_others": True, "motion_blur_shutter": 0.5, "samples": 128}
+    weapon = dict(blur, motion_blur_shutter=0.25)       # 90 deg: directional streak, head stays solid (showcase choice)
     return {"schema_version": 1, "id": "showcase_v1_layers", "shot": "showcase_v1", "layers": [
         {"id": "mace_protect", "kind": "protected_geometry", "objects": ["sc_mace_head", "sc_mace_shaft"],
-         "render": blur, "occlusion": "holdout", "order": 0, "grade": "per_channel_gain",
-         "ghost_suppression": True, "ghost_mode": "under_layer", "ghost_colors": ["ember"],
+         "render": weapon, "occlusion": "holdout", "order": 0, "grade": "per_channel_gain",
+         "ghost_suppression": True, "ghost_mode": "swept_band", "ghost_fill": "temporal", "ghost_band_px": 8,
+         "ghost_keep_objects": ["sc_asura"],          # the defender is static: temporal fill is safe on him
+         "soften_px": 0.7,                            # match LTX's softness (the layer is a crisp Cycles render)
          "protection": {"track_object": "sc_mace_head", "authored_speed_widths": 0.5, "dilate_frames": 1,
-                        "raw_retention_below": 0.5, "include_frames": list(range(FRAMES))}},
+                        "raw_retention_below": None, "include_frames": list(range(FRAMES))}},   # colour-blind look
         {"id": "impact_fx", "kind": "effect", "collections": ["fx_impact"], "render": blur, "occlusion": "holdout",
          "order": 1, "trigger": {"timeline": "sc_mace_slam_v1", "phase": "impact", "edge": "start"},
          "duration_frames": FRAMES - 29},

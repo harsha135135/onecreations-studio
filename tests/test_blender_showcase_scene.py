@@ -39,7 +39,7 @@ def test_contracts_rig_and_objects(sc):
     CameraMotion.model_validate(json.loads((sc["root"] / "camera_motion.json").read_text(encoding="utf-8")))
     ActionTimeline.model_validate(spec["choreography"]["action_timeline"])
     layers = CompositeManifest.model_validate(spec["layers"])
-    assert layers.layers[0].ghost_mode == "under_layer" and layers.layers[0].protection.include_frames == list(range(49))
+    assert layers.layers[0].ghost_mode == "swept_band" and layers.layers[0].protection.include_frames == list(range(49))
     assert layers.layers[2].render.light_only == ["fx_flash_light"] and layers.layers[2].blend == "add"
     (arm,) = m.armatures
     assert arm.oc_id == "sc_asura_rig"

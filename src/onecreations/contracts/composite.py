@@ -56,12 +56,24 @@ class CompositeLayer(Model):
     grade: Literal["none", "per_channel_gain"] = "none"
     ghost_suppression: bool = Field(default=False, description="inpaint raw generated remnants of the protected "
                                                                "object near its authored path in protected frames")
-    ghost_mode: Literal["outside_core", "under_layer"] = Field(default="outside_core", description=(
-        "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's "
-        "partial alpha, so a semi-transparent motion-blurred weapon never shows the raw one through"))
+    ghost_mode: Literal["outside_core", "under_layer", "swept_band"] = Field(default="outside_core", description=(
+        "outside_core (M3-A v1): colour-detected remnants only where the layer alpha < 0.3; under_layer (v2): also "
+        "under the layer's partial alpha; swept_band (showcase, geometric, for looks where colour cannot separate the "
+        "weapon from the background): in the authored fast frames, the weapon's authored silhouette in that frame, "
+        "dilated by ghost_band_px, outside the layer's solid core and outside ghost_keep_objects; the grade gain is "
+        "then fitted from raw pixels under the layer's solid core in the other frames"))
+    ghost_fill: Literal["diffuse", "temporal"] = Field(default="diffuse", description=(
+        "diffuse: inpaint from the surrounding pixels; temporal: copy the region from the nearest generated frame "
+        "where the weapon is not there, aligned by a small shift search (diffusion as fallback)"))
+    ghost_band_px: int = Field(default=10, ge=1, le=40)
+    ghost_keep_objects: list[str] = Field(default=[], description="oc_ids never overwritten by ghost suppression "
+                                                                  "(the actors)")
     ghost_colors: list[str] = Field(default=[], description="extra colour rules counted as raw remnants (e.g. ember "
                                                             "for an orange-tinted raw weapon)")
     blend: Literal["over", "add"] = "over"
+    soften_px: float = Field(default=0.0, ge=0, le=3, description="Gaussian sigma (px) applied to the layer "
+                                                                 "(premultiplied) before compositing, to match the "
+                                                                 "generated video's softness")
 
     @model_validator(mode="after")
     def _kind_fields(self) -> "CompositeLayer":

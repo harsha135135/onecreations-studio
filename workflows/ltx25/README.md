@@ -11,6 +11,7 @@ The model files live on the data root (`G:\onecreations\models\ltx\…`) and are
 | `m2b_strike_api.json` | M2-B articulated strike (and its retry) | same as R2 | M2-A's graph and prompt; only the output prefix changed |
 | `m2c_camera_api.json` | M2-C authored camera move | same as R2 | M2-A's graph and prompt (verbatim); only the output prefix changed |
 | `m3a_action_api.json` | M3-A controlled cinematic appearance | same as R2 | `m2b_strike_api.json` with only the prompt (cinematic appearance; no choreography or camera words, tested) and the output prefix changed |
+| `showcase_v1_api.json` | SHOWCASE v1 (not an admission run) | same as R2 | `m2b_strike_768_api.json` (768×448) with only the prompt (appearance of the showcase designs; no choreography or camera words, tested) and the output prefix changed |
 | `m2b_strike_768_api.json` | M2-B same-shot resolution comparison | same as R2 | `m2b_strike_api.json` with only `EmptyLTXVLatentVideo` 768×448 (and the output prefix) |
 | `r2d_control_diagnostic_api.json` | R2D control diagnostic | same as R2 | R2's graph with only the prompt (neutral, motion-free) and the output prefix changed; see "R2D" below |
 

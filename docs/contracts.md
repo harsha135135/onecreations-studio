@@ -36,7 +36,7 @@ a test fails if they drift). Unknown fields are errors, so typos in hand-written
 | `ExperimentRecord` | `contracts/records.py` | Validates `training/**/experiment-card*.yaml` |
 | `AdmissionRecord` | `contracts/records.py` | Validates `admission_records/records.jsonl` lines from `tools/admission/monitor.py` |
 | `ExportManifest` | `contracts/export.py` | Blender export bundle (below) |
-| `CompositeManifest` | `contracts/composite.py` | M3-A on: deterministic layers rendered from the authored scene and combined with a generated video. Each layer is `protected_geometry` (with a `ProtectionRule`: authored speed in own widths, dilation, raw-retention floor) or an `effect` (with a `LayerTrigger` on an `ActionTimeline` phase edge and a duration). It also records render settings (holdouts, motion-blur shutter, samples), `occlusion: holdout`, grading and ghost suppression. It lives in the scene spec's `layers` section, is rendered by `integrations/blender/render_layers.py` and applied by `tools/admission/hybrid_composite.py` |
+| `CompositeManifest` | `contracts/composite.py` | M3-A on: deterministic layers rendered from the authored scene and combined with a generated video. Each layer is `protected_geometry` (with a `ProtectionRule`: authored speed in own widths, dilation, raw-retention floor) or an `effect` (with a `LayerTrigger` on an `ActionTimeline` phase edge and a duration). It also records render settings (holdouts, motion-blur shutter, samples), `occlusion: holdout`, grading and ghost suppression. It lives in the scene spec's `layers` section, is rendered by `integrations/blender/render_layers.py` and applied by `tools/admission/hybrid_composite.py`. Showcase additions (all optional, M3-A records unchanged): `protection.include_frames`; `ghost_mode` `outside_core` (v1) / `under_layer` (v2) / `swept_band` (geometric, for looks where colour cannot separate the weapon); `ghost_fill` `diffuse` / `temporal`; `ghost_band_px`; `ghost_keep_objects`; `ghost_colors`; `blend` `over` / `add`; `soften_px`; `render.light_only` (an additive light pass) |
 
 ## Shot validation (`onecreations validate-shot PROJECT_DIR`)
 
@@ -78,7 +78,9 @@ is one ray through (nearly) its centre. That makes the index and depth passes ex
 Volume-only helpers (meshes whose materials have a volume and no surface shader, e.g. the M3-A haze box) are hidden
 while the passes render, because a volume scatters 1-spp rays into speckle. They are listed in
 `passes.excluded_volume_objects`, which is written only when non-empty, so bundles of scenes without volumes are unchanged
-(M3-A, 2026-10-03; Blender-tested).
+(M3-A, 2026-10-03; Blender-tested). Objects flagged with the custom property `oc_exclude_from_passes` (e.g.
+semi-transparent flames, which have no meaningful depth) are hidden the same way and listed in `passes.excluded_objects`;
+only objects actually in the rendered view layer are listed (showcase, 2026-10-06).
 
 ### Measured on the Mac (Blender 4.5.14 LTS, macOS arm64, diagnostic scene, 160×90)
 

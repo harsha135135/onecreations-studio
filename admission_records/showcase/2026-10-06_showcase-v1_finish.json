@@ -1,0 +1,44 @@
+{
+ "input": "G:\\onecreations\\renders\\showcase_v1\\composite\\hybrid.mp4",
+ "input_sha256": "33834c7f1fa669f690436c2ba77675926c6a0230d6dedfc905e2d683d6877c37",
+ "frames": 49,
+ "size": [
+  768,
+  448
+ ],
+ "params": {
+  "contrast": 1.05,
+  "brightness": 0.0,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "shadows_cool": 0.03,
+  "highlights_warm": 0.03,
+  "vignette_angle": 0.45,
+  "sharpen": 0.35,
+  "grain": 3,
+  "grain_seed": 1000,
+  "shake": [
+   [
+    29,
+    0,
+    2
+   ],
+   [
+    30,
+    -1,
+    -1
+   ],
+   [
+    31,
+    1,
+    0
+   ]
+  ]
+ },
+ "filter_chain": "eq=contrast=1.05:brightness=0.0:saturation=1.0:gamma=1.0,colorbalance=rs=-0.03:bs=0.03:rh=0.03:bh=-0.03,vignette=angle=0.45,unsharp=lx=5:ly=5:la=0.35:cx=3:cy=3:ca=0,format=yuv444p,noise=c0s=3:c0f=t:all_seed=1000",
+ "master": "showcase_v1_final_master.mp4",
+ "master_sha256": "b412f9dc235ca3e2df907b8d5a41827771b00ac3598dfb032ecdf16878652efc",
+ "view": "showcase_v1_final.mp4",
+ "view_sha256": "8248c4d3b21f23b3f85cb70795e0fe99259290c606c0148e3548497f41ea98e8",
+ "note": "post-only finish; the shake (if any) does not alter the authored camera"
+}

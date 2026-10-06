@@ -34,6 +34,13 @@
           "default": null,
           "title": "Duration Frames"
         },
+        "ghost_band_px": {
+          "default": 10,
+          "maximum": 40,
+          "minimum": 1,
+          "title": "Ghost Band Px",
+          "type": "integer"
+        },
         "ghost_colors": {
           "default": [],
           "description": "extra colour rules counted as raw remnants (e.g. ember for an orange-tinted raw weapon)",
@@ -43,12 +50,32 @@
           "title": "Ghost Colors",
           "type": "array"
         },
+        "ghost_fill": {
+          "default": "diffuse",
+          "description": "diffuse: inpaint from the surrounding pixels; temporal: copy the region from the nearest generated frame where the weapon is not there, aligned by a small shift search (diffusion as fallback)",
+          "enum": [
+            "diffuse",
+            "temporal"
+          ],
+          "title": "Ghost Fill",
+          "type": "string"
+        },
+        "ghost_keep_objects": {
+          "default": [],
+          "description": "oc_ids never overwritten by ghost suppression (the actors)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ghost Keep Objects",
+          "type": "array"
+        },
         "ghost_mode": {
           "default": "outside_core",
-          "description": "outside_core (M3-A v1): remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's partial alpha, so a semi-transparent motion-blurred weapon never shows the raw one through",
+          "description": "outside_core (M3-A v1): colour-detected remnants only where the layer alpha < 0.3; under_layer (v2): also under the layer's partial alpha; swept_band (showcase, geometric, for looks where colour cannot separate the weapon from the background): in the authored fast frames, the weapon's authored silhouette in that frame, dilated by ghost_band_px, outside the layer's solid core and outside ghost_keep_objects; the grade gain is then fitted from raw pixels under the layer's solid core in the other frames",
           "enum": [
             "outside_core",
-            "under_layer"
+            "under_layer",
+            "swept_band"
           ],
           "title": "Ghost Mode",
           "type": "string"
@@ -122,6 +149,14 @@
             "motion_blur_shutter": 0.5,
             "samples": 64
           }
+        },
+        "soften_px": {
+          "default": 0.0,
+          "description": "Gaussian sigma (px) applied to the layer (premultiplied) before compositing, to match the generated video's softness",
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Soften Px",
+          "type": "number"
         },
         "trigger": {
           "anyOf": [

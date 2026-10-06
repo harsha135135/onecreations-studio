@@ -88,6 +88,9 @@ class ExportPasses(Model):
     excluded_volume_objects: list[str] = Field(
         default=[], description="volume-only helpers (e.g. a haze box) hidden while rendering the geometric passes; "
                                 "written only when non-empty")
+    excluded_objects: list[str] = Field(
+        default=[], description="objects flagged oc_exclude_from_passes (e.g. semi-transparent flames) hidden while "
+                                "rendering the geometric passes; written only when non-empty")
 
 
 class ExportManifest(Model):

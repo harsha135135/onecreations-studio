@@ -1,0 +1,55 @@
+{
+  "actors": {
+    "asura": "sc_asura",
+    "defender": "sc_defender"
+  },
+  "contacts": [],
+  "duration": "49/24",
+  "id": "sc_mace_slam_v1",
+  "phases": [
+    {
+      "actor": "asura",
+      "end": "7/24",
+      "id": "guard",
+      "kind": "idle",
+      "start": "0"
+    },
+    {
+      "actor": "asura",
+      "end": "23/24",
+      "id": "windup",
+      "kind": "other",
+      "start": "7/24"
+    },
+    {
+      "actor": "asura",
+      "end": "29/24",
+      "id": "strike",
+      "kind": "strike",
+      "start": "23/24"
+    },
+    {
+      "actor": "asura",
+      "end": "17/12",
+      "id": "impact",
+      "kind": "impact",
+      "start": "29/24"
+    },
+    {
+      "actor": "asura",
+      "end": "2",
+      "id": "recovery",
+      "kind": "recovery",
+      "start": "17/12"
+    },
+    {
+      "actor": "defender",
+      "end": "2",
+      "id": "defender_hold",
+      "kind": "defense",
+      "start": "0"
+    }
+  ],
+  "schema_version": 1,
+  "version": "1.0.0"
+}

@@ -212,14 +212,20 @@ def export(args) -> str:
 
     exr_dir = os.path.join(out_dir, "_exr")
     fo = None
-    excluded_volumes = []
+    excluded_volumes, excluded_flagged = [], []
     if args.passes:
         os.makedirs(exr_dir, exist_ok=True)
         fo = setup_passes(scene, exr_dir, args.samples)
+        rendered = {o.name for o in bpy.context.view_layer.objects}
         for o in scene.objects:                       # passes are geometric: volume-only helpers would scatter rays
-            if common.is_volume_only(o) and not o.hide_render:
+            if o.name not in rendered or o.hide_render:
+                continue
+            if common.is_volume_only(o):
                 o.hide_render = True
                 excluded_volumes.append(o.name)
+            elif o.get("oc_exclude_from_passes"):     # e.g. semi-transparent flames: no meaningful depth
+                o.hide_render = True
+                excluded_flagged.append(o.name)
 
     cam_rows = {k: [] for k in ("c2w", "lens_mm", "shift_x", "shift_y")}
     obj_rows = {str(o["oc_id"]): [] for o in tagged}
@@ -328,6 +334,8 @@ def export(args) -> str:
         }
         if excluded_volumes:
             manifest["passes"]["excluded_volume_objects"] = sorted(excluded_volumes)
+        if excluded_flagged:
+            manifest["passes"]["excluded_objects"] = sorted(excluded_flagged)
         if not args.keep_exr:
             shutil.rmtree(exr_dir, ignore_errors=True)
     manifest["content_sha256"] = hashing.content_hash(manifest)

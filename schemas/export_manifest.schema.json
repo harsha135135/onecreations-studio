@@ -371,6 +371,15 @@
           "title": "Engine",
           "type": "string"
         },
+        "excluded_objects": {
+          "default": [],
+          "description": "objects flagged oc_exclude_from_passes (e.g. semi-transparent flames) hidden while rendering the geometric passes; written only when non-empty",
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Objects",
+          "type": "array"
+        },
         "excluded_volume_objects": {
           "default": [],
           "description": "volume-only helpers (e.g. a haze box) hidden while rendering the geometric passes; written only when non-empty",

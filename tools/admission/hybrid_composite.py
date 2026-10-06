@@ -51,6 +51,25 @@ def alpha_over(base: np.ndarray, layer_rgba: np.ndarray, gain=(1.0, 1.0, 1.0)) -
     return np.clip(rgb * a + base.astype(np.float32) * (1.0 - a) + 0.5, 0, 255).astype(np.uint8)
 
 
+def soften(layer_rgba: np.ndarray, sigma: float) -> np.ndarray:
+    """Separable Gaussian blur of a straight-alpha RGBA layer, done in premultiplied space (no dark fringes)."""
+    if sigma <= 0:
+        return layer_rgba
+    r = max(1, int(math.ceil(3 * sigma)))
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+    a = layer_rgba[..., 3:4].astype(np.float32) / 255.0
+    pre = np.concatenate([layer_rgba[..., :3].astype(np.float32) * a, a * 255.0], axis=-1)
+    for axis in (0, 1):
+        pad = [(0, 0)] * 3
+        pad[axis] = (r, r)
+        padded = np.pad(pre, pad, mode="edge")
+        pre = sum(k[i] * np.take(padded, np.arange(i, i + pre.shape[axis]), axis=axis) for i in range(2 * r + 1))
+    alpha = np.clip(pre[..., 3:4], 0, 255)
+    rgb = np.where(alpha > 0.5, pre[..., :3] * 255.0 / np.maximum(alpha, 1e-3), 0.0)
+    return np.clip(np.concatenate([rgb, alpha], axis=-1) + 0.5, 0, 255).astype(np.uint8)
+
+
 def add_light(base: np.ndarray, layer_rgba: np.ndarray, gain: float = 1.0) -> np.ndarray:
     """Additive light pass: out = base + gain * layer.rgb (clipped)."""
     return np.clip(base.astype(np.float32) + gain * layer_rgba[..., :3].astype(np.float32) + 0.5, 0, 255).astype(np.uint8)
@@ -86,6 +105,60 @@ def inpaint(img: np.ndarray, mask: np.ndarray, iters: int = 80) -> np.ndarray:
         out[fill] = acc[fill] / cnt[fill][:, None]
         weight = np.where(fill, 1.0, weight)
     return np.clip(out + 0.5, 0, 255).astype(np.uint8)
+
+
+def temporal_fill(video: np.ndarray, f: int, region: np.ndarray, forbidden: list[np.ndarray],
+                  keep: np.ndarray | None = None, max_offset: int = 4, search: int = 6, ring_px: int = 6,
+                  max_rmse: float = 22.0) -> tuple[np.ndarray, dict]:
+    """Fill `region` of frame f per pixel from the nearest generated frames g (|g - f| <= max_offset): for each g,
+    the integer shift (+-search px) best matching a background ring around the region (actors `keep` and both frames'
+    weapon zones excluded) is found by SSD; region pixels whose shifted source is outside forbidden[g] (g's own weapon
+    zone) are copied, nearest frames first; candidates matching worse than max_rmse are skipped. Leftover pixels are
+    diffusion-inpainted. The seam is softened over a 1 px band."""
+    out = video[f].copy()
+    if not region.any():
+        return out, {"sources": [], "diffused_px": 0}
+    n, h, w, _ = video.shape
+    keep = np.zeros(region.shape, bool) if keep is None else keep
+    ring = cd.dilate(region, ring_px) & ~region & ~keep & ~forbidden[f]
+    ry, rx = np.nonzero(ring)
+    remaining = region.copy()
+    used = []
+    for g in sorted((g for g in range(f - max_offset, f + max_offset + 1) if g != f and 0 <= g < n),
+                    key=lambda g: (abs(g - f), g)):
+        if len(ry) < 30:
+            break
+        target = video[f][ry, rx].astype(np.float32)
+        best = None
+        for dy in range(-search, search + 1):
+            sry = np.clip(ry + dy, 0, h - 1)
+            for dx in range(-search, search + 1):
+                srx = np.clip(rx + dx, 0, w - 1)
+                ok = ~forbidden[g][sry, srx]
+                if ok.mean() < 0.6:
+                    continue
+                cost = float(((video[g][sry, srx][ok].astype(np.float32) - target[ok]) ** 2).mean())
+                if best is None or cost < best[0]:
+                    best = (cost, dy, dx)
+        if best is None or best[0] ** 0.5 > max_rmse:
+            continue
+        cost, dy, dx = best
+        ys, xs = np.nonzero(remaining)
+        sy, sx = np.clip(ys + dy, 0, h - 1), np.clip(xs + dx, 0, w - 1)
+        valid = ~forbidden[g][sy, sx]
+        out[ys[valid], xs[valid]] = video[g][sy[valid], sx[valid]]
+        remaining[ys[valid], xs[valid]] = False
+        used.append({"frame": int(g), "shift": [int(dx), int(dy)], "ring_rmse": round(cost ** 0.5, 1),
+                     "px": int(valid.sum())})
+        if not remaining.any():
+            break
+    diffused = int(remaining.sum())
+    if diffused:
+        out = inpaint(out, remaining)
+    edge = cd.dilate(region, 1) & cd.dilate(~region, 1)            # soften the seam: a band straddling the border
+    if edge.any():
+        out[edge] = ((out[edge].astype(np.uint16) + inpaint(out, edge)[edge]) // 2).astype(np.uint8)
+    return out, {"sources": used, "diffused_px": diffused}
 
 
 def authored_fast_frames(centroids: list, widths: list, speed_widths: float, dilate: int) -> list[int]:
@@ -183,14 +256,17 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             missing = [f for f in protected if f not in frames_rgba]
             if missing:
                 raise FileNotFoundError(f"layer {layer.id}: no render for protected frames {missing}")
-            layers_cache = {f: _png_rgba(frames_rgba[f]) for f in frames_rgba}
+            layers_cache = {f: soften(_png_rgba(frames_rgba[f]), layer.soften_px) for f in frames_rgba}
             gain = [1.0, 1.0, 1.0]
+            geometric = layer.ghost_mode == "swept_band"         # colour cannot see the weapon in this look
             if layer.grade == "per_channel_gain":
                 pairs = []
                 for f in range(n):
-                    if f in unreliable or ret_blur[f] < 0.8 or f not in layers_cache:
+                    if f in unreliable or f not in layers_cache or (not geometric and ret_blur[f] < 0.8):
                         continue
-                    sel = (layers_cache[f][..., 3] >= 242) & cd.color_mask(raw[f], color) & band[f]
+                    sel = (layers_cache[f][..., 3] >= 242) & band[f]
+                    if not geometric:
+                        sel &= cd.color_mask(raw[f], color)
                     pairs.append((raw[f][sel].astype(np.float32), layers_cache[f][..., :3][sel].astype(np.float32)))
                 gain = fit_gain(pairs)
             # grip point (projected mace-bone head) for the hand-attachment check
@@ -207,12 +283,29 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             body = jc.get("body_object", "m3a_asura")
             body_color = tracking["subjects"].get(body, {}).get("color", "crimson")
             under_layer = ghost_under_layer or layer.ghost_mode == "under_layer"
+            swept = layer.ghost_suppression and layer.ghost_mode == "swept_band" and not ghost_under_layer
+            if swept:
+                weapon_ids = [index_of[o] for o in layer.objects if o in index_of]
+                wmask = [np.isin(idx[f], weapon_ids) for f in range(n)]
+                keep = [np.isin(idx[f], [index_of[o] for o in layer.ghost_keep_objects if o in index_of])
+                        for f in range(n)]
+                sweep = [cd.dilate(wmask[f], layer.ghost_band_px) for f in range(n)]
+                source = out.copy()                      # temporal fill reads untouched generated frames
             per_frame = {}
             for f in protected:
                 lay = layers_cache[f]
                 base = out[f]
                 ghost = np.zeros(base.shape[:2], bool)
-                if layer.ghost_suppression:
+                fill_info = None
+                if swept:
+                    ghost = np.zeros(base.shape[:2], bool)
+                    if f in unreliable:
+                        ghost = sweep[f] & (lay[..., 3] < 230) & ~cd.dilate(keep[f], 1)
+                        if layer.ghost_fill == "temporal":
+                            base, fill_info = temporal_fill(source, f, ghost, sweep, keep=cd.dilate(keep[f], 1))
+                        else:
+                            base = inpaint(base, ghost)
+                elif layer.ghost_suppression:
                     under = np.ones(base.shape[:2], bool) if under_layer else (lay[..., 3] < 77)
                     remnant = cd.color_mask(base, color)
                     for extra in layer.ghost_colors:
@@ -230,9 +323,12 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                                 "composite_vs_blur_reference_centroid_px": err_b,
                                 "composite_vs_sharp_gt_centroid_px_report_only": err,
                                 "grip_to_generated_hand_px": nearest_distance(grips[f], cd.color_mask(raw[f], body_color))}
+                if fill_info is not None:
+                    per_frame[f]["ghost_fill"] = fill_info
             entry.update(color=color, band_px=BAND_PX, retention_vs_blur=ret_blur, retention_vs_sharp=ret_sharp,
                          authored_fast_frames=authored, low_retention_frames=low, protected_frames=protected,
-                         ghost_mode="under_layer" if under_layer else "outside_core",
+                         ghost_mode=("swept_band" if swept else "under_layer" if under_layer else "outside_core"),
+                         ghost_fill=layer.ghost_fill if swept else "diffuse",
                          ghost_colors=list(layer.ghost_colors), grade_gain=gain, per_frame=per_frame)
         else:
             start = trigger_frame(timeline, layer.trigger.phase, layer.trigger.edge, fps)
