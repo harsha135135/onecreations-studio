@@ -1,0 +1,449 @@
+{
+ "run_id": "d2_run1",
+ "pipeline": "d2.1",
+ "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+ "started": "2026-10-06T21:43:40+05:30",
+ "options": {
+  "first_frame_samples": 1024,
+  "reference_samples": 64,
+  "layer_samples": null,
+  "device": "OPTIX",
+  "min_free_ram_gb": 20.0,
+  "technical_retries": 1,
+  "ltx_timeout_s": 3600
+ },
+ "stages": [
+  {
+   "id": "PLAN",
+   "key": "620124b1dfb007bc30505f53e6b59947afe3151455355c2f707982fe235a8b19",
+   "started": "2026-10-06T21:43:40+05:30",
+   "status": "done",
+   "outputs": {
+    "director_plan": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\director_plan.json",
+     "sha256": "0c3465be089e05f8c9a66aeb661b644d65a4d73865b78ffbdfd9b848966842ba"
+    },
+    "shot_spec": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\shot_spec.json",
+     "sha256": "b89b8bb3e7096de0361781f9926f95a989831570e32650fba4570ce68ab69767"
+    }
+   },
+   "info": {
+    "warnings": []
+   },
+   "finished": "2026-10-06T21:43:40+05:30",
+   "duration_s": 0.03
+  },
+  {
+   "id": "VALIDATE",
+   "key": "b4ff9e83deeae7e82ca9ffdd3574f1f38e4ab3227ef02da0508302b6b894e023",
+   "started": "2026-10-06T21:43:40+05:30",
+   "status": "done",
+   "outputs": {},
+   "info": {
+    "issues": []
+   },
+   "finished": "2026-10-06T21:43:40+05:30",
+   "duration_s": 0.0
+  },
+  {
+   "id": "COMPILE",
+   "key": "70e17e30b45e84dedb24b36089bbb4d22a30158dcf7744118c39668581c0db76",
+   "started": "2026-10-06T21:43:40+05:30",
+   "status": "done",
+   "outputs": {
+    "compiled_shot": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\compiled_shot.json",
+     "sha256": "f9afc3d6c81526f53376e19188850e6ffd9db1b4ba07db1a53c956790addac9a"
+    }
+   },
+   "info": {
+    "events": {
+     "strike.START": 0,
+     "strike.GUARD_END": 7,
+     "strike.APEX": 23,
+     "strike.CONTACT": 29,
+     "strike.HOLD_END": 34,
+     "strike.RECOVERY_START": 34,
+     "strike.END": 48,
+     "guard.START": 0,
+     "guard.END": 48
+    }
+   },
+   "finished": "2026-10-06T21:43:40+05:30",
+   "duration_s": 0.03
+  },
+  {
+   "id": "BLENDER_BUILD",
+   "key": "6e562c3396ece23d5c6015eaa4587ff104e612615f72602fccb7b8b50a080531",
+   "started": "2026-10-06T21:43:40+05:30",
+   "status": "done",
+   "outputs": {
+    "blend": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\preflight\\scene.blend",
+     "sha256": "c691dabcfd56af53c5e6ffda0d079389ad06ccde64d703e7f1f507aadbceabb0"
+    },
+    "shot_spec": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\preflight\\shot_spec.json",
+     "sha256": "9f9e47b5ce5dd7b30ba5eccc029463a5842907e1f3b00c66e9d130d0befc4bf7"
+    }
+   },
+   "info": {},
+   "finished": "2026-10-06T21:43:44+05:30",
+   "duration_s": 3.87
+  },
+  {
+   "id": "CONTROL_RENDER",
+   "key": "24ce9bb36020ecaf06434a070e475609c5589e0f8253191d3aebd2946843e3d5",
+   "started": "2026-10-06T21:43:44+05:30",
+   "status": "done",
+   "outputs": {
+    "export_manifest": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\preflight\\export\\export_manifest.json",
+     "sha256": "e98461fcf25d12ea9118413ce95c197fb758c47c553f813e0cb9b4f6e0971fa9"
+    },
+    "depth_control": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\controls\\depth_control.mp4",
+     "sha256": "9cc8ee3fc5228981bca64a21198d891bafdc52ca10d4dc7beee5587cf2272f1e"
+    },
+    "depth_sidecar": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\controls\\depth_control.json",
+     "sha256": "107f5240646d1f2e641fed760de66e7833d3df6599bc7dc5c38c1e5050367cb6"
+    },
+    "reference": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\preflight\\reference_preview.mp4",
+     "sha256": "798ee17b838ccc5643b75866b22d77b629c5cbde1b26a61525ee390d79f1a986"
+    },
+    "reference_blur": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\preflight\\reference_motionblur.mp4",
+     "sha256": "f16dbca6b6618580fc639d49e3eba252305556496c82dc37c02ec79960ad559d"
+    }
+   },
+   "info": {},
+   "finished": "2026-10-06T21:47:44+05:30",
+   "duration_s": 240.32
+  },
+  {
+   "id": "FIRST_FRAME",
+   "key": "ddf3ab914589591a05ce2cfede773186b5a6e5b73226949472abb2acbf44a849",
+   "started": "2026-10-06T21:47:44+05:30",
+   "status": "done",
+   "outputs": {
+    "first_frame": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\controls\\first_frame.png",
+     "sha256": "b8635407a83b5ea167aae7182fa27acd6e8165e793307238d15aa9dbe99e45a3"
+    }
+   },
+   "info": {
+    "samples": 1024
+   },
+   "finished": "2026-10-06T21:48:03+05:30",
+   "duration_s": 18.26
+  },
+  {
+   "id": "PREFLIGHT_QC",
+   "key": "693478e33e99cadb3f77329e4025137d673c7daf98ba4af5287a061cb56970db",
+   "started": "2026-10-06T21:48:03+05:30",
+   "status": "done",
+   "outputs": {
+    "report": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\qc\\preflight.json",
+     "sha256": "fc8cc8f20bca8ba14abae48647f86eac67c64b6387874ded0ec0224741ff9eb8"
+    }
+   },
+   "info": {
+    "passed": true,
+    "masks": [
+     "ARCHITECTURE",
+     "ASURA",
+     "BANNERS",
+     "BRAZIERS",
+     "DEFENDER",
+     "GROUND",
+     "MACE",
+     "PILLARS",
+     "RUBBLE",
+     "SHRINE",
+     "TRIDENT",
+     "WALLS"
+    ]
+   },
+   "finished": "2026-10-06T21:48:10+05:30",
+   "duration_s": 7.64
+  },
+  {
+   "id": "LTX_GENERATE",
+   "key": "7994692a4f90c560594afc9f3fa0d7165f6ad2c4dd15fcd3ce69d5d62c3c9cef",
+   "started": "2026-10-06T21:48:10+05:30",
+   "status": "done",
+   "outputs": {
+    "raw": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\generation\\raw.mp4",
+     "sha256": "6bca01d426760b76b4ebf756985bfbbda6c93d3226195d87c3b5b848e4f066ae"
+    },
+    "workflow": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\generation\\workflow_api.json",
+     "sha256": "1d94e6bbc3ea6c991711d0dfba308ff20c5947d78c7e900394ebcdf32f74a6a5"
+    }
+   },
+   "info": {
+    "attempt": 1,
+    "wall_s": 49.3,
+    "comfy_wall_s": 39.922,
+    "phases_s": {
+     "load": 3.656,
+     "other": 1.625,
+     "text_encode": 8.906,
+     "denoise": 21.75,
+     "vae_decode": 3.579,
+     "output": 0.359
+    },
+    "denoise_steps": {
+     "12": {
+      "steps": 8,
+      "first_step_s": 14.016,
+      "median_step_s": 1.0
+     }
+    },
+    "startup_s": 7.609,
+    "telemetry": {
+     "peak_gpu_mem_used_mb": 11501.0,
+     "peak_ram_used_mb": 30461,
+     "min_ram_available_mb": 2048,
+     "peak_swap_used_mb": 176,
+     "peak_proc_tree_rss_mb": 20754,
+     "peak_proc_tree_private_mb": 34585,
+     "baseline_gpu_mem_used_mb": 0.0,
+     "baseline_swap_used_mb": 142,
+     "baseline_commit_total_mb": 12320,
+     "peak_commit_total_mb": 46772,
+     "commit_limit_mb": 60157,
+     "samples": 47,
+     "swap_growth_mb": 34,
+     "peak_commit_pct": 77.7,
+     "pcie_start": "gen1 x16",
+     "pcie_end": "gen4 x16",
+     "pcie_under_load": {
+      "gen2 x16": 1,
+      "gen4 x16": 13
+     },
+     "min_pcie_gen_under_load": 2,
+     "min_pcie_width_under_load": 16,
+     "expect_pcie": "gen4 x16",
+     "auto_flags": [
+      "gpu_over_target_11000mb",
+      "pcie_below_expected"
+     ]
+    },
+    "free_ram_gb_before": 22.16,
+    "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+    "seed": 1000,
+    "steps": 8,
+    "resolution": [
+     768,
+     448
+    ],
+    "frames": 49
+   },
+   "finished": "2026-10-06T21:49:00+05:30",
+   "duration_s": 49.28
+  },
+  {
+   "id": "POST_GENERATION_QC",
+   "key": "39f92a113d76f5143023554fb845daea511fea8ac332def91287f8e7f1689600",
+   "started": "2026-10-06T21:49:00+05:30",
+   "status": "done",
+   "outputs": {
+    "report": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\qc\\post_generation.json",
+     "sha256": "0aec16149c4e0b6cd51ae005c644a9c348bf83eba1e2ab52c0a78e36fd3cee00"
+    }
+   },
+   "info": {
+    "decision": {
+     "status": "proceed",
+     "repairs": [
+      {
+       "object": "MACE",
+       "action": "protected_layer",
+       "reason": "policy (geometry=protected), not QC",
+       "qc_evidence": [
+        "weapon_integrity"
+       ]
+      }
+     ],
+     "regenerate_for": [],
+     "fail_for": []
+    },
+    "passed": {
+     "video_valid": true,
+     "subject_framing": true,
+     "contact_timing": true,
+     "apex_presence": true,
+     "weapon_integrity": false,
+     "camera_progression": true,
+     "output_integrity": true
+    }
+   },
+   "finished": "2026-10-06T21:49:05+05:30",
+   "duration_s": 5.72
+  },
+  {
+   "id": "REPAIR",
+   "key": "3a4f7e29271561f27dc0a69e46ea0e0841e5ac18569e2d157419a893c57bab08",
+   "started": "2026-10-06T21:49:05+05:30",
+   "status": "done",
+   "outputs": {
+    "repaired": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\repair\\repaired.mp4",
+     "sha256": "cff7b60c20e84cd8bfb2e5516a8274d47106278ea4e0420c6301bc8c335f7972"
+    },
+    "report": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\repair\\composite_report.json",
+     "sha256": "4cf2e9dc89114fd2c5ec3db6f811659936dff4d6a8ef169e695cd87070665e6d"
+    }
+   },
+   "info": {
+    "layers": {
+     "mace_protect": {
+      "protected_frames": 49,
+      "ghost_mode": "swept_band",
+      "ghost_fill": "temporal",
+      "gain": [
+       1.1037,
+       1.1077,
+       1.3891
+      ]
+     }
+    },
+    "layer_dirs": {
+     "mace_protect": "G:\\onecreations\\runs\\d2_run1\\repair\\layers\\mace_protect"
+    }
+   },
+   "finished": "2026-10-06T21:50:50+05:30",
+   "duration_s": 104.76
+  },
+  {
+   "id": "VFX",
+   "key": "e174dd56905233a7148197dc3873678a352659420060d8028f9ba165f704a6c3",
+   "started": "2026-10-06T21:50:50+05:30",
+   "status": "done",
+   "outputs": {},
+   "info": {
+    "layer_dirs": {
+     "impact_fx": "G:\\onecreations\\runs\\d2_run1\\vfx\\layers\\impact_fx"
+    },
+    "layer_hashes": {
+     "impact_fx": "302dc7b70a017f764c2a1ef39101f42b8ed20db1c066abfc5b1d84fe2ff4b06b"
+    },
+    "blender_frames": {
+     "impact_fx": "30-49"
+    }
+   },
+   "finished": "2026-10-06T21:51:56+05:30",
+   "duration_s": 65.57
+  },
+  {
+   "id": "COMPOSITE",
+   "key": "36ebee914502d494e3adc357d5061970b52eebab89639f1f852705d60c6ffdeb",
+   "started": "2026-10-06T21:51:56+05:30",
+   "status": "done",
+   "outputs": {
+    "composite": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\composite\\composite.mp4",
+     "sha256": "a1d9faecd0d7c86c1e711bdd711509f1b1e0b6f47ec2cc2c9de0eb2ed45a1315"
+    },
+    "reference_with_effects": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\composite\\reference_with_effects.mp4",
+     "sha256": "1200ead8ce7204efac83bf9ab53ad5faf545fc29b38ecf612c1f8fb25e76bf39"
+    }
+   },
+   "info": {
+    "order": [
+     "raw",
+     "mace_protect",
+     "impact_fx",
+     "grade"
+    ],
+    "effects": {
+     "impact_fx": 29
+    }
+   },
+   "finished": "2026-10-06T21:52:02+05:30",
+   "duration_s": 6.29
+  },
+  {
+   "id": "GRADE",
+   "key": "654283951435c399f050c0e6f8c504129bb725811fc3b134a8ac9bb0645307a7",
+   "started": "2026-10-06T21:52:02+05:30",
+   "status": "done",
+   "outputs": {
+    "final_master": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\grade\\final_master.mp4",
+     "sha256": "b5a58e2c60330e9b1f945acf83bfefc4a6c6b260078361cc2d3c718c00bc1d8c"
+    },
+    "final_view": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\grade\\final.mp4",
+     "sha256": "5c3c836129fa8b3c6f6156e5527c2401c48e1b6de1dccfeeb812684eba7af08c"
+    }
+   },
+   "info": {
+    "filter_chain": "eq=contrast=1.05:brightness=0.0:saturation=1.0:gamma=1.0,colorbalance=rs=-0.03:bs=0.03:rh=0.03:bh=-0.03,vignette=angle=0.45,unsharp=lx=5:ly=5:la=0.35:cx=3:cy=3:ca=0,format=yuv444p,noise=c0s=3:c0f=t:all_seed=1000",
+    "shake": []
+   },
+   "finished": "2026-10-06T21:52:03+05:30",
+   "duration_s": 1.34
+  },
+  {
+   "id": "FINAL_QC",
+   "key": "8284d0ceb58a324103269d500384db25b76438389e5101aaec19c6c12506839f",
+   "started": "2026-10-06T21:52:03+05:30",
+   "status": "done",
+   "outputs": {
+    "report": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\qc\\final.json",
+     "sha256": "d509f2a9e0bc7e4bb677736e30e13f3f973559a6a30eb0d69c51fa1d0a57701b"
+    }
+   },
+   "info": {
+    "passed": true,
+    "checks": {
+     "final_valid": true,
+     "protected_weapon_present": true,
+     "effects_begin_at_contact": true,
+     "bounded_repair": true,
+     "no_holes": true
+    }
+   },
+   "finished": "2026-10-06T21:52:14+05:30",
+   "duration_s": 10.68
+  },
+  {
+   "id": "DELIVER",
+   "key": "8c880f4ea13fe355f9258cf353669d75a0d3ed73f5c8898d9627908068929b0d",
+   "started": "2026-10-06T21:52:14+05:30",
+   "status": "done",
+   "outputs": {
+    "final": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\deliverables\\final.mp4",
+     "sha256": "5c3c836129fa8b3c6f6156e5527c2401c48e1b6de1dccfeeb812684eba7af08c"
+    },
+    "preview": {
+     "path": "G:\\onecreations\\runs\\d2_run1\\deliverables\\preview.mp4",
+     "sha256": "56d41f699aab31f7ae134883bc2a4f83878962d30801c786e357fb5c95eced87"
+    }
+   },
+   "info": {
+    "final_sha256": "5c3c836129fa8b3c6f6156e5527c2401c48e1b6de1dccfeeb812684eba7af08c"
+   },
+   "finished": "2026-10-06T21:52:14+05:30",
+   "duration_s": 0.37
+  }
+ ],
+ "status": "succeeded",
+ "storage_free_gib_before": 236.52,
+ "free_ram_gb_before": 22.15,
+ "finished": "2026-10-06T21:52:14+05:30",
+ "wall_s": 514.2,
+ "storage_free_gib_after": 236.09
+}

@@ -1,0 +1,14 @@
+{
+ "note": "media stays on G: (not in Git)",
+ "root": "G:\\onecreations\\runs\\d2_run1",
+ "sha256": {
+  "deliverables/final.mp4": "5c3c836129fa8b3c6f6156e5527c2401c48e1b6de1dccfeeb812684eba7af08c",
+  "deliverables/preview.mp4": "56d41f699aab31f7ae134883bc2a4f83878962d30801c786e357fb5c95eced87",
+  "generation/raw.mp4": "6bca01d426760b76b4ebf756985bfbbda6c93d3226195d87c3b5b848e4f066ae",
+  "repair/repaired.mp4": "cff7b60c20e84cd8bfb2e5516a8274d47106278ea4e0420c6301bc8c335f7972",
+  "composite/composite.mp4": "a1d9faecd0d7c86c1e711bdd711509f1b1e0b6f47ec2cc2c9de0eb2ed45a1315",
+  "grade/final_master.mp4": "b5a58e2c60330e9b1f945acf83bfefc4a6c6b260078361cc2d3c718c00bc1d8c",
+  "controls/first_frame.png": "b8635407a83b5ea167aae7182fa27acd6e8165e793307238d15aa9dbe99e45a3",
+  "controls/depth_control.mp4": "9cc8ee3fc5228981bca64a21198d891bafdc52ca10d4dc7beee5587cf2272f1e"
+ }
+}

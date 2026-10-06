@@ -1,0 +1,1339 @@
+{
+ "schema_version": 1,
+ "shot_id": "d2_run1",
+ "compiler": "onecreations.director.compiler/1",
+ "spec_sha256": "4c9dc2476c650d8e8ae404f9e6098d1230db7bebe8feae0f9cd4fff41ad20d4f",
+ "registry_sha256": "91521b296823693a7cff8db3b121b0d5cf75ad808b5ca2cd0e10b1ee95c11617",
+ "engine": "blender_showcase_v1",
+ "frames": 49,
+ "fps": 24,
+ "resolution": [
+  768,
+  448
+ ],
+ "events": [
+  {
+   "name": "strike.START",
+   "frame": 0,
+   "time": "0"
+  },
+  {
+   "name": "strike.GUARD_END",
+   "frame": 7,
+   "time": "7/24"
+  },
+  {
+   "name": "strike.APEX",
+   "frame": 23,
+   "time": "23/24"
+  },
+  {
+   "name": "strike.CONTACT",
+   "frame": 29,
+   "time": "29/24"
+  },
+  {
+   "name": "strike.HOLD_END",
+   "frame": 34,
+   "time": "17/12"
+  },
+  {
+   "name": "strike.RECOVERY_START",
+   "frame": 34,
+   "time": "17/12"
+  },
+  {
+   "name": "strike.END",
+   "frame": 48,
+   "time": "2"
+  },
+  {
+   "name": "guard.START",
+   "frame": 0,
+   "time": "0"
+  },
+  {
+   "name": "guard.END",
+   "frame": 48,
+   "time": "2"
+  }
+ ],
+ "action_timeline": {
+  "schema_version": 1,
+  "id": "sc_mace_slam_v1",
+  "version": "1.0.0",
+  "duration": "49/24",
+  "actors": {
+   "asura": "sc_asura",
+   "defender": "sc_defender"
+  },
+  "phases": [
+   {
+    "id": "guard",
+    "kind": "idle",
+    "actor": "asura",
+    "start": "0",
+    "end": "7/24"
+   },
+   {
+    "id": "windup",
+    "kind": "other",
+    "actor": "asura",
+    "start": "7/24",
+    "end": "23/24"
+   },
+   {
+    "id": "strike",
+    "kind": "strike",
+    "actor": "asura",
+    "start": "23/24",
+    "end": "29/24"
+   },
+   {
+    "id": "impact",
+    "kind": "impact",
+    "actor": "asura",
+    "start": "29/24",
+    "end": "17/12"
+   },
+   {
+    "id": "recovery",
+    "kind": "recovery",
+    "actor": "asura",
+    "start": "17/12",
+    "end": "2"
+   },
+   {
+    "id": "defender_hold",
+    "kind": "defense",
+    "actor": "defender",
+    "start": "0",
+    "end": "2"
+   }
+  ],
+  "contacts": []
+ },
+ "camera_move": {
+  "target": [
+   -0.5,
+   -3.9,
+   1.5
+  ],
+  "azimuth_deg": [
+   -14.0,
+   10.0
+  ],
+  "radius_m": [
+   7.6,
+   6.3
+  ],
+  "height_m": [
+   2.25,
+   1.95
+  ],
+  "lens_mm": 32.0,
+  "ease_linear_mix": 0.5,
+  "yaw_offset_deg": 0.0,
+  "sensor_mm": 36.0,
+  "sensor_fit": "AUTO",
+  "clip_start": 0.1,
+  "clip_end": 300.0
+ },
+ "scene_build": {
+  "engine": "blender_showcase_v1",
+  "shot_id": "d2_run1",
+  "timeline_id": "sc_mace_slam_v1",
+  "timeline_actors": {
+   "asura": "sc_asura",
+   "defender": "sc_defender"
+  },
+  "frames": 49,
+  "fps": 24,
+  "resolution": [
+   768,
+   448
+  ],
+  "root_at": [
+   -1.8,
+   -4.0,
+   0.0
+  ],
+  "asura_yaw_deg": 30.0,
+  "defender_at": [
+   0.7,
+   -3.55,
+   0.0
+  ],
+  "defender_yaw_deg": -65.0,
+  "defender_scale": 1.08,
+  "camera_move": {
+   "target": [
+    -0.5,
+    -3.9,
+    1.5
+   ],
+   "azimuth_deg": [
+    -14.0,
+    10.0
+   ],
+   "radius_m": [
+    7.6,
+    6.3
+   ],
+   "height_m": [
+    2.25,
+    1.95
+   ],
+   "lens_mm": 32.0,
+   "ease_linear_mix": 0.5,
+   "yaw_offset_deg": 0.0,
+   "sensor_mm": 36.0,
+   "sensor_fit": "AUTO",
+   "clip_start": 0.1,
+   "clip_end": 300.0
+  },
+  "sun": {
+   "elevation_deg": 22.0,
+   "heading_deg": 150.3,
+   "energy": 4.2,
+   "color": [
+    1.0,
+    0.55,
+    0.28
+   ]
+  },
+  "look": {
+   "sun": 3.2,
+   "fill": 220.0,
+   "firekey": 700.0,
+   "coolrim": 1500.0,
+   "fire": 420.0,
+   "sanctum": 90.0,
+   "world": 0.15,
+   "haze": 0.005,
+   "exposure": -0.7,
+   "look": "AgX - High Contrast",
+   "fire_emission": 1.8,
+   "door_emission": 0.3,
+   "fill_color": [
+    0.4,
+    0.55,
+    1.0
+   ],
+   "skin": [
+    0.19,
+    0.022,
+    0.017
+   ],
+   "skin_dark": [
+    0.065,
+    0.008,
+    0.006
+   ]
+  },
+  "strike_frames": 6,
+  "fx": {
+   "seed": 23,
+   "dust_density": 1.6,
+   "dust_decay_s": 0.6,
+   "components": [
+    "dust",
+    "debris",
+    "sparks",
+    "cracks"
+   ],
+   "flash": false,
+   "flash_energy_w": []
+  },
+  "layers": {
+   "schema_version": 1,
+   "id": "d2_run1_layers",
+   "shot": "d2_run1",
+   "layers": [
+    {
+     "id": "mace_protect",
+     "kind": "protected_geometry",
+     "objects": [
+      "sc_mace_head",
+      "sc_mace_shaft"
+     ],
+     "collections": [],
+     "render": {
+      "holdout_others": true,
+      "motion_blur_shutter": 0.25,
+      "samples": 128,
+      "light_only": null
+     },
+     "occlusion": "holdout",
+     "order": 0,
+     "protection": {
+      "track_object": "sc_mace_head",
+      "authored_speed_widths": 0.5,
+      "dilate_frames": 1,
+      "raw_retention_below": null,
+      "include_frames": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24,
+       25,
+       26,
+       27,
+       28,
+       29,
+       30,
+       31,
+       32,
+       33,
+       34,
+       35,
+       36,
+       37,
+       38,
+       39,
+       40,
+       41,
+       42,
+       43,
+       44,
+       45,
+       46,
+       47,
+       48
+      ]
+     },
+     "trigger": null,
+     "duration_frames": null,
+     "grade": "per_channel_gain",
+     "ghost_suppression": true,
+     "ghost_mode": "swept_band",
+     "ghost_fill": "temporal",
+     "ghost_band_px": 8,
+     "ghost_keep_objects": [
+      "sc_asura"
+     ],
+     "ghost_colors": [],
+     "blend": "over",
+     "soften_px": 0.7
+    },
+    {
+     "id": "impact_fx",
+     "kind": "effect",
+     "objects": [],
+     "collections": [
+      "fx_impact"
+     ],
+     "render": {
+      "holdout_others": true,
+      "motion_blur_shutter": 0.5,
+      "samples": 128,
+      "light_only": null
+     },
+     "occlusion": "holdout",
+     "order": 1,
+     "protection": null,
+     "trigger": {
+      "timeline": "sc_mace_slam_v1",
+      "phase": "impact",
+      "edge": "start"
+     },
+     "duration_frames": 20,
+     "grade": "none",
+     "ghost_suppression": false,
+     "ghost_mode": "outside_core",
+     "ghost_fill": "diffuse",
+     "ghost_band_px": 10,
+     "ghost_keep_objects": [],
+     "ghost_colors": [],
+     "blend": "over",
+     "soften_px": 0.0
+    }
+   ]
+  },
+  "attacker_asset": "asura_v2",
+  "material_index_pass": true
+ },
+ "layers": {
+  "schema_version": 1,
+  "id": "d2_run1_layers",
+  "shot": "d2_run1",
+  "layers": [
+   {
+    "id": "mace_protect",
+    "kind": "protected_geometry",
+    "objects": [
+     "sc_mace_head",
+     "sc_mace_shaft"
+    ],
+    "collections": [],
+    "render": {
+     "holdout_others": true,
+     "motion_blur_shutter": 0.25,
+     "samples": 128,
+     "light_only": null
+    },
+    "occlusion": "holdout",
+    "order": 0,
+    "protection": {
+     "track_object": "sc_mace_head",
+     "authored_speed_widths": 0.5,
+     "dilate_frames": 1,
+     "raw_retention_below": null,
+     "include_frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+     ]
+    },
+    "trigger": null,
+    "duration_frames": null,
+    "grade": "per_channel_gain",
+    "ghost_suppression": true,
+    "ghost_mode": "swept_band",
+    "ghost_fill": "temporal",
+    "ghost_band_px": 8,
+    "ghost_keep_objects": [
+     "sc_asura"
+    ],
+    "ghost_colors": [],
+    "blend": "over",
+    "soften_px": 0.7
+   },
+   {
+    "id": "impact_fx",
+    "kind": "effect",
+    "objects": [],
+    "collections": [
+     "fx_impact"
+    ],
+    "render": {
+     "holdout_others": true,
+     "motion_blur_shutter": 0.5,
+     "samples": 128,
+     "light_only": null
+    },
+    "occlusion": "holdout",
+    "order": 1,
+    "protection": null,
+    "trigger": {
+     "timeline": "sc_mace_slam_v1",
+     "phase": "impact",
+     "edge": "start"
+    },
+    "duration_frames": 20,
+    "grade": "none",
+    "ghost_suppression": false,
+    "ghost_mode": "outside_core",
+    "ghost_fill": "diffuse",
+    "ghost_band_px": 10,
+    "ghost_keep_objects": [],
+    "ghost_colors": [],
+    "blend": "over",
+    "soften_px": 0.0
+   }
+  ]
+ },
+ "generation": {
+  "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+  "workflow": "workflows/ltx25/showcase_v1_api.json",
+  "workflow_sha256": "9d08be3077904c4fd3d892d78f319a091a9a4f33b427aa2ed119cd22f5fc4989",
+  "overrides": {
+   "4": {
+    "text": "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain."
+   },
+   "8": {
+    "noise_seed": 1000
+   },
+   "7": {
+    "width": 768,
+    "height": 448,
+    "length": 49
+   }
+  },
+  "prompt": "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain.",
+  "seed": 1000,
+  "steps": 8,
+  "resolution": [
+   768,
+   448
+  ],
+  "frames": 49
+ },
+ "grade": {
+  "contrast": 1.05,
+  "brightness": 0.0,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "shadows_cool": 0.03,
+  "highlights_warm": 0.03,
+  "vignette_angle": 0.45,
+  "sharpen": 0.35,
+  "grain": 3,
+  "grain_seed": 1000,
+  "shake": []
+ },
+ "semantic_objects": [
+  {
+   "id": "MACE",
+   "kind": "weapon",
+   "asset": "heavy_mace_v1",
+   "oc_ids": [
+    "sc_mace_head",
+    "sc_mace_shaft"
+   ],
+   "pass_indices": [
+    8,
+    9
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "protected",
+    "timing": "authored",
+    "editable": true,
+    "rule": "fast_weapon_v2",
+    "provenance": "P1: heavy_blunt weapon, mace_slam_v1 estimated peak 1.27 head widths/frame >= 0.7 (local observation, M2-B/768/M3-A/Showcase)"
+   },
+   "protected_layer": "mace_protect"
+  },
+  {
+   "id": "TRIDENT",
+   "kind": "weapon",
+   "asset": "trident_v1",
+   "oc_ids": [
+    "sc_defender"
+   ],
+   "pass_indices": [
+    2
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": false,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": false,
+    "rule": null,
+    "provenance": "P3: integrated prop follows its owner"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "IMPACT_DUST",
+   "kind": "effect",
+   "asset": "impact_dust_v1",
+   "oc_ids": [],
+   "pass_indices": [],
+   "mask_source": "effect_layer_alpha",
+   "mask_separable": false,
+   "depth": "none",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "deterministic",
+    "geometry": "protected",
+    "timing": "authored",
+    "editable": false,
+    "rule": null,
+    "provenance": "P5: deterministic effect layer keyed from a semantic event"
+   },
+   "protected_layer": "impact_fx"
+  },
+  {
+   "id": "DEBRIS",
+   "kind": "effect",
+   "asset": "debris_v1",
+   "oc_ids": [],
+   "pass_indices": [],
+   "mask_source": "effect_layer_alpha",
+   "mask_separable": false,
+   "depth": "none",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "deterministic",
+    "geometry": "protected",
+    "timing": "authored",
+    "editable": false,
+    "rule": null,
+    "provenance": "P5: deterministic effect layer keyed from a semantic event"
+   },
+   "protected_layer": "impact_fx"
+  },
+  {
+   "id": "SPARKS",
+   "kind": "effect",
+   "asset": "sparks_v1",
+   "oc_ids": [],
+   "pass_indices": [],
+   "mask_source": "effect_layer_alpha",
+   "mask_separable": false,
+   "depth": "none",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "deterministic",
+    "geometry": "protected",
+    "timing": "authored",
+    "editable": false,
+    "rule": null,
+    "provenance": "P5: deterministic effect layer keyed from a semantic event"
+   },
+   "protected_layer": "impact_fx"
+  },
+  {
+   "id": "FLOOR_CRACKS",
+   "kind": "effect",
+   "asset": "floor_cracks_v1",
+   "oc_ids": [],
+   "pass_indices": [],
+   "mask_source": "effect_layer_alpha",
+   "mask_separable": false,
+   "depth": "none",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "deterministic",
+    "geometry": "protected",
+    "timing": "authored",
+    "editable": false,
+    "rule": null,
+    "provenance": "P5: deterministic effect layer keyed from a semantic event"
+   },
+   "protected_layer": "impact_fx"
+  },
+  {
+   "id": "ASURA",
+   "kind": "character",
+   "asset": "asura_v2",
+   "oc_ids": [
+    "sc_asura"
+   ],
+   "pass_indices": [
+    1
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [
+    "skin",
+    "iron",
+    "bronze",
+    "leather",
+    "loincloth",
+    "horn",
+    "tusk",
+    "eye",
+    "hair"
+   ],
+   "material_masks": {
+    "skin": 1,
+    "armour": 2,
+    "cloth_harness": 3,
+    "head_details": 4
+   },
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P2: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "DEFENDER",
+   "kind": "character",
+   "asset": "ascetic_defender_v1",
+   "oc_ids": [
+    "sc_defender"
+   ],
+   "pass_indices": [
+    2
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [
+    "ash_skin",
+    "white_cloth",
+    "shawl",
+    "sash",
+    "beads",
+    "hair",
+    "steel"
+   ],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P2: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "GROUND",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "m2a_floor"
+   ],
+   "pass_indices": [
+    7
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "SHRINE",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "m2a_shrine"
+   ],
+   "pass_indices": [
+    4
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "PILLARS",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "m2a_colonnade"
+   ],
+   "pass_indices": [
+    3
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "WALLS",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "m2a_walls"
+   ],
+   "pass_indices": [
+    5
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "RUBBLE",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "m2a_rubble",
+    "sc_debris"
+   ],
+   "pass_indices": [
+    6,
+    16
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "ARCHITECTURE",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "sc_architecture"
+   ],
+   "pass_indices": [
+    13
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "BRAZIERS",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "sc_braziers"
+   ],
+   "pass_indices": [
+    14
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  },
+  {
+   "id": "BANNERS",
+   "kind": "environment_part",
+   "asset": "temple_courtyard_v1",
+   "oc_ids": [
+    "sc_banners"
+   ],
+   "pass_indices": [
+    15
+   ],
+   "mask_source": "object_index_pass",
+   "mask_separable": true,
+   "depth": "depth_pass",
+   "material_groups": [],
+   "material_masks": {},
+   "policy": {
+    "appearance": "generative",
+    "geometry": "generative",
+    "timing": "authored",
+    "editable": true,
+    "rule": null,
+    "provenance": "P4: generative, held by the depth control"
+   },
+   "protected_layer": null
+  }
+ ],
+ "qc": [
+  {
+   "id": "events_resolved",
+   "stage": "preflight",
+   "kind": "events",
+   "params": {
+    "required": [
+     "CONTACT",
+     "APEX"
+    ]
+   },
+   "implemented": true,
+   "provenance": "D1 event graph"
+  },
+  {
+   "id": "timeline_matches_engine",
+   "stage": "preflight",
+   "kind": "timeline",
+   "params": {},
+   "implemented": true,
+   "provenance": "D1: compiler and Blender builder compute the same timeline"
+  },
+  {
+   "id": "weapon_bone_projection",
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_asura_rig",
+    "bone": "mace",
+    "object": "sc_mace_head",
+    "max_px": 4.5
+   },
+   "implemented": true,
+   "provenance": "M2-B joint cross-check; Showcase 2.1 px"
+  },
+  {
+   "id": "stationary_root",
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_asura_rig",
+    "bones": [
+     "root",
+     "pelvis",
+     "thigh.L",
+     "thigh.R",
+     "shin.L",
+     "shin.R"
+    ],
+    "max_m": 0.001
+   },
+   "implemented": true,
+   "provenance": "M2-B: root and legs never keyed"
+  },
+  {
+   "id": "camera_contract",
+   "stage": "preflight",
+   "kind": "camera",
+   "params": {
+    "max_position_err_m": 0.001,
+    "max_angle_err_deg": 0.05
+   },
+   "implemented": true,
+   "provenance": "M2-C camera contract"
+  },
+  {
+   "id": "camera_clearance",
+   "stage": "preflight",
+   "kind": "clearance",
+   "params": {
+    "min_m": 1.0
+   },
+   "implemented": true,
+   "provenance": "M2-C clearance rule"
+  },
+  {
+   "id": "actors_in_frame",
+   "stage": "preflight",
+   "kind": "framing",
+   "params": {
+    "objects": [
+     "sc_asura",
+     "sc_defender"
+    ],
+    "min_px": 400
+   },
+   "implemented": true,
+   "provenance": "M2/M3 gate: subjects in frame"
+  },
+  {
+   "id": "weapon_visible",
+   "stage": "preflight",
+   "kind": "framing",
+   "params": {
+    "objects": [
+     "sc_mace_head"
+    ],
+    "min_px": 200
+   },
+   "implemented": true,
+   "provenance": "M2-B gate"
+  },
+  {
+   "id": "depth_valid",
+   "stage": "preflight",
+   "kind": "passes",
+   "params": {
+    "max_isolated_background_px": 200
+   },
+   "implemented": true,
+   "provenance": "M3-A / Showcase pass cleanliness"
+  },
+  {
+   "id": "first_frame_aligned",
+   "stage": "preflight",
+   "kind": "first_frame",
+   "params": {
+    "resolution": [
+     768,
+     448
+    ]
+   },
+   "implemented": true,
+   "provenance": "first frame rendered from the same scene, camera and frame as the passes (exact by construction)"
+  },
+  {
+   "id": "video_valid",
+   "stage": "post_generation",
+   "kind": "video",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 25.0,
+    "spike_rel": 6.0,
+    "on_fail": "regenerate"
+   },
+   "implemented": true,
+   "provenance": "technical validity (decode, count, size, blank or corrupt frames)"
+  },
+  {
+   "id": "subject_framing",
+   "stage": "post_generation",
+   "kind": "framing",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "max_offset_px": 32,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   },
+   "implemented": true,
+   "provenance": "M2 position check (about half a 64-px guide cell)"
+  },
+  {
+   "id": "contact_timing",
+   "stage": "post_generation",
+   "kind": "timing",
+   "params": {
+    "search_frames": 4,
+    "radius_px": 24,
+    "onset_frac": 0.9,
+    "tol_frames": 2,
+    "max_offset_px": 6,
+    "min_ncc": 0.45,
+    "on_fail": "fail"
+   },
+   "implemented": true,
+   "provenance": "M2-B timing tolerance (2 frames); thresholds calibrated on Showcase v1 run 1 before D2"
+  },
+  {
+   "id": "apex_presence",
+   "stage": "post_generation",
+   "kind": "timing",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "fail"
+   },
+   "implemented": true,
+   "provenance": "M2-B apex; calibrated on Showcase v1 run 1"
+  },
+  {
+   "id": "weapon_integrity",
+   "stage": "post_generation",
+   "kind": "weapon",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "repair"
+   },
+   "implemented": true,
+   "provenance": "raw fast-weapon failure detector (M2-B / M3-A / Showcase); repaired by the protection policy"
+  },
+  {
+   "id": "camera_progression",
+   "stage": "post_generation",
+   "kind": "camera",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "margin_px": 8,
+    "max_offset_px": 24,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   },
+   "implemented": true,
+   "provenance": "M2-C (generated move ~0.9x the authored one)"
+  },
+  {
+   "id": "output_integrity",
+   "stage": "post_generation",
+   "kind": "video",
+   "params": {
+    "max_hole_frac": 0.005,
+    "on_fail": "regenerate"
+   },
+   "implemented": true,
+   "provenance": "no black holes"
+  },
+  {
+   "id": "final_valid",
+   "stage": "final",
+   "kind": "video",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 40.0,
+    "spike_rel": 8.0
+   },
+   "implemented": true,
+   "provenance": "delivery validity"
+  },
+  {
+   "id": "protected_weapon_present",
+   "stage": "final",
+   "kind": "weapon",
+   "params": {
+    "min_ncc": 0.7
+   },
+   "implemented": true,
+   "provenance": "the repaired weapon survives effects and grade"
+  },
+  {
+   "id": "effects_begin_at_contact",
+   "stage": "final",
+   "kind": "events",
+   "params": {
+    "min_change": 8,
+    "max_change_before": 2
+   },
+   "implemented": true,
+   "provenance": "effects keyed from strike.CONTACT"
+  },
+  {
+   "id": "bounded_repair",
+   "stage": "final",
+   "kind": "composite",
+   "params": {
+    "allowed_pass_indices": [
+     [
+      8,
+      9
+     ]
+    ],
+    "band_px": 10,
+    "max_outside_frac": 0.001
+   },
+   "implemented": true,
+   "provenance": "repair stays near the weapon"
+  },
+  {
+   "id": "no_holes",
+   "stage": "final",
+   "kind": "video",
+   "params": {
+    "max_hole_frac": 0.005
+   },
+   "implemented": true,
+   "provenance": "no black holes after compositing"
+  }
+ ],
+ "stages": [
+  {
+   "id": "parse",
+   "implemented": true,
+   "in_dry_run": true,
+   "notes": "keyword_v1 interpreter (replaceable)"
+  },
+  {
+   "id": "plan",
+   "implemented": true,
+   "in_dry_run": true,
+   "notes": ""
+  },
+  {
+   "id": "validate",
+   "implemented": true,
+   "in_dry_run": true,
+   "notes": ""
+  },
+  {
+   "id": "compile",
+   "implemented": true,
+   "in_dry_run": true,
+   "notes": ""
+  },
+  {
+   "id": "build_scene",
+   "implemented": true,
+   "in_dry_run": false,
+   "notes": "Blender build_showcase_scene.py --config"
+  },
+  {
+   "id": "render_controls",
+   "implemented": true,
+   "in_dry_run": false,
+   "notes": "oc_export passes + make_controls depth"
+  },
+  {
+   "id": "first_frame",
+   "implemented": true,
+   "in_dry_run": false,
+   "notes": "Cycles still of frame 1 (render_stills.py)"
+  },
+  {
+   "id": "masks",
+   "implemented": true,
+   "in_dry_run": false,
+   "notes": "per-semantic-object masks from the object-index pass"
+  },
+  {
+   "id": "preflight_qc",
+   "implemented": true,
+   "in_dry_run": false,
+   "notes": "qc.evaluate_preflight"
+  },
+  {
+   "id": "generate",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": "proven stage exists (run_admission.ps1 + workflow); not invoked by the D1 orchestrator"
+  },
+  {
+   "id": "post_qc",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": "contract only (post_generation checks)"
+  },
+  {
+   "id": "render_layers",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": "render_layers.py exists; not orchestrated in D1"
+  },
+  {
+   "id": "repair_composite",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": "hybrid_composite.py exists; not orchestrated in D1"
+  },
+  {
+   "id": "grade",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": "finish_grade.py exists; not orchestrated in D1"
+  },
+  {
+   "id": "deliver",
+   "implemented": false,
+   "in_dry_run": false,
+   "notes": ""
+  }
+ ],
+ "notes": []
+}

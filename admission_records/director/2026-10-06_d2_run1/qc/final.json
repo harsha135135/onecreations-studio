@@ -1,0 +1,36 @@
+{
+ "checks": {
+  "final_valid": {
+   "passed": true,
+   "frames": 49,
+   "size": [
+    768,
+    448
+   ],
+   "blank_frames": [],
+   "abrupt_frames": [],
+   "median_frame_diff": 7.12
+  },
+  "protected_weapon_present": {
+   "passed": true,
+   "frames_checked": 49,
+   "min_ncc": 0.81
+  },
+  "effects_begin_at_contact": {
+   "passed": true,
+   "contact_frame": 29,
+   "first_changed_frame": 29,
+   "max_change_before_contact": 0
+  },
+  "bounded_repair": {
+   "passed": true,
+   "max_changed_outside_frac": 0.0
+  },
+  "no_holes": {
+   "passed": true,
+   "hole_frames": []
+  }
+ },
+ "passed": true,
+ "final_sha256": "b5a58e2c60330e9b1f945acf83bfefc4a6c6b260078361cc2d3c718c00bc1d8c"
+}

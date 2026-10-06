@@ -9,7 +9,6 @@ entries:
 # --- characters ---------------------------------------------------------------------------------------------------
 - id: asura_v2
   kind: character
-  status: experimental
   description: >-
     Upgraded horned asura (D2): firmer separated musculature, larger defined head with fused horn bases, an iron
     breastplate tied to the pauldrons by shoulder straps, knee guards, finger tubes around the mace grip and a closed
@@ -19,7 +18,9 @@ entries:
   provenance: >-
     D2 character admission (2026-10-06, admission_records/director/2026-10-06_asura_v2_admission.json): identical rig
     motion (max joint difference 0.0 m) and pass indices; lower silhouette solidity, a longer outline and more surface
-    creases than asura_showcase_v1 at opening/apex/fast strike/contact/recovery; one fix round (off-hand fist)
+    creases than asura_showcase_v1 at opening/apex/fast strike/contact/recovery; one fix round (off-hand fist);
+    used in the D2 run d2_run1 (2026-10-06, admission_records/director/2026-10-06_d2_run1): its forms persisted
+    through LTX f0-f48
   limitations:
     - one rig family (m2b_humanoid_16bone); stylised metaball surfaces; no facial animation, no cloth simulation
     - per-part masks come from the material-index pass (groups below), not from separate objects or object indices

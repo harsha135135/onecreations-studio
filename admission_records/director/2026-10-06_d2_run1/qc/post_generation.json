@@ -1,0 +1,155 @@
+{
+ "checks": {
+  "video_valid": {
+   "passed": true,
+   "frames": 49,
+   "size": [
+    768,
+    448
+   ],
+   "blank_frames": [],
+   "abrupt_frames": [],
+   "median_frame_diff": 6.15,
+   "on_fail": "regenerate"
+  },
+  "subject_framing": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.946,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.888,
+     "offset_px": 2.0
+    },
+    "24": {
+     "ncc": 0.796,
+     "offset_px": 2.0
+    },
+    "36": {
+     "ncc": 0.807,
+     "offset_px": 2.8
+    },
+    "48": {
+     "ncc": 0.766,
+     "offset_px": 2.0
+    }
+   },
+   "on_fail": "fail"
+  },
+  "contact_timing": {
+   "passed": true,
+   "contact_frame": 29,
+   "observed_onset": 29,
+   "offset_frames": 0,
+   "best_ncc": 0.557,
+   "per_frame_ncc": {
+    "25": 0.467,
+    "26": 0.464,
+    "27": 0.471,
+    "28": 0.422,
+    "29": 0.528,
+    "30": 0.55,
+    "31": 0.556,
+    "32": 0.557,
+    "33": 0.555
+   },
+   "on_fail": "fail"
+  },
+  "apex_presence": {
+   "passed": true,
+   "apex_frame": 23,
+   "ncc": 0.53,
+   "offset_px": 8.0,
+   "on_fail": "fail"
+  },
+  "weapon_integrity": {
+   "passed": false,
+   "failed_frames": [
+    24,
+    26,
+    27
+   ],
+   "per_frame_ncc": {
+    "23": {
+     "ncc": 0.53,
+     "offset_px": 8.0
+    },
+    "24": {
+     "ncc": 0.592,
+     "offset_px": 10.2
+    },
+    "25": {
+     "ncc": 0.506,
+     "offset_px": 7.6
+    },
+    "26": {
+     "ncc": 0.571,
+     "offset_px": 15.8
+    },
+    "27": {
+     "ncc": 0.44,
+     "offset_px": 12.8
+    },
+    "28": {
+     "ncc": 0.503,
+     "offset_px": 8.2
+    },
+    "29": {
+     "ncc": 0.528,
+     "offset_px": 2.8
+    }
+   },
+   "meaning": "raw generated weapon unreliable in these frames",
+   "on_fail": "repair"
+  },
+  "camera_progression": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.995,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.95,
+     "offset_px": 0.0
+    },
+    "24": {
+     "ncc": 0.875,
+     "offset_px": 4.0
+    },
+    "36": {
+     "ncc": 0.839,
+     "offset_px": 4.0
+    },
+    "48": {
+     "ncc": 0.817,
+     "offset_px": 4.0
+    }
+   },
+   "note": "background registered to the authored move (image space)",
+   "on_fail": "fail"
+  },
+  "output_integrity": {
+   "passed": true,
+   "hole_frames": [],
+   "on_fail": "regenerate"
+  }
+ },
+ "decision": {
+  "status": "proceed",
+  "repairs": [
+   {
+    "object": "MACE",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC",
+    "qc_evidence": [
+     "weapon_integrity"
+    ]
+   }
+  ],
+  "regenerate_for": [],
+  "fail_for": []
+ }
+}

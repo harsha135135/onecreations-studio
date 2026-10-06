@@ -1,0 +1,539 @@
+{
+ "status": "succeeded",
+ "run_id": "d2_run1",
+ "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+ "plan": {
+  "schema_version": 1,
+  "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+  "interpreter": "keyword_v1",
+  "supported": true,
+  "environment": "temple_courtyard_v1",
+  "characters": {
+   "attacker": "asura_v2",
+   "defender": "ascetic_defender_v1"
+  },
+  "semantic_names": {
+   "attacker": "ASURA",
+   "defender": "DEFENDER"
+  },
+  "weapons": {
+   "attacker": "heavy_mace_v1"
+  },
+  "actions": {
+   "attacker": "mace_slam_v1",
+   "defender": "defender_guard_v1"
+  },
+  "action_params": {},
+  "camera": "orbit_push_v1",
+  "camera_variant": "low",
+  "look": "mythic_temple_dusk_v1",
+  "vfx": [
+   "impact_dust_v1",
+   "debris_v1",
+   "sparks_v1",
+   "floor_cracks_v1"
+  ],
+  "predicted_protection": {
+   "MACE": "fast_weapon_v2"
+  },
+  "decisions": [
+   {
+    "slot": "environment",
+    "choice": "temple_courtyard_v1",
+    "source": "prompt",
+    "evidence": "ruined temple",
+    "note": null
+   },
+   {
+    "slot": "attacker",
+    "choice": "asura_v2",
+    "source": "prompt",
+    "evidence": "horned asura",
+    "note": null
+   },
+   {
+    "slot": "defender",
+    "choice": "ascetic_defender_v1",
+    "source": "prompt",
+    "evidence": "defender",
+    "note": null
+   },
+   {
+    "slot": "attacker.weapon",
+    "choice": "heavy_mace_v1",
+    "source": "prompt",
+    "evidence": "mace",
+    "note": null
+   },
+   {
+    "slot": "defender.weapon",
+    "choice": "trident_v1",
+    "source": "prompt",
+    "evidence": "trident",
+    "note": "integrated into the defender asset"
+   },
+   {
+    "slot": "attacker.action",
+    "choice": "mace_slam_v1",
+    "source": "prompt",
+    "evidence": "attacking",
+    "note": null
+   },
+   {
+    "slot": "defender.action",
+    "choice": "defender_guard_v1",
+    "source": "prompt",
+    "evidence": "guards",
+    "note": null
+   },
+   {
+    "slot": "camera",
+    "choice": "orbit_push_v1",
+    "source": "prompt",
+    "evidence": "orbit",
+    "note": null
+   },
+   {
+    "slot": "camera.variant",
+    "choice": "low",
+    "source": "prompt",
+    "evidence": "low",
+    "note": null
+   },
+   {
+    "slot": "look",
+    "choice": "mythic_temple_dusk_v1",
+    "source": "prompt",
+    "evidence": "dusk",
+    "note": null
+   },
+   {
+    "slot": "vfx",
+    "choice": "impact_dust_v1",
+    "source": "prompt",
+    "evidence": null,
+    "note": null
+   },
+   {
+    "slot": "vfx",
+    "choice": "debris_v1",
+    "source": "prompt",
+    "evidence": null,
+    "note": null
+   },
+   {
+    "slot": "vfx",
+    "choice": "sparks_v1",
+    "source": "prompt",
+    "evidence": null,
+    "note": null
+   },
+   {
+    "slot": "vfx",
+    "choice": "floor_cracks_v1",
+    "source": "prompt",
+    "evidence": null,
+    "note": null
+   },
+   {
+    "slot": "protection",
+    "choice": "MACE -> fast_weapon_v2",
+    "source": "rule",
+    "evidence": "P1",
+    "note": null
+   }
+  ],
+  "warnings": [],
+  "unsupported": []
+ },
+ "shot_spec": {
+  "schema_version": 1,
+  "id": "d2_run1",
+  "description": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+  "duration_frames": 49,
+  "fps": 24,
+  "resolution": [
+   768,
+   448
+  ],
+  "environment": {
+   "id": "TEMPLE",
+   "asset": "temple_courtyard_v1"
+  },
+  "characters": [
+   {
+    "id": "ASURA",
+    "role": "attacker",
+    "asset": "asura_v2",
+    "placement": null,
+    "appearance": "default"
+   },
+   {
+    "id": "DEFENDER",
+    "role": "defender",
+    "asset": "ascetic_defender_v1",
+    "placement": null,
+    "appearance": "default"
+   }
+  ],
+  "props": [
+   {
+    "id": "MACE",
+    "asset": "heavy_mace_v1",
+    "owner": "ASURA",
+    "mount": "weapon_hand"
+   },
+   {
+    "id": "TRIDENT",
+    "asset": "trident_v1",
+    "owner": "DEFENDER",
+    "mount": "integrated"
+   }
+  ],
+  "actions": [
+   {
+    "id": "strike",
+    "actor": "ASURA",
+    "preset": "mace_slam_v1",
+    "params": {},
+    "target": "DEFENDER"
+   },
+   {
+    "id": "guard",
+    "actor": "DEFENDER",
+    "preset": "defender_guard_v1",
+    "params": {},
+    "target": "ASURA"
+   }
+  ],
+  "camera": {
+   "preset": "orbit_push_v1",
+   "variant": "low",
+   "target": {
+    "anchor": "ASURA",
+    "offset": [
+     1.3,
+     0.1,
+     1.5
+    ]
+   },
+   "params": {}
+  },
+  "look": {
+   "preset": "mythic_temple_dusk_v1",
+   "params": {}
+  },
+  "events": [
+   {
+    "id": "impact_dust",
+    "preset": "impact_dust_v1",
+    "trigger": {
+     "action": "strike",
+     "event": "CONTACT",
+     "offset_frames": 0
+    },
+    "params": {}
+   },
+   {
+    "id": "debris",
+    "preset": "debris_v1",
+    "trigger": {
+     "action": "strike",
+     "event": "CONTACT",
+     "offset_frames": 0
+    },
+    "params": {}
+   },
+   {
+    "id": "sparks",
+    "preset": "sparks_v1",
+    "trigger": {
+     "action": "strike",
+     "event": "CONTACT",
+     "offset_frames": 0
+    },
+    "params": {}
+   },
+   {
+    "id": "floor_cracks",
+    "preset": "floor_cracks_v1",
+    "trigger": {
+     "action": "strike",
+     "event": "CONTACT",
+     "offset_frames": 0
+    },
+    "params": {}
+   }
+  ],
+  "generation": {
+   "profile": "ltx25_union_768_v1",
+   "seed": 1000,
+   "style": null
+  },
+  "protection": [],
+  "compositing": "protected_layers_v1",
+  "grade": {
+   "preset": "showcase_v1",
+   "params": {}
+  },
+  "qc_profile": "showcase_class_preflight_v1"
+ },
+ "assets": {
+  "characters": {
+   "attacker": "asura_v2",
+   "defender": "ascetic_defender_v1"
+  },
+  "weapons": {
+   "attacker": "heavy_mace_v1"
+  },
+  "environment": "temple_courtyard_v1",
+  "actions": {
+   "attacker": "mace_slam_v1",
+   "defender": "defender_guard_v1"
+  },
+  "camera": [
+   "orbit_push_v1",
+   "low"
+  ],
+  "look": "mythic_temple_dusk_v1",
+  "vfx": [
+   "impact_dust_v1",
+   "debris_v1",
+   "sparks_v1",
+   "floor_cracks_v1"
+  ]
+ },
+ "stages": [
+  {
+   "id": "PLAN",
+   "status": "done",
+   "duration_s": 0.03,
+   "failure": null
+  },
+  {
+   "id": "VALIDATE",
+   "status": "done",
+   "duration_s": 0.0,
+   "failure": null
+  },
+  {
+   "id": "COMPILE",
+   "status": "done",
+   "duration_s": 0.03,
+   "failure": null
+  },
+  {
+   "id": "BLENDER_BUILD",
+   "status": "done",
+   "duration_s": 3.87,
+   "failure": null
+  },
+  {
+   "id": "CONTROL_RENDER",
+   "status": "done",
+   "duration_s": 240.32,
+   "failure": null
+  },
+  {
+   "id": "FIRST_FRAME",
+   "status": "done",
+   "duration_s": 18.26,
+   "failure": null
+  },
+  {
+   "id": "PREFLIGHT_QC",
+   "status": "done",
+   "duration_s": 7.64,
+   "failure": null
+  },
+  {
+   "id": "LTX_GENERATE",
+   "status": "done",
+   "duration_s": 49.28,
+   "failure": null
+  },
+  {
+   "id": "POST_GENERATION_QC",
+   "status": "done",
+   "duration_s": 5.72,
+   "failure": null
+  },
+  {
+   "id": "REPAIR",
+   "status": "done",
+   "duration_s": 104.76,
+   "failure": null
+  },
+  {
+   "id": "VFX",
+   "status": "done",
+   "duration_s": 65.57,
+   "failure": null
+  },
+  {
+   "id": "COMPOSITE",
+   "status": "done",
+   "duration_s": 6.29,
+   "failure": null
+  },
+  {
+   "id": "GRADE",
+   "status": "done",
+   "duration_s": 1.34,
+   "failure": null
+  },
+  {
+   "id": "FINAL_QC",
+   "status": "done",
+   "duration_s": 10.68,
+   "failure": null
+  },
+  {
+   "id": "DELIVER",
+   "status": "done",
+   "duration_s": 0.37,
+   "failure": null
+  }
+ ],
+ "qc": {
+  "PREFLIGHT_QC": {
+   "passed": true,
+   "masks": [
+    "ARCHITECTURE",
+    "ASURA",
+    "BANNERS",
+    "BRAZIERS",
+    "DEFENDER",
+    "GROUND",
+    "MACE",
+    "PILLARS",
+    "RUBBLE",
+    "SHRINE",
+    "TRIDENT",
+    "WALLS"
+   ]
+  },
+  "POST_GENERATION_QC": {
+   "decision": {
+    "status": "proceed",
+    "repairs": [
+     {
+      "object": "MACE",
+      "action": "protected_layer",
+      "reason": "policy (geometry=protected), not QC",
+      "qc_evidence": [
+       "weapon_integrity"
+      ]
+     }
+    ],
+    "regenerate_for": [],
+    "fail_for": []
+   },
+   "passed": {
+    "video_valid": true,
+    "subject_framing": true,
+    "contact_timing": true,
+    "apex_presence": true,
+    "weapon_integrity": false,
+    "camera_progression": true,
+    "output_integrity": true
+   }
+  },
+  "FINAL_QC": {
+   "passed": true,
+   "checks": {
+    "final_valid": true,
+    "protected_weapon_present": true,
+    "effects_begin_at_contact": true,
+    "bounded_repair": true,
+    "no_holes": true
+   }
+  }
+ },
+ "repair": {
+  "layers": {
+   "mace_protect": {
+    "protected_frames": 49,
+    "ghost_mode": "swept_band",
+    "ghost_fill": "temporal",
+    "gain": [
+     1.1037,
+     1.1077,
+     1.3891
+    ]
+   }
+  },
+  "layer_dirs": {
+   "mace_protect": "G:\\onecreations\\runs\\d2_run1\\repair\\layers\\mace_protect"
+  }
+ },
+ "ltx": {
+  "attempt": 1,
+  "wall_s": 49.3,
+  "comfy_wall_s": 39.922,
+  "phases_s": {
+   "load": 3.656,
+   "other": 1.625,
+   "text_encode": 8.906,
+   "denoise": 21.75,
+   "vae_decode": 3.579,
+   "output": 0.359
+  },
+  "denoise_steps": {
+   "12": {
+    "steps": 8,
+    "first_step_s": 14.016,
+    "median_step_s": 1.0
+   }
+  },
+  "startup_s": 7.609,
+  "telemetry": {
+   "peak_gpu_mem_used_mb": 11501.0,
+   "peak_ram_used_mb": 30461,
+   "min_ram_available_mb": 2048,
+   "peak_swap_used_mb": 176,
+   "peak_proc_tree_rss_mb": 20754,
+   "peak_proc_tree_private_mb": 34585,
+   "baseline_gpu_mem_used_mb": 0.0,
+   "baseline_swap_used_mb": 142,
+   "baseline_commit_total_mb": 12320,
+   "peak_commit_total_mb": 46772,
+   "commit_limit_mb": 60157,
+   "samples": 47,
+   "swap_growth_mb": 34,
+   "peak_commit_pct": 77.7,
+   "pcie_start": "gen1 x16",
+   "pcie_end": "gen4 x16",
+   "pcie_under_load": {
+    "gen2 x16": 1,
+    "gen4 x16": 13
+   },
+   "min_pcie_gen_under_load": 2,
+   "min_pcie_width_under_load": 16,
+   "expect_pcie": "gen4 x16",
+   "auto_flags": [
+    "gpu_over_target_11000mb",
+    "pcie_below_expected"
+   ]
+  },
+  "free_ram_gb_before": 22.16,
+  "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+  "seed": 1000,
+  "steps": 8,
+  "resolution": [
+   768,
+   448
+  ],
+  "frames": 49
+ },
+ "wall_s": 514.2,
+ "deliverables": {
+  "final": "G:\\onecreations\\runs\\d2_run1\\deliverables\\final.mp4",
+  "preview": "G:\\onecreations\\runs\\d2_run1\\deliverables\\preview.mp4"
+ },
+ "final_sha256": "5c3c836129fa8b3c6f6156e5527c2401c48e1b6de1dccfeeb812684eba7af08c",
+ "storage_free_gib": [
+  236.52,
+  236.09
+ ]
+}

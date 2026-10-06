@@ -1,0 +1,144 @@
+{
+ "schema_version": 1,
+ "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+ "interpreter": "keyword_v1",
+ "supported": true,
+ "environment": "temple_courtyard_v1",
+ "characters": {
+  "attacker": "asura_v2",
+  "defender": "ascetic_defender_v1"
+ },
+ "semantic_names": {
+  "attacker": "ASURA",
+  "defender": "DEFENDER"
+ },
+ "weapons": {
+  "attacker": "heavy_mace_v1"
+ },
+ "actions": {
+  "attacker": "mace_slam_v1",
+  "defender": "defender_guard_v1"
+ },
+ "action_params": {},
+ "camera": "orbit_push_v1",
+ "camera_variant": "low",
+ "look": "mythic_temple_dusk_v1",
+ "vfx": [
+  "impact_dust_v1",
+  "debris_v1",
+  "sparks_v1",
+  "floor_cracks_v1"
+ ],
+ "predicted_protection": {
+  "MACE": "fast_weapon_v2"
+ },
+ "decisions": [
+  {
+   "slot": "environment",
+   "choice": "temple_courtyard_v1",
+   "source": "prompt",
+   "evidence": "ruined temple",
+   "note": null
+  },
+  {
+   "slot": "attacker",
+   "choice": "asura_v2",
+   "source": "prompt",
+   "evidence": "horned asura",
+   "note": null
+  },
+  {
+   "slot": "defender",
+   "choice": "ascetic_defender_v1",
+   "source": "prompt",
+   "evidence": "defender",
+   "note": null
+  },
+  {
+   "slot": "attacker.weapon",
+   "choice": "heavy_mace_v1",
+   "source": "prompt",
+   "evidence": "mace",
+   "note": null
+  },
+  {
+   "slot": "defender.weapon",
+   "choice": "trident_v1",
+   "source": "prompt",
+   "evidence": "trident",
+   "note": "integrated into the defender asset"
+  },
+  {
+   "slot": "attacker.action",
+   "choice": "mace_slam_v1",
+   "source": "prompt",
+   "evidence": "attacking",
+   "note": null
+  },
+  {
+   "slot": "defender.action",
+   "choice": "defender_guard_v1",
+   "source": "prompt",
+   "evidence": "guards",
+   "note": null
+  },
+  {
+   "slot": "camera",
+   "choice": "orbit_push_v1",
+   "source": "prompt",
+   "evidence": "orbit",
+   "note": null
+  },
+  {
+   "slot": "camera.variant",
+   "choice": "low",
+   "source": "prompt",
+   "evidence": "low",
+   "note": null
+  },
+  {
+   "slot": "look",
+   "choice": "mythic_temple_dusk_v1",
+   "source": "prompt",
+   "evidence": "dusk",
+   "note": null
+  },
+  {
+   "slot": "vfx",
+   "choice": "impact_dust_v1",
+   "source": "prompt",
+   "evidence": null,
+   "note": null
+  },
+  {
+   "slot": "vfx",
+   "choice": "debris_v1",
+   "source": "prompt",
+   "evidence": null,
+   "note": null
+  },
+  {
+   "slot": "vfx",
+   "choice": "sparks_v1",
+   "source": "prompt",
+   "evidence": null,
+   "note": null
+  },
+  {
+   "slot": "vfx",
+   "choice": "floor_cracks_v1",
+   "source": "prompt",
+   "evidence": null,
+   "note": null
+  },
+  {
+   "slot": "protection",
+   "choice": "MACE -> fast_weapon_v2",
+   "source": "rule",
+   "evidence": "P1",
+   "note": null
+  }
+ ],
+ "warnings": [],
+ "unsupported": []
+}
