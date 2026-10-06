@@ -2,6 +2,10 @@
 
     blender -b --factory-startup --python build_showcase_scene.py -- --out showcase.blend --spec shot_spec.json
 
+D1 (2026-10-06): --config scene_build.json (from the director's CompiledShot) overrides the module constants below
+(placements, camera move, look, strike timing, effect components, layer manifest, ids). Without --config the build
+is exactly SHOWCASE v1.
+
 THIS IS A SHOWCASE OPTIMISATION SCENE, NOT AN ADMISSION EXPERIMENT: characters, look, lighting, framing, resolution and
 effects all change together, chosen for final visual quality. Control is kept, not re-tested:
 - the M2-B rig and its strike keys verbatim (original speed, the M3-A ActionTimeline phases), root fixed; the rig is
@@ -55,6 +59,42 @@ MIN_CLEARANCE_M = 1.0
 STRIKE_FRAMES = strike.DEFAULT_STRIKE_FRAMES
 SUN = {"elevation_deg": 22.0, "heading_deg": 150.3, "energy": 4.2, "color": (1.0, 0.55, 0.28)}
 SKINNING: dict = {}                                   # filled by build_asura (weight sanity, written to the spec)
+SHOT_ID, TIMELINE_ID = "showcase_v1", "sc_mace_slam_v1"
+TIMELINE_ACTORS = {"asura": "sc_asura", "defender": "sc_defender"}
+FX = {"components": ["dust", "debris", "sparks", "cracks"], "flash": True, "seed": 23, "dust_density": 1.6,
+      "dust_decay_s": 0.6, "flash_energy_w": [2200.0, 1100.0, 420.0, 140.0, 40.0]}
+FX_KINDS = {"dust": ("plume", "ring"), "debris": ("chip",), "sparks": ("spark",), "cracks": ("crack",)}
+LAYERS = None                                         # compiled CompositeManifest (dict); None: layers_manifest()
+
+
+def apply_config(cfg: dict) -> None:
+    """Apply a compiled scene_build configuration (D1). Unknown keys are errors: the compiler and this builder must
+    agree on the interface."""
+    global RES, ROOT_AT, ASURA_YAW_DEG, DEFENDER_AT, DEFENDER_YAW_DEG, DEFENDER_SCALE, CAMERA_MOVE, SUN, STRIKE_FRAMES
+    global SHOT_ID, TIMELINE_ID, TIMELINE_ACTORS, LAYERS
+    known = {"engine", "shot_id", "timeline_id", "timeline_actors", "frames", "fps", "resolution", "root_at",
+             "asura_yaw_deg", "defender_at", "defender_yaw_deg", "defender_scale", "camera_move", "sun", "look",
+             "strike_frames", "fx", "layers"}
+    unknown = set(cfg) - known
+    if unknown:
+        raise ValueError(f"scene_build: unknown keys {sorted(unknown)}")
+    if cfg.get("frames", FRAMES) != FRAMES or cfg.get("fps", FPS) != FPS:
+        raise ValueError(f"this engine builds {FRAMES} frames at {FPS} fps only")
+    RES = tuple(cfg.get("resolution", RES))
+    ROOT_AT = list(cfg.get("root_at", ROOT_AT))
+    ASURA_YAW_DEG = cfg.get("asura_yaw_deg", ASURA_YAW_DEG)
+    DEFENDER_AT = list(cfg.get("defender_at", DEFENDER_AT))
+    DEFENDER_YAW_DEG = cfg.get("defender_yaw_deg", DEFENDER_YAW_DEG)
+    DEFENDER_SCALE = cfg.get("defender_scale", DEFENDER_SCALE)
+    CAMERA_MOVE = dict(cfg.get("camera_move", CAMERA_MOVE))
+    SUN = dict(cfg.get("sun", SUN))
+    LOOK.update(cfg.get("look", {}))
+    STRIKE_FRAMES = int(cfg.get("strike_frames", STRIKE_FRAMES))
+    FX.update(cfg.get("fx", {}))
+    SHOT_ID = cfg.get("shot_id", SHOT_ID)
+    TIMELINE_ID = cfg.get("timeline_id", TIMELINE_ID)
+    TIMELINE_ACTORS = dict(cfg.get("timeline_actors", TIMELINE_ACTORS))
+    LAYERS = cfg.get("layers")
 LOOK = {"sun": 3.2, "fill": 220.0, "firekey": 700.0, "coolrim": 1500.0, "fire": 420.0, "sanctum": 90.0,
         "world": 0.15, "haze": 0.005, "exposure": -0.7, "look": "AgX - High Contrast",
         "fire_emission": 1.8, "door_emission": 0.3, "fill_color": (0.40, 0.55, 1.0), "skin": (0.19, 0.022, 0.017), "skin_dark": (0.065, 0.008, 0.006)}
@@ -665,7 +705,7 @@ def _crack_material():
     return mat, gate.inputs[1]
 
 
-def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
+def build_impact_fx(scene, start_frame: int, m, seed: int | None = None):
     """Dust volumes (burst + ground ring), debris chunks, sparks and floor cracks, keyed per frame (CONSTANT) from
     `start_frame` (the ActionTimeline impact start). Collection fx_impact, excluded from the main view layer."""
     coll = bpy.data.collections.new("fx_impact")
@@ -673,7 +713,7 @@ def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
     dust_mat, dens = _dust_volume()
     crack_mat, crack_on = _crack_material()
     spark_mat = lk.plain("fx_spark", (1.0, 0.6, 0.25), 0.4, emission=(1.0, 0.55, 0.18), strength=40.0)
-    rng = random.Random(seed)
+    rng = random.Random(FX["seed"] if seed is None else seed)
     px, py, _ = impact_point()
     objs = []
 
@@ -719,10 +759,14 @@ def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
     crack.data.materials.append(crack_mat)
     crack.rotation_euler = (0.0, 0.0, math.radians(17))
     add(crack, "crack")
+    keep_kinds = {k for comp in FX["components"] for k in FX_KINDS[comp]}   # all objects are created first so the
+    for o, kind, _kw in [x for x in objs if x[1] not in keep_kinds]:          # random draws (seeded) never shift
+        bpy.data.objects.remove(o, do_unlink=True)
+    objs = [x for x in objs if x[1] in keep_kinds]
 
     for f in range(scene.frame_start, scene.frame_end + 1):
         t = (f - start_frame) / FPS
-        dens.default_value = 0.0 if t < 0 else 1.6 * math.exp(-t / 0.6)
+        dens.default_value = 0.0 if t < 0 else FX["dust_density"] * math.exp(-t / FX["dust_decay_s"])
         dens.keyframe_insert("default_value", frame=f)
         crack_on.default_value = 0.0 if t < 0 else 1.0
         crack_on.keyframe_insert("default_value", frame=f)
@@ -773,13 +817,15 @@ def build_impact_fx(scene, start_frame: int, m, seed: int = 23):
                 kp.interpolation = "CONSTANT"
     bpy.context.view_layer.layer_collection.children["fx_impact"].exclude = True
     scene.cycles.volume_bounces = 2                       # light dust volumes need multiple scattering
+    if not FX["flash"]:
+        return coll, None
 
     flash = bpy.data.collections.new("fx_flash")
     scene.collection.children.link(flash)
     light = lk.point_light(scene, "fx_flash_light", (px, py, 0.4), 0.0, (1.0, 0.62, 0.32), radius=0.3, collection=flash)
     for f in range(scene.frame_start, scene.frame_end + 1):
         k = f - start_frame
-        light.data.energy = {0: 2200.0, 1: 1100.0, 2: 420.0, 3: 140.0, 4: 40.0}.get(k, 0.0)
+        light.data.energy = float(FX["flash_energy_w"][k]) if 0 <= k < len(FX["flash_energy_w"]) else 0.0
         light.data.keyframe_insert("energy", frame=f)
     for fc in light.data.animation_data.action.fcurves:
         for kp in fc.keyframe_points:
@@ -801,6 +847,8 @@ def proxies() -> list[dict]:
 
 
 def layers_manifest() -> dict:
+    if LAYERS is not None:
+        return LAYERS
     blur = {"holdout_others": True, "motion_blur_shutter": 0.5, "samples": 128}
     weapon = dict(blur, motion_blur_shutter=0.25)       # 90 deg: directional streak, head stays solid (showcase choice)
     return {"schema_version": 1, "id": "showcase_v1_layers", "shot": "showcase_v1", "layers": [
@@ -875,7 +923,7 @@ def build(out_path: str, spec_path: str | None) -> dict:
                  "peak_speed_m_s": round(float(np.linalg.norm(np.diff(eyes, axis=0), axis=1).max() * FPS), 4),
                  "orbit_deg": CAMERA_MOVE["azimuth_deg"][1] - CAMERA_MOVE["azimuth_deg"][0]}
     timeline = strike.action_timeline(phases, STRIKE_FRAMES)
-    timeline.update(id="sc_mace_slam_v1", actors={"asura": "sc_asura", "defender": "sc_defender"})
+    timeline.update(id=TIMELINE_ID, actors=dict(TIMELINE_ACTORS))
     timeline["phases"].append({"id": "defender_hold", "kind": "defense", "actor": "defender",
                                "start": "0", "end": strike.src_time(FRAMES)})
     if spec_path:
@@ -888,7 +936,7 @@ def build(out_path: str, spec_path: str | None) -> dict:
 
 def spec_dict(timeline, reached, keys, events, clearance, move_info, impact_out) -> dict:
     return {
-        "shot": "showcase_v1",
+        "shot": SHOT_ID,
         "label": "SHOWCASE OPTIMISATION RUN - NOT A CONTROLLED ADMISSION EXPERIMENT",
         "purpose": ("the best controlled cinematic action shot the system can make today (characters, look, lighting, "
                     "framing, resolution, effects optimised jointly; no capability claim)"),
@@ -949,7 +997,10 @@ def main() -> None:
     p.add_argument("--out", required=True)
     p.add_argument("--spec", default=None)
     p.add_argument("--look", default=None, help="JSON overrides of LOOK (look development only)")
+    p.add_argument("--config", default=None, help="compiled scene_build JSON (D1 director)")
     a = p.parse_args(common.script_args())
+    if a.config:
+        apply_config(common.read_json(a.config))
     if a.look:
         import json
 

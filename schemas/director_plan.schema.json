@@ -1,0 +1,251 @@
+{
+  "$defs": {
+    "Decision": {
+      "additionalProperties": false,
+      "properties": {
+        "choice": {
+          "title": "Choice",
+          "type": "string"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the matched prompt text, or the rule id",
+          "title": "Evidence"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "slot": {
+          "description": "e.g. environment, attacker, attacker.action, camera.variant, vfx",
+          "title": "Slot",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "prompt",
+            "default",
+            "rule"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot",
+        "choice",
+        "source"
+      ],
+      "title": "Decision",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/director_plan.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "action_params": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "type": "object"
+      },
+      "default": {},
+      "title": "Action Params",
+      "type": "object"
+    },
+    "actions": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "default": {},
+      "description": "role -> action preset",
+      "title": "Actions",
+      "type": "object"
+    },
+    "camera": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Camera"
+    },
+    "camera_variant": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Camera Variant"
+    },
+    "characters": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "default": {},
+      "description": "role -> character asset",
+      "title": "Characters",
+      "type": "object"
+    },
+    "decisions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Decision"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "environment": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Environment"
+    },
+    "interpreter": {
+      "description": "which planner produced this (e.g. keyword_v1); replaceable by an LLM",
+      "title": "Interpreter",
+      "type": "string"
+    },
+    "look": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Look"
+    },
+    "predicted_protection": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "default": {},
+      "description": "semantic object -> protection rule (the compiler's rules, previewed)",
+      "title": "Predicted Protection",
+      "type": "object"
+    },
+    "request": {
+      "title": "Request",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "semantic_names": {
+      "additionalProperties": {
+        "maxLength": 64,
+        "pattern": "^[A-Z][A-Z0-9_]*$",
+        "type": "string"
+      },
+      "default": {},
+      "description": "role -> semantic identity",
+      "title": "Semantic Names",
+      "type": "object"
+    },
+    "supported": {
+      "title": "Supported",
+      "type": "boolean"
+    },
+    "unsupported": {
+      "default": [],
+      "description": "requested things the current library cannot do",
+      "items": {
+        "type": "string"
+      },
+      "title": "Unsupported",
+      "type": "array"
+    },
+    "vfx": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "title": "Vfx",
+      "type": "array"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "weapons": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+        "type": "string"
+      },
+      "default": {},
+      "description": "owner role -> weapon asset",
+      "title": "Weapons",
+      "type": "object"
+    }
+  },
+  "required": [
+    "request",
+    "interpreter",
+    "supported"
+  ],
+  "title": "DirectorPlan",
+  "type": "object"
+}

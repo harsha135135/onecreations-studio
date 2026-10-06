@@ -1,0 +1,195 @@
+{
+  "$defs": {
+    "AssetEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "default": [],
+          "description": "lower-case words/phrases the prompt interpreter maps here",
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "builder": {
+          "description": "how the current engine builds it (file:function or pipeline stage)",
+          "title": "Builder",
+          "type": "string"
+        },
+        "data": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Data",
+          "type": "object"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "character",
+            "weapon",
+            "environment",
+            "action",
+            "camera",
+            "vfx",
+            "look",
+            "grade",
+            "generation_profile",
+            "protection_rule"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "limitations": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ParamSpec"
+          },
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        },
+        "provenance": {
+          "description": "where the evidence for this entry comes from",
+          "title": "Provenance",
+          "type": "string"
+        },
+        "status": {
+          "default": "proven",
+          "enum": [
+            "proven",
+            "experimental"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "description",
+        "builder",
+        "provenance"
+      ],
+      "title": "AssetEntry",
+      "type": "object"
+    },
+    "ParamSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "default": {
+          "default": null,
+          "title": "Default"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "type": {
+          "enum": [
+            "number",
+            "integer",
+            "vec3",
+            "string",
+            "bool",
+            "choice"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ParamSpec",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/asset_registry.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "engine": {
+      "description": "the scene engine these entries are built by",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Engine",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/AssetEntry"
+      },
+      "minItems": 1,
+      "title": "Entries",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "engine",
+    "entries"
+  ],
+  "title": "AssetRegistry",
+  "type": "object"
+}

@@ -1,0 +1,292 @@
+{
+ "MACE": {
+  "pass_indices": [
+   8,
+   9
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "mace_f00.png",
+    "pixels": 3362
+   },
+   "23": {
+    "file": "mace_f23.png",
+    "pixels": 3463
+   },
+   "29": {
+    "file": "mace_f29.png",
+    "pixels": 3663
+   },
+   "48": {
+    "file": "mace_f48.png",
+    "pixels": 4418
+   }
+  }
+ },
+ "TRIDENT": {
+  "pass_indices": [
+   2
+  ],
+  "separable": false,
+  "frames": {
+   "0": {
+    "file": "trident_f00.png",
+    "pixels": 7800
+   },
+   "23": {
+    "file": "trident_f23.png",
+    "pixels": 9757
+   },
+   "29": {
+    "file": "trident_f29.png",
+    "pixels": 10532
+   },
+   "48": {
+    "file": "trident_f48.png",
+    "pixels": 12781
+   }
+  }
+ },
+ "ASURA": {
+  "pass_indices": [
+   1
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "asura_f00.png",
+    "pixels": 24438
+   },
+   "23": {
+    "file": "asura_f23.png",
+    "pixels": 25351
+   },
+   "29": {
+    "file": "asura_f29.png",
+    "pixels": 28756
+   },
+   "48": {
+    "file": "asura_f48.png",
+    "pixels": 31306
+   }
+  }
+ },
+ "DEFENDER": {
+  "pass_indices": [
+   2
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "defender_f00.png",
+    "pixels": 7800
+   },
+   "23": {
+    "file": "defender_f23.png",
+    "pixels": 9757
+   },
+   "29": {
+    "file": "defender_f29.png",
+    "pixels": 10532
+   },
+   "48": {
+    "file": "defender_f48.png",
+    "pixels": 12781
+   }
+  }
+ },
+ "GROUND": {
+  "pass_indices": [
+   7
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "ground_f00.png",
+    "pixels": 119531
+   },
+   "23": {
+    "file": "ground_f23.png",
+    "pixels": 112342
+   },
+   "29": {
+    "file": "ground_f29.png",
+    "pixels": 108145
+   },
+   "48": {
+    "file": "ground_f48.png",
+    "pixels": 107018
+   }
+  }
+ },
+ "SHRINE": {
+  "pass_indices": [
+   4
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "shrine_f00.png",
+    "pixels": 26682
+   },
+   "23": {
+    "file": "shrine_f23.png",
+    "pixels": 35388
+   },
+   "29": {
+    "file": "shrine_f29.png",
+    "pixels": 37569
+   },
+   "48": {
+    "file": "shrine_f48.png",
+    "pixels": 38427
+   }
+  }
+ },
+ "PILLARS": {
+  "pass_indices": [
+   3
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "pillars_f00.png",
+    "pixels": 53494
+   },
+   "23": {
+    "file": "pillars_f23.png",
+    "pixels": 62613
+   },
+   "29": {
+    "file": "pillars_f29.png",
+    "pixels": 64876
+   },
+   "48": {
+    "file": "pillars_f48.png",
+    "pixels": 68560
+   }
+  }
+ },
+ "WALLS": {
+  "pass_indices": [
+   5
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "walls_f00.png",
+    "pixels": 51513
+   },
+   "23": {
+    "file": "walls_f23.png",
+    "pixels": 40523
+   },
+   "29": {
+    "file": "walls_f29.png",
+    "pixels": 38078
+   },
+   "48": {
+    "file": "walls_f48.png",
+    "pixels": 34888
+   }
+  }
+ },
+ "RUBBLE": {
+  "pass_indices": [
+   6,
+   16
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "rubble_f00.png",
+    "pixels": 2953
+   },
+   "23": {
+    "file": "rubble_f23.png",
+    "pixels": 2716
+   },
+   "29": {
+    "file": "rubble_f29.png",
+    "pixels": 2281
+   },
+   "48": {
+    "file": "rubble_f48.png",
+    "pixels": 1132
+   }
+  }
+ },
+ "ARCHITECTURE": {
+  "pass_indices": [
+   13
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "architecture_f00.png",
+    "pixels": 9151
+   },
+   "23": {
+    "file": "architecture_f23.png",
+    "pixels": 9836
+   },
+   "29": {
+    "file": "architecture_f29.png",
+    "pixels": 10077
+   },
+   "48": {
+    "file": "architecture_f48.png",
+    "pixels": 9683
+   }
+  }
+ },
+ "BRAZIERS": {
+  "pass_indices": [
+   14
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "braziers_f00.png",
+    "pixels": 7726
+   },
+   "23": {
+    "file": "braziers_f23.png",
+    "pixels": 7794
+   },
+   "29": {
+    "file": "braziers_f29.png",
+    "pixels": 7408
+   },
+   "48": {
+    "file": "braziers_f48.png",
+    "pixels": 5851
+   }
+  }
+ },
+ "BANNERS": {
+  "pass_indices": [
+   15
+  ],
+  "separable": true,
+  "frames": {
+   "0": {
+    "file": "banners_f00.png",
+    "pixels": 5401
+   },
+   "23": {
+    "file": "banners_f23.png",
+    "pixels": 5711
+   },
+   "29": {
+    "file": "banners_f29.png",
+    "pixels": 6085
+   },
+   "48": {
+    "file": "banners_f48.png",
+    "pixels": 6803
+   }
+  }
+ }
+}

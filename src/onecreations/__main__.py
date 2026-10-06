@@ -11,6 +11,11 @@
     onecreations blender export SCENE.blend --out DIR [--passes] [--probes] [--timewarp tw.json] [--camera NAME]
     onecreations blender import-camera SCENE.blend --samples FILE --save OUT.blend [--intrinsics JSON]
     onecreations blender visualize --samples FILE --save OUT.blend [--blend SCENE.blend] [--intrinsics JSON] ...
+    onecreations director plan "PROMPT" [--spec-out spec.json] [--shot-id ID]
+    onecreations director validate SPEC.json
+    onecreations director compile SPEC.json [--out compiled.json]
+    onecreations generate "PROMPT" --dry-run [--json]         (or --spec SPEC.json instead of a prompt)
+    onecreations generate "PROMPT" --preflight DIR [--samples 64]   (Blender controls + first frame + masks + QC; no LTX)
 """
 
 from __future__ import annotations
@@ -156,6 +161,112 @@ def cmd_blender(args) -> int:
     raise AssertionError(args.blender_cmd)
 
 
+def _load_spec(path: str):
+    from onecreations.contracts.director import ShotSpec
+    return ShotSpec.model_validate(json.loads(Path(path).read_text(encoding="utf-8")))
+
+
+def cmd_director(args) -> int:
+    from onecreations.director.compiler import CompileError, compile_shot
+    from onecreations.director.executor import plan_request, summarize
+    from onecreations.director.registry import load_registry
+    from onecreations.director.validate import validate_spec
+    reg = load_registry()
+    if args.director_cmd == "plan":
+        plan, spec = plan_request(args.prompt, reg, args.shot_id)
+        _print(plan.model_dump(mode="json"))
+        if spec is not None and args.spec_out:
+            Path(args.spec_out).write_text(spec.model_dump_json(indent=2), encoding="utf-8")
+            print(f"ShotSpec -> {args.spec_out}")
+        return 0 if plan.supported else 2
+    spec = _load_spec(args.spec)
+    if args.director_cmd == "validate":
+        issues = validate_spec(spec, reg)
+        for i in issues:
+            print(f"[{i.severity.upper()}] {i.code}: {i.message}")
+        bad = any(i.severity == "error" for i in issues)
+        print("INVALID" if bad else "valid")
+        return 1 if bad else 0
+    try:
+        compiled = compile_shot(spec, reg)
+    except CompileError as exc:
+        for i in exc.issues:
+            print(f"[{i.severity.upper()}] {i.code}: {i.message}")
+        return 1
+    if args.out:
+        Path(args.out).write_text(compiled.model_dump_json(indent=1), encoding="utf-8")
+        print(f"CompiledShot -> {args.out}")
+    else:
+        _print(summarize(compiled))
+    return 0
+
+
+def cmd_generate(args) -> int:
+    from onecreations.director.compiler import compile_shot
+    from onecreations.director.executor import dry_run, plan_request, preflight
+    from onecreations.director.registry import load_registry
+    if not (args.dry_run or args.preflight):
+        print("full prompt -> final video is not orchestrated yet (D1): use --dry-run or --preflight DIR")
+        return 2
+    if bool(args.prompt) == bool(args.spec):
+        print("give a PROMPT or --spec SPEC.json")
+        return 2
+    reg = load_registry()
+    spec = _load_spec(args.spec) if args.spec else None
+    if args.dry_run:
+        out = dry_run(request=args.prompt, spec=spec, reg=reg, shot_id=args.shot_id)
+        if args.json:
+            _print(out)
+        else:
+            _print_dry_run(out)
+        return {"ok": 0, "invalid": 1, "unsupported": 2}[out["status"]]
+    if spec is None:
+        plan, spec = plan_request(args.prompt, reg, args.shot_id)
+        if spec is None:
+            _print({"supported": False, "unsupported": plan.unsupported, "warnings": plan.warnings})
+            return 2
+    report = preflight(compile_shot(spec, reg), Path(args.preflight), samples=args.samples)
+    summary = {k: report[k] for k in ("shot_id", "out_dir", "timings", "stopped_before")}
+    summary["qc_passed"] = report["qc"]["passed"]
+    _print(summary)
+    return 0 if report["qc"]["passed"] else 1
+
+
+def _print_dry_run(out: dict) -> None:
+    plan = out.get("plan")
+    if plan:
+        print(f"interpreter {plan['interpreter']}: supported={plan['supported']}")
+        for d in plan["decisions"]:
+            ev = f" ({d['evidence']!r})" if d.get("evidence") else ""
+            note = f" - {d['note']}" if d.get("note") else ""
+            print(f"  {d['slot']:<34} {d['choice']:<28} {d['source']}{ev}{note}")
+        for w in plan["warnings"]:
+            print(f"  WARNING: {w}")
+        for u in plan["unsupported"]:
+            print(f"  UNSUPPORTED: {u}")
+    for i in out.get("issues", []):
+        print(f"  [{i['severity'].upper()}] {i['code']}: {i['message']}")
+    c = out.get("compiled")
+    if not c:
+        print(f"status: {out['status']}")
+        return
+    w, h = c["resolution"]
+    print(f"shot {c['shot_id']}: {c['frames']} frames @ {c['fps']} fps, {w}x{h}, engine {c['engine']}")
+    print("events: " + ", ".join(f"{k}={v}" for k, v in c["events"].items()))
+    for k, o in c["objects"].items():
+        print(f"  {k:<14} {o['kind']:<17} {o['asset']:<22} {o['policy']}")
+    parts = []
+    for ly in c["layers"]:
+        trig = ly["trigger"]
+        parts.append(ly["id"] + (f"@{trig['phase']}.{trig['edge']}" if trig else ""))
+    print("layers: " + ", ".join(parts))
+    g = c["generation"]
+    print(f"generation: {g['backend']}, seed {g['seed']}, {g['steps']} steps")
+    print(f"prompt: {g['prompt']}")
+    print("stages: " + " -> ".join(s["id"] + ("" if s["implemented"] else "(not in D1)") for s in c["stages"]))
+    print("dry run: no process was started (no Blender, no LTX)")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="onecreations", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -219,6 +330,27 @@ def build_parser() -> argparse.ArgumentParser:
     bv.add_argument("--velocity", action="store_true")
     bv.add_argument("--summary")
     bv.add_argument("--name")
+
+    d = sub.add_parser("director")
+    dsub = d.add_subparsers(dest="director_cmd", required=True)
+    dp = dsub.add_parser("plan")
+    dp.add_argument("prompt")
+    dp.add_argument("--spec-out")
+    dp.add_argument("--shot-id", default="d1_shot")
+    dv = dsub.add_parser("validate")
+    dv.add_argument("spec")
+    dc = dsub.add_parser("compile")
+    dc.add_argument("spec")
+    dc.add_argument("--out")
+
+    g = sub.add_parser("generate")
+    g.add_argument("prompt", nargs="?")
+    g.add_argument("--spec")
+    g.add_argument("--dry-run", action="store_true")
+    g.add_argument("--preflight", metavar="DIR")
+    g.add_argument("--samples", type=int, default=64)
+    g.add_argument("--shot-id", default="d1_shot")
+    g.add_argument("--json", action="store_true")
     return p
 
 
@@ -227,7 +359,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     args = build_parser().parse_args(argv)
     handler = {"validate-shot": cmd_validate_shot, "schemas": cmd_schemas, "camera": cmd_camera,
-               "blender": cmd_blender}[args.cmd]
+               "blender": cmd_blender, "director": cmd_director, "generate": cmd_generate}[args.cmd]
     return handler(args)
 
 

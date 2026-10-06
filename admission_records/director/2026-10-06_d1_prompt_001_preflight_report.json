@@ -1,0 +1,138 @@
+{
+ "mode": "preflight",
+ "shot_id": "d1_prompt_001",
+ "out_dir": "G:\\onecreations\\renders\\d1_preflight\\prompt_001",
+ "timings": {
+  "build_s": 3.1,
+  "export_s": 30.9,
+  "control_s": 2.9,
+  "first_frame_s": 2.8
+ },
+ "first_frame_samples": 64,
+ "masks": {
+  "MACE": [
+   8,
+   9
+  ],
+  "TRIDENT": [
+   2
+  ],
+  "ASURA": [
+   1
+  ],
+  "DEFENDER": [
+   2
+  ],
+  "GROUND": [
+   7
+  ],
+  "SHRINE": [
+   4
+  ],
+  "PILLARS": [
+   3
+  ],
+  "WALLS": [
+   5
+  ],
+  "RUBBLE": [
+   6,
+   16
+  ],
+  "ARCHITECTURE": [
+   13
+  ],
+  "BRAZIERS": [
+   14
+  ],
+  "BANNERS": [
+   15
+  ]
+ },
+ "qc": {
+  "passed": true,
+  "checks": {
+   "events_resolved": {
+    "passed": true,
+    "events": {
+     "strike.START": 0,
+     "strike.GUARD_END": 7,
+     "strike.APEX": 23,
+     "strike.CONTACT": 29,
+     "strike.HOLD_END": 34,
+     "strike.RECOVERY_START": 34,
+     "strike.END": 48,
+     "guard.START": 0,
+     "guard.END": 48
+    }
+   },
+   "timeline_matches_engine": {
+    "passed": true
+   },
+   "weapon_bone_projection": {
+    "passed": true,
+    "max_px": 2.11
+   },
+   "stationary_root": {
+    "passed": true,
+    "max_move_m": 0.0
+   },
+   "camera_contract": {
+    "passed": true,
+    "max_position_err_m": 4.69140244874211e-07,
+    "max_angle_err_deg": 3.8e-05
+   },
+   "camera_clearance": {
+    "passed": true,
+    "min_distance_m": 1.95
+   },
+   "actors_in_frame": {
+    "passed": true,
+    "objects": {
+     "sc_asura": {
+      "min_px": 24438,
+      "touches_border_frames": 0
+     },
+     "sc_defender": {
+      "min_px": 7800,
+      "touches_border_frames": 0
+     }
+    },
+    "frame": [
+     768,
+     448
+    ]
+   },
+   "weapon_visible": {
+    "passed": true,
+    "objects": {
+     "sc_mace_head": {
+      "min_px": 2471,
+      "touches_border_frames": 0
+     }
+    },
+    "frame": [
+     768,
+     448
+    ]
+   },
+   "depth_valid": {
+    "passed": true,
+    "isolated_background_px": 14,
+    "finite_depth_on_objects": true
+   },
+   "first_frame_aligned": {
+    "passed": true,
+    "method": "same .blend, camera and frame as the passes"
+   }
+  },
+  "not_run": [
+   "weapon_attachment",
+   "contact_timing",
+   "appearance_persistence",
+   "protected_layer_integrity",
+   "deliverable_format"
+  ]
+ },
+ "stopped_before": "generate (LTX not invoked)"
+}

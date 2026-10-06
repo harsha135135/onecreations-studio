@@ -1,0 +1,316 @@
+# OneCreations asset registry (D1, 2026-10-06). Validated by onecreations.contracts.registry.AssetRegistry.
+# Only assets, actions, cameras, effects, looks, grades and profiles that actually exist and were used in Showcase v1
+# are registered. Builders are the current Blender engine (integrations/blender/build_showcase_scene.py).
+schema_version: 1
+id: onecreations_library_v1
+engine: blender_showcase_v1
+entries:
+
+# --- characters ---------------------------------------------------------------------------------------------------
+- id: asura_showcase_v1
+  kind: character
+  description: Huge horned asura demon warrior (continuous metaball body, armour, mane) on the 16-bone M2-B humanoid rig.
+  aliases: [asura, demon, rakshasa, horned demon, demon warrior, horned asura]
+  builder: integrations/blender/build_showcase_scene.py:build_asura (oc_characters)
+  provenance: Showcase v1 (2026-10-06); rig and strike from M2-B (PARTIAL; timing and articulation followed)
+  limitations:
+    - the only rigged character; one rig family (m2b_humanoid_16bone)
+    - stylised metaball surfaces; no facial animation, no cloth simulation
+    - skin, armour and cloth share one object index (sub-part masks are not separable yet)
+  data:
+    oc_id: sc_asura
+    pass_index: 1
+    rig: m2b_humanoid_16bone
+    rig_oc_id: sc_asura_rig
+    semantic_name: ASURA
+    roles: [attacker]
+    motion: rigged
+    anchors: {root: root bone, chest: chest bone, weapon_hand: mace bone (hand.L tail)}
+    weapon_classes: [heavy_blunt]
+    default_placement: {position: [-1.8, -4.0, 0.0], yaw_deg: 30.0, scale: 1.0}
+    material_groups: [skin, iron, bronze, leather, loincloth, horn, tusk, eye, hair]
+    prompt: >-
+      A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes
+      and a black mane wears heavy layered black iron pauldrons with spikes, crossed leather chest straps with a bronze
+      medallion, a leather belt, a dark loincloth with leather tassets and iron greaves
+
+- id: ascetic_defender_v1
+  kind: character
+  description: Ash-blue ascetic defender (matted hair bun, white dhoti, shawl, beads) in a static forward trident guard.
+  aliases: [ascetic, defender, sage, yogi, shiva, lord shiva, mahadeva]
+  builder: integrations/blender/build_showcase_scene.py:build_defender (oc_characters)
+  provenance: Showcase v1 (2026-10-06)
+  limitations:
+    - "static, no rig: no reaction, no block or parry contact"
+    - the trident is part of the same mesh and object index (not separately maskable or protectable)
+  data:
+    oc_id: sc_defender
+    pass_index: 2
+    rig: null
+    semantic_name: DEFENDER
+    proper_names: {shiva: SHIVA, lord shiva: SHIVA, mahadeva: SHIVA}
+    roles: [defender]
+    motion: static
+    anchors: {root: object origin}
+    integrated_props: [trident_v1]
+    default_placement: {position: [0.70, -3.55, 0.0], yaw_deg: -65.0, scale: 1.08}
+    material_groups: [ash_skin, white_cloth, shawl, sash, beads, hair, steel]
+    prompt: a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl
+
+# --- weapons ------------------------------------------------------------------------------------------------------
+- id: heavy_mace_v1
+  kind: weapon
+  description: Heavy flanged and spiked aged-gold mace head on an iron shaft with a leather grip, mounted on the rig's mace bone.
+  aliases: [mace, gada, club, war club]
+  builder: integrations/blender/build_showcase_scene.py:build_asura (mace parts)
+  provenance: M2-B / M3-A / Showcase v1; raw LTX breaks it in the fastest strike frames (M2-B, 768, M3-A, Showcase run 1)
+  limitations: [one size; must be held by a rig with a mace bone]
+  data:
+    parts:
+      - {oc_id: sc_mace_head, pass_index: 8, part: head}
+      - {oc_id: sc_mace_shaft, pass_index: 9, part: shaft}
+    track_part: sc_mace_head
+    weapon_class: heavy_blunt
+    mount: {type: rig_bone, rig: m2b_humanoid_16bone, bone: mace}
+    prompt: and holds a heavy golden spiked mace
+
+- id: trident_v1
+  kind: weapon
+  description: Steel trident integrated into the ascetic defender's mesh, held in a forward guard.
+  aliases: [trident, trishula, trishul]
+  builder: integrations/blender/build_showcase_scene.py:build_defender (trident tubes)
+  provenance: Showcase v1
+  limitations: [integrated into ascetic_defender_v1; static; shares the defender's object index]
+  data:
+    parts: []
+    weapon_class: polearm
+    mount: {type: integrated, owner_asset: ascetic_defender_v1}
+    prompt: holds a steel trident
+
+# --- environment --------------------------------------------------------------------------------------------------
+- id: temple_courtyard_v1
+  kind: environment
+  description: Ancient Indian stone temple courtyard (colonnades with lintels, stepped shrine with shikhara finial and lit sanctum, braziers, banners, rubble).
+  aliases: [temple, courtyard, ruined temple, ancient temple, temple courtyard, ruins, shrine]
+  builder: integrations/blender/build_temple_shot_scene.py:build_environment + build_showcase_scene.py:upgrade_temple
+  provenance: M2-A (temple), M3-A / Showcase v1 (finished look and upgrades)
+  limitations: [one layout; actors are staged in the front courtyard zone; no destruction beyond floor decals]
+  data:
+    semantic_objects:
+      GROUND: {oc_ids: [m2a_floor], pass_indices: [7]}
+      SHRINE: {oc_ids: [m2a_shrine], pass_indices: [4]}
+      PILLARS: {oc_ids: [m2a_colonnade], pass_indices: [3]}
+      WALLS: {oc_ids: [m2a_walls], pass_indices: [5]}
+      RUBBLE: {oc_ids: [m2a_rubble, sc_debris], pass_indices: [6, 16]}
+      ARCHITECTURE: {oc_ids: [sc_architecture], pass_indices: [13]}
+      BRAZIERS: {oc_ids: [sc_braziers], pass_indices: [14]}
+      BANNERS: {oc_ids: [sc_banners], pass_indices: [15]}
+    actor_zone: {min: [-3.0, -6.0], max: [1.6, -2.4]}
+    prompt:
+      subject: an ancient Indian stone temple courtyard
+      detail: >-
+        massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway,
+        bronze fire braziers, worn cracked flagstones
+
+# --- actions ------------------------------------------------------------------------------------------------------
+- id: mace_slam_v1
+  kind: action
+  description: One heavy mace slam - guard, overhead wind-up, apex, accelerating downswing, ground contact beside the target, hold, recovery.
+  aliases: [slam, slams, strike, strikes, smash, smashes, attack, attacks, attacking, swing, swings, hit, hits, bash]
+  builder: integrations/blender/build_temple_strike_scene.py:choreography_frames + key_poses (two-bone IK -> FK keys)
+  provenance: M2-B (apex/contact 0/0 frames off, articulation followed); M3-A and Showcase v1 (same keys, exact timeline)
+  limitations:
+    - one authored strike; root and legs fixed (no travel); the head lands on the ground beside the target (no body contact)
+    - 49-frame / 24 fps profile only
+  params:
+    strike_frames: {type: integer, default: 6, min: 2, max: 9, description: apex -> contact duration (9 = M2-B retry speed)}
+  data:
+    actor_motion: rigged
+    requires_rig: m2b_humanoid_16bone
+    requires_weapon_class: heavy_blunt
+    frames: 49
+    fps: 24
+    timeline_version: {default: 1.0.0, other: "1.0.0-strike{strike_frames}f"}
+    events:
+      START: {frame: 0}
+      GUARD_END: {frame: 7}
+      APEX: {frame: 23}
+      CONTACT: {frame: 23, plus_param: strike_frames}
+      HOLD_END: {frame: 34}
+      RECOVERY_START: {frame: 34}
+      END: {frame: 48}
+    phases:
+      - {id: guard, kind: idle, start: START, end: GUARD_END}
+      - {id: windup, kind: other, start: GUARD_END, end: APEX}
+      - {id: strike, kind: strike, start: APEX, end: CONTACT}
+      - {id: impact, kind: impact, start: CONTACT, end: HOLD_END}
+      - {id: recovery, kind: recovery, start: HOLD_END, end: END}
+    peak_weapon_speed_head_widths_per_frame: {showcase_768x448: 1.27, m2b_512x320: 1.25}
+    default_vfx: [impact_dust_v1, debris_v1, sparks_v1, floor_cracks_v1, impact_flash_v1, camera_jolt_v1]
+
+- id: defender_guard_v1
+  kind: action
+  description: Static defensive guard held for the whole shot (trident forward toward the attacker).
+  aliases: [guard, guards, guarding, block, blocks, blocking, defend, defends, brace, braces, stands, parry, parries]
+  builder: static pose of ascetic_defender_v1 (no keys)
+  provenance: Showcase v1
+  limitations: [no motion; a requested block or parry is rendered as a held guard without weapon contact]
+  data:
+    actor_motion: static
+    frames: 49
+    fps: 24
+    events: {START: {frame: 0}, END: {frame: 48}}
+    phases:
+      - {id: defender_hold, kind: defense, start: START, end: END}
+    prompt: in a guarding stance
+
+# --- camera -------------------------------------------------------------------------------------------------------
+- id: orbit_push_v1
+  kind: camera
+  description: Look-at orbit plus push-in around a target, fixed lens, no roll (the M2-C / M3-A / Showcase family).
+  aliases: [orbit, orbiting, push-in, push in, pushes in, dolly in, circling]
+  builder: build_temple_camera_scene.camera_samples -> CameraTrajectory -> CameraMotion -> oc_import_camera
+  provenance: M2-C PASS (24 deg orbit + 1.5 m push-in, 35 mm); M3-A (24 deg, 1.4 m); Showcase v1 (low variant)
+  limitations: [the generated move reaches ~0.9x of the authored displacement (M2-C, one run)]
+  data:
+    family: orbit_push_look_at
+    defaults:
+      azimuth_deg: [-14.0, 10.0]
+      radius_m: [7.6, 6.3]
+      height_m: [2.25, 1.95]
+      lens_mm: 32.0
+      ease_linear_mix: 0.5
+      yaw_offset_deg: 0.0
+      sensor_mm: 36.0
+      sensor_fit: AUTO
+      clip_start: 0.1
+      clip_end: 300.0
+    default_target: {anchor_role: attacker, offset: [1.3, 0.1, 1.5]}
+    variants:
+      low: {}
+      high: {azimuth_deg: [-12.0, 12.0], radius_m: [8.4, 7.0], height_m: [3.6, 3.3], lens_mm: 35.0}
+    variant_aliases: {low: [low, low angle, low cinematic, heroic], high: [high, high angle, raised, elevated]}
+    envelope:
+      max_orbit_deg: 24.0
+      max_push_in_m: 1.5
+      height_m: [1.9, 3.6]
+      lens_mm: [32.0, 35.0]
+      min_radius_m: 6.0
+      ease_linear_mix: [0.3, 1.0]
+
+# --- effects (all triggered by semantic events) ---------------------------------------------------------------------
+- id: impact_dust_v1
+  kind: vfx
+  description: Backlit dust volumes - a plume and a ground ring - expanding and thinning after the contact.
+  aliases: [dust, dust cloud, dust burst]
+  builder: build_showcase_scene.build_impact_fx (plume + ring volumes) -> impact_fx layer
+  provenance: Showcase v1 (revised twice after viewing)
+  limitations: [rendered in the shared impact_fx layer]
+  data: {component: dust, layer: impact_fx, trigger_event: CONTACT, duration: to_end}
+- id: debris_v1
+  kind: vfx
+  description: Angular stone chips on ballistic arcs that come to rest on the floor.
+  aliases: [debris, chips, stones, rubble, fragments]
+  builder: build_showcase_scene.build_impact_fx (chips) -> impact_fx layer
+  provenance: M3-A, Showcase v1
+  data: {component: debris, layer: impact_fx, trigger_event: CONTACT, duration: to_end}
+- id: sparks_v1
+  kind: vfx
+  description: Short emissive spark streaks for five frames after the contact.
+  aliases: [sparks, spark]
+  builder: build_showcase_scene.build_impact_fx (sparks) -> impact_fx layer
+  provenance: Showcase v1
+  data: {component: sparks, layer: impact_fx, trigger_event: CONTACT, duration: to_end}
+- id: floor_cracks_v1
+  kind: vfx
+  description: Floor crack and crater decal that appears at the contact and persists.
+  aliases: [cracks, crack, cracked floor, crater]
+  builder: build_showcase_scene.build_impact_fx (crack decal) -> impact_fx layer
+  provenance: Showcase v1
+  data: {component: cracks, layer: impact_fx, trigger_event: CONTACT, duration: to_end}
+- id: impact_flash_v1
+  kind: vfx
+  description: Impact light flash - a light-only pass of a decaying point light, added to the frame.
+  aliases: [flash, impact flash, light burst]
+  builder: build_showcase_scene.build_impact_fx (fx_flash) -> impact_flash light pass (blend add)
+  provenance: Showcase v1 (energy cut to ~45% after viewing)
+  data: {component: flash, layer: impact_flash, trigger_event: CONTACT, duration: 5,
+         energy_w: [2200.0, 1100.0, 420.0, 140.0, 40.0]}
+- id: camera_jolt_v1
+  kind: vfx
+  description: 2-px post-only camera-response jolt over three frames (never alters the authored camera).
+  aliases: [jolt, shake, camera shake, camera jolt]
+  builder: tools/admission/finish_grade.py (shake)
+  provenance: Showcase v1
+  data: {component: jolt, layer: grade, trigger_event: CONTACT, offsets_px: [[0, 0, 2], [1, -1, -1], [2, 1, 0]]}
+
+# --- look, grade, generation, protection ----------------------------------------------------------------------------
+- id: mythic_temple_dusk_v1
+  kind: look
+  description: Low-key dusk contre-jour - warm low sun from behind-right, cool fill, fire-motivated key, cool rim, haze, AgX High Contrast.
+  aliases: [dusk, sunset, twilight, evening, golden hour, dark fantasy, mythological, mythic, dark mythological]
+  builder: build_showcase_scene.lighting + materials (oc_lookdev)
+  provenance: Showcase v1 (three look-development rounds)
+  data:
+    lighting: {sun: 3.2, fill: 220.0, firekey: 700.0, coolrim: 1500.0, fire: 420.0, sanctum: 90.0, world: 0.15,
+               haze: 0.005, exposure: -0.7, look: AgX - High Contrast, fire_emission: 1.8, door_emission: 0.3,
+               fill_color: [0.40, 0.55, 1.0], skin: [0.19, 0.022, 0.017], skin_dark: [0.065, 0.008, 0.006]}
+    sun: {elevation_deg: 22.0, heading_deg: 150.3, energy: 4.2, color: [1.0, 0.55, 0.28]}
+    prompt:
+      open: Cinematic dark fantasy film still
+      time: at dusk
+      light: warm low sunlight from behind with long shadows and soft atmospheric haze
+      close: Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain.
+
+- id: showcase_v1
+  kind: grade
+  description: Restrained reproducible finish (contrast, cool shadows / warm highlights, vignette, luma sharpen, fixed-seed grain).
+  aliases: []
+  builder: tools/admission/finish_grade.py
+  provenance: Showcase v1
+  data:
+    finish: {contrast: 1.05, brightness: 0.0, saturation: 1.0, gamma: 1.0, shadows_cool: 0.03, highlights_warm: 0.03,
+             vignette_angle: 0.45, sharpen: 0.35, grain: 3, grain_seed: 1000}
+
+- id: ltx25_union_768_v1
+  kind: generation_profile
+  description: LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA, first frame + depth control, 768x448x49, 8 steps.
+  aliases: []
+  builder: workflows/ltx25/showcase_v1_api.json via tools/windows/run_admission.ps1 (ComfyUI pinned)
+  provenance: M2-B 768 (admitted on the 4070 / 32 GB); Showcase v1 run 1 (39.2 s)
+  limitations: [fixed 8-step distilled schedule (model card); 49 frames; no upscaler installed]
+  data:
+    backend: LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)
+    workflow: workflows/ltx25/showcase_v1_api.json
+    resolution: [768, 448]
+    frames: 49
+    fps: 24
+    steps: 8
+    nodes: {prompt: "4", seed: "8", latent: "7"}
+    prompt_template: >-
+      {look_open}: {env_subject} {look_time}, {env_detail}, {look_light}. {attacker}, {attacker_weapon}. Facing him,
+      {defender} {defender_prop} {defender_stance}. {look_close}{style}
+
+- id: fast_weapon_v2
+  kind: protection_rule
+  description: Blender owns the weapon in every frame (90 deg shutter, holdout occlusion, gain grade, soften) with geometric swept-band ghost repair and a temporal fill in the authored fast frames.
+  aliases: []
+  builder: render_layers.py + tools/admission/hybrid_composite.py (CompositeManifest protected_geometry layer)
+  provenance: >-
+    M2-B (raw smear in the fastest frames, >= ~0.7 head widths/frame at 512x320 - a local working observation, not a
+    model limit); 768 comparison (no improvement); M3-A (v1 not usable, v2 post-hoc); Showcase v1 (swept_band + temporal)
+  limitations: [colour-independent but needs the authored silhouette; fills around a moving actor are excluded]
+  data:
+    applies_to_weapon_class: [heavy_blunt]
+    trigger: {min_peak_speed_head_widths_per_frame: 0.7}
+    layer_settings:
+      render: {holdout_others: true, motion_blur_shutter: 0.25, samples: 128}
+      grade: per_channel_gain
+      ghost_suppression: true
+      ghost_mode: swept_band
+      ghost_fill: temporal
+      ghost_band_px: 8
+      soften_px: 0.7
+      authored_speed_widths: 0.5
+      dilate_frames: 1
+      all_frames: true

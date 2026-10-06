@@ -1,0 +1,601 @@
+{
+  "$defs": {
+    "ActionSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Actor",
+          "type": "string"
+        },
+        "id": {
+          "description": "action instance id, used by event references (e.g. strike)",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        },
+        "preset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Preset",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "preset"
+      ],
+      "title": "ActionSpec",
+      "type": "object"
+    },
+    "CameraSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "additionalProperties": true,
+          "default": {},
+          "description": "overrides of the preset (validated against its envelope)",
+          "title": "Params",
+          "type": "object"
+        },
+        "preset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Preset",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/TargetRef"
+        },
+        "variant": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variant"
+        }
+      },
+      "required": [
+        "preset",
+        "target"
+      ],
+      "title": "CameraSpec",
+      "type": "object"
+    },
+    "CharacterSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "appearance": {
+          "default": "default",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Appearance",
+          "type": "string"
+        },
+        "asset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Asset",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Placement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "None: the asset's default staging"
+        },
+        "role": {
+          "enum": [
+            "attacker",
+            "defender",
+            "bystander"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "asset"
+      ],
+      "title": "CharacterSpec",
+      "type": "object"
+    },
+    "EffectEventSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        },
+        "preset": {
+          "description": "vfx registry id",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Preset",
+          "type": "string"
+        },
+        "trigger": {
+          "$ref": "#/$defs/EventRef"
+        }
+      },
+      "required": [
+        "id",
+        "preset",
+        "trigger"
+      ],
+      "title": "EffectEventSpec",
+      "type": "object"
+    },
+    "EnvironmentSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "asset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Asset",
+          "type": "string"
+        },
+        "id": {
+          "default": "TEMPLE",
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset"
+      ],
+      "title": "EnvironmentSpec",
+      "type": "object"
+    },
+    "EventRef": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Action",
+          "type": "string"
+        },
+        "event": {
+          "enum": [
+            "START",
+            "GUARD_END",
+            "APEX",
+            "CONTACT",
+            "HOLD_END",
+            "RECOVERY_START",
+            "END"
+          ],
+          "title": "Event",
+          "type": "string"
+        },
+        "offset_frames": {
+          "default": 0,
+          "title": "Offset Frames",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "action",
+        "event"
+      ],
+      "title": "EventRef",
+      "type": "object"
+    },
+    "GenerationSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Profile",
+          "type": "string"
+        },
+        "seed": {
+          "default": 1000,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "optional extra appearance words appended to the prompt",
+          "title": "Style"
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "title": "GenerationSettings",
+      "type": "object"
+    },
+    "GradeSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        },
+        "preset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Preset",
+          "type": "string"
+        }
+      },
+      "required": [
+        "preset"
+      ],
+      "title": "GradeSpec",
+      "type": "object"
+    },
+    "LookSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Params",
+          "type": "object"
+        },
+        "preset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Preset",
+          "type": "string"
+        }
+      },
+      "required": [
+        "preset"
+      ],
+      "title": "LookSpec",
+      "type": "object"
+    },
+    "Placement": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "scale": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Scale",
+          "type": "number"
+        },
+        "yaw_deg": {
+          "default": 0.0,
+          "title": "Yaw Deg",
+          "type": "number"
+        }
+      },
+      "required": [
+        "position"
+      ],
+      "title": "Placement",
+      "type": "object"
+    },
+    "PropSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "asset": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+          "title": "Asset",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mount": {
+          "default": "weapon_hand",
+          "enum": [
+            "weapon_hand",
+            "integrated"
+          ],
+          "title": "Mount",
+          "type": "string"
+        },
+        "owner": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Owner",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "asset",
+        "owner"
+      ],
+      "title": "PropSpec",
+      "type": "object"
+    },
+    "ProtectionSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "object": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Object",
+          "type": "string"
+        },
+        "rule": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+              "type": "string"
+            },
+            {
+              "const": "none",
+              "type": "string"
+            }
+          ],
+          "description": "protection rule id, or none to trust the generated output",
+          "title": "Rule"
+        }
+      },
+      "required": [
+        "object",
+        "rule"
+      ],
+      "title": "ProtectionSpec",
+      "type": "object"
+    },
+    "TargetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "offset": {
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Offset",
+          "type": "array"
+        }
+      },
+      "required": [
+        "anchor"
+      ],
+      "title": "TargetRef",
+      "type": "object"
+    }
+  },
+  "$id": "onecreations/shot_spec.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ActionSpec"
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "camera": {
+      "$ref": "#/$defs/CameraSpec"
+    },
+    "characters": {
+      "items": {
+        "$ref": "#/$defs/CharacterSpec"
+      },
+      "minItems": 1,
+      "title": "Characters",
+      "type": "array"
+    },
+    "compositing": {
+      "default": "protected_layers_v1",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Compositing",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "duration_frames": {
+      "exclusiveMinimum": 0,
+      "title": "Duration Frames",
+      "type": "integer"
+    },
+    "environment": {
+      "$ref": "#/$defs/EnvironmentSpec"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EffectEventSpec"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "fps": {
+      "default": 24,
+      "exclusiveMinimum": 0,
+      "title": "Fps",
+      "type": "integer"
+    },
+    "generation": {
+      "$ref": "#/$defs/GenerationSettings"
+    },
+    "grade": {
+      "$ref": "#/$defs/GradeSpec"
+    },
+    "id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "look": {
+      "$ref": "#/$defs/LookSpec"
+    },
+    "props": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PropSpec"
+      },
+      "title": "Props",
+      "type": "array"
+    },
+    "protection": {
+      "default": [],
+      "description": "explicit overrides; otherwise the compiler's policy rules decide",
+      "items": {
+        "$ref": "#/$defs/ProtectionSpec"
+      },
+      "title": "Protection",
+      "type": "array"
+    },
+    "qc_profile": {
+      "default": "showcase_class_preflight_v1",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.\\-]*$",
+      "title": "Qc Profile",
+      "type": "string"
+    },
+    "resolution": {
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Resolution",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "duration_frames",
+    "resolution",
+    "environment",
+    "characters",
+    "camera",
+    "look",
+    "generation",
+    "grade"
+  ],
+  "title": "ShotSpec",
+  "type": "object"
+}
