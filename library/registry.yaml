@@ -1,4 +1,4 @@
-# OneCreations asset registry (D1, 2026-10-06). Validated by onecreations.contracts.registry.AssetRegistry.
+# OneCreations asset registry (D1, 2026-10-06; D2 adds asura_v2). Validated by onecreations.contracts.registry.AssetRegistry.
 # Only assets, actions, cameras, effects, looks, grades and profiles that actually exist and were used in Showcase v1
 # are registered. Builders are the current Blender engine (integrations/blender/build_showcase_scene.py).
 schema_version: 1
@@ -7,17 +7,57 @@ engine: blender_showcase_v1
 entries:
 
 # --- characters ---------------------------------------------------------------------------------------------------
+- id: asura_v2
+  kind: character
+  status: experimental
+  description: >-
+    Upgraded horned asura (D2): firmer separated musculature, larger defined head with fused horn bases, an iron
+    breastplate tied to the pauldrons by shoulder straps, knee guards, finger tubes around the mace grip and a closed
+    off-hand fist. Same rig, anchors, oc_ids and pass indices as asura_showcase_v1.
+  aliases: [asura, demon, rakshasa, horned demon, demon warrior, horned asura]
+  builder: integrations/blender/build_showcase_scene.py:build_asura_v2 (scene_build.attacker_asset = asura_v2)
+  provenance: >-
+    D2 character admission (2026-10-06, admission_records/director/2026-10-06_asura_v2_admission.json): identical rig
+    motion (max joint difference 0.0 m) and pass indices; lower silhouette solidity, a longer outline and more surface
+    creases than asura_showcase_v1 at opening/apex/fast strike/contact/recovery; one fix round (off-hand fist)
+  limitations:
+    - one rig family (m2b_humanoid_16bone); stylised metaball surfaces; no facial animation, no cloth simulation
+    - per-part masks come from the material-index pass (groups below), not from separate objects or object indices
+    - "the fingers are rigid to the mace bone: they hold the grip by construction, they do not articulate"
+  data:
+    oc_id: sc_asura
+    pass_index: 1
+    rig: m2b_humanoid_16bone
+    rig_oc_id: sc_asura_rig
+    semantic_name: ASURA
+    roles: [attacker]
+    motion: rigged
+    builder_variant: asura_v2
+    anchors: {root: root bone, chest: chest bone, weapon_hand: mace bone (hand.L tail)}
+    weapon_classes: [heavy_blunt]
+    default_placement: {position: [-1.8, -4.0, 0.0], yaw_deg: 30.0, scale: 1.0}
+    material_groups: [skin, iron, bronze, leather, loincloth, horn, tusk, eye, hair]
+    material_masks: {skin: 1, armour: 2, cloth_harness: 3, head_details: 4}
+    prompt: >-
+      A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes
+      and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather
+      shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and
+      greaves
+
 - id: asura_showcase_v1
   kind: character
   description: Huge horned asura demon warrior (continuous metaball body, armour, mane) on the 16-bone M2-B humanoid rig.
-  aliases: [asura, demon, rakshasa, horned demon, demon warrior, horned asura]
+  aliases: [showcase asura, asura v1]
   builder: integrations/blender/build_showcase_scene.py:build_asura (oc_characters)
-  provenance: Showcase v1 (2026-10-06); rig and strike from M2-B (PARTIAL; timing and articulation followed)
+  provenance: >-
+    Showcase v1 (2026-10-06); rig and strike from M2-B (PARTIAL; timing and articulation followed). D2: kept
+    unchanged as the fallback; the generic aliases moved to asura_v2 after its admission
   limitations:
-    - the only rigged character; one rig family (m2b_humanoid_16bone)
+    - the only rigged character family; one rig (m2b_humanoid_16bone)
     - stylised metaball surfaces; no facial animation, no cloth simulation
-    - skin, armour and cloth share one object index (sub-part masks are not separable yet)
+    - skin, armour and cloth share one object index (D2's material-index pass can separate them; not registered for v1)
   data:
+    builder_variant: asura_showcase_v1
     oc_id: sc_asura
     pass_index: 1
     rig: m2b_humanoid_16bone

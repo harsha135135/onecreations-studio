@@ -86,7 +86,9 @@ def write_masks(compiled: CompiledShot, bundle_dir: Path, out_dir: Path) -> dict
     """Per-semantic-object masks from the object-index pass at the key events (the MaskProvider of D1)."""
     from onecreations.blender_bundle import load_bundle
 
-    idx = load_bundle(bundle_dir).passes()["object_index"]
+    passes = load_bundle(bundle_dir).passes()
+    idx = passes["object_index"]
+    mat = passes["material_index"] if "material_index" in passes else None
     ev = {e.name.split(".")[1]: e.frame for e in compiled.events if e.name.startswith("strike.")}
     frames = sorted({0, ev["APEX"], ev["CONTACT"], compiled.frames - 1})
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -101,6 +103,17 @@ def write_masks(compiled: CompiledShot, bundle_dir: Path, out_dir: Path) -> dict
             _write_png_gray(m, p)
             files[str(f)] = {"file": p.name, "pixels": int(m.sum())}
         index[o.id] = {"pass_indices": o.pass_indices, "separable": o.mask_separable, "frames": files}
+        if o.material_masks and mat is not None:       # per-part masks: object AND material-index group
+            parts = {}
+            for part, group in o.material_masks.items():
+                pf = {}
+                for f in frames:
+                    m = np.isin(idx[f], o.pass_indices) & (mat[f] == group)
+                    p = out_dir / f"{o.id.lower()}_{part}_f{f:02d}.png"
+                    _write_png_gray(m, p)
+                    pf[str(f)] = {"file": p.name, "pixels": int(m.sum())}
+                parts[part] = {"material_index": group, "frames": pf}
+            index[o.id]["parts"] = parts
     (out_dir / "masks.json").write_text(json.dumps(index, indent=1), encoding="utf-8")
     return index
 
@@ -137,7 +150,7 @@ def preflight(compiled: CompiledShot, out_dir: Path, samples: int = 64, device: 
     t["first_frame_s"] = round(time.perf_counter() - t0, 1)
     masks = write_masks(compiled, out_dir / "export", out_dir / "masks")
     built = json.loads((out_dir / "shot_spec.json").read_text(encoding="utf-8"))
-    qc = evaluate_preflight(compiled, out_dir, built)
+    qc = evaluate_preflight(compiled, out_dir / "export", out_dir / "first_frame.png", built)
     report = {"mode": "preflight", "shot_id": compiled.shot_id, "out_dir": str(out_dir), "timings": t,
               "first_frame_samples": samples, "masks": {k: v["pass_indices"] for k, v in masks.items()},
               "qc": qc, "stopped_before": "generate (LTX not invoked)"}

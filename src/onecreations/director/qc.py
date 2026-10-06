@@ -1,7 +1,9 @@
 """QC as data: the checks a compiled shot must pass, per stage, and the evaluator for the deterministic preflight.
 
-D1 implements the PREFLIGHT checks (control inputs, before any generation). Post-generation and final checks are
-declared with `implemented: false` so future automatic QC can plug in without changing the contract.
+D1 implemented the PREFLIGHT checks (control inputs, before any generation); D2 implements the POST_GENERATION
+checks (A-F: video validity, subject control, action timing, weapon integrity, camera, output integrity; evaluated in
+video_qc.py) and the FINAL checks. Each post-generation check declares its failure action as data (`on_fail`:
+repair / regenerate / fail); measurable checks only, never an aesthetic score.
 """
 
 from __future__ import annotations
@@ -34,27 +36,46 @@ def checks_for(profile: str, ctx: dict) -> list[QCCheck]:
         ("first_frame_aligned", "first_frame", {"resolution": ctx["resolution"]},
          "first frame rendered from the same scene, camera and frame as the passes (exact by construction)"),
     ]
+    cp = [0, 12, 24, 36, 48]
     post = [
-        ("weapon_attachment", "post_generation", {"max_grip_px": 12}, "M3-A hybrid criterion"),
-        ("contact_timing", "post_generation", {"event": "CONTACT", "tol_frames": 2}, "M2-B timing check"),
-        ("appearance_persistence", "post_generation", {}, "M3-A appearance axis (visual today)"),
-        ("protected_layer_integrity", "post_generation", {"no_double_image": True}, "M3-A / Showcase review"),
+        ("video_valid", "video", {"min_std": 3.0, "spike_abs": 25.0, "spike_rel": 6.0, "on_fail": "regenerate"},
+         "technical validity (decode, count, size, blank or corrupt frames)"),
+        ("subject_framing", "framing", {"frames": cp, "max_offset_px": 32, "min_ncc": 0.5, "on_fail": "fail"},
+         "M2 position check (about half a 64-px guide cell)"),
+        ("contact_timing", "timing", {"search_frames": 4, "radius_px": 24, "onset_frac": 0.9, "tol_frames": 2,
+                                      "max_offset_px": 6, "min_ncc": 0.45, "on_fail": "fail"},
+         "M2-B timing tolerance (2 frames); thresholds calibrated on Showcase v1 run 1 before D2"),
+        ("apex_presence", "timing", {"radius_px": 24, "min_ncc": 0.4, "max_offset_px": 10, "on_fail": "fail"},
+         "M2-B apex; calibrated on Showcase v1 run 1"),
+        ("weapon_integrity", "weapon", {"radius_px": 24, "min_ncc": 0.4, "max_offset_px": 10, "on_fail": "repair"},
+         "raw fast-weapon failure detector (M2-B / M3-A / Showcase); repaired by the protection policy"),
+        ("camera_progression", "camera", {"frames": cp, "margin_px": 8, "max_offset_px": 24, "min_ncc": 0.5,
+                                          "on_fail": "fail"}, "M2-C (generated move ~0.9x the authored one)"),
+        ("output_integrity", "video", {"max_hole_frac": 0.005, "on_fail": "regenerate"}, "no black holes"),
     ]
-    final = [("deliverable_format", "final", {"resolution": ctx["resolution"], "fps": ctx["fps"]}, "delivery")]
+    final = [
+        ("final_valid", "video", {"min_std": 3.0, "spike_abs": 40.0, "spike_rel": 8.0}, "delivery validity"),
+        ("protected_weapon_present", "weapon", {"min_ncc": 0.7}, "the repaired weapon survives effects and grade"),
+        ("effects_begin_at_contact", "events", {"min_change": 8, "max_change_before": 2},
+         "effects keyed from strike.CONTACT"),
+        ("bounded_repair", "composite", {"allowed_pass_indices": [ctx["weapon_pass_indices"]], "band_px": 10,
+                                         "max_outside_frac": 0.001}, "repair stays near the weapon"),
+        ("no_holes", "video", {"max_hole_frac": 0.005}, "no black holes after compositing"),
+    ]
     out = [QCCheck(id=i, stage="preflight", kind=k, params=p, implemented=True, provenance=s) for i, k, p, s in pre]
-    out += [QCCheck(id=i, stage="post_generation", kind=k, params=p, implemented=False, provenance=s)
+    out += [QCCheck(id=i, stage="post_generation", kind=k, params=p, implemented=True, provenance=s)
             for i, k, p, s in post]
-    out += [QCCheck(id=i, stage="final", kind=k, params=p, implemented=False, provenance=s) for i, k, p, s in final]
+    out += [QCCheck(id=i, stage="final", kind=k, params=p, implemented=True, provenance=s) for i, k, p, s in final]
     return out
 
 
-def evaluate_preflight(compiled, out_dir: Path, built_spec: dict) -> dict:
+def evaluate_preflight(compiled, export_dir: Path, first_frame: Path, built_spec: dict) -> dict:
     """Run the implemented preflight checks on a built scene (export bundle, controls, first frame)."""
     from onecreations.blender_bundle import load_bundle
     from onecreations.director import camera as cam
     from onecreations.geometry.intrinsics import project
 
-    b = load_bundle(out_dir / "export")
+    b = load_bundle(export_dir)
     idx, depth = b.passes()["object_index"], b.passes()["depth_m"]
     om = b.manifest.passes.object_index_map
     results = {}
@@ -116,7 +137,7 @@ def evaluate_preflight(compiled, out_dir: Path, built_spec: dict) -> dict:
             r = {"passed": iso <= p["max_isolated_background_px"] and finite, "isolated_background_px": iso,
                  "finite_depth_on_objects": finite}
         elif chk.id == "first_frame_aligned":
-            ff = out_dir / "first_frame.png"
+            ff = Path(first_frame)
             r = {"passed": ff.is_file() and [b.manifest.camera.intrinsics.resolution_x,
                                              b.manifest.camera.intrinsics.resolution_y] == list(p["resolution"]),
                  "method": "same .blend, camera and frame as the passes"}

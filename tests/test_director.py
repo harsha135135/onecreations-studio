@@ -228,7 +228,7 @@ def test_showcase_v1_reproduction_against_archived_records(reg, spec_dict):
 def test_prompt_interpreter_supported_example(reg):
     plan = interpret(PROMPT, reg)
     assert plan.supported and plan.unsupported == []
-    assert plan.characters == {"attacker": "asura_showcase_v1", "defender": "ascetic_defender_v1"}
+    assert plan.characters == {"attacker": "asura_v2", "defender": "ascetic_defender_v1"}
     assert plan.actions == {"attacker": "mace_slam_v1", "defender": "defender_guard_v1"}
     assert (plan.environment, plan.camera, plan.camera_variant, plan.look) == \
         ("temple_courtyard_v1", "orbit_push_v1", "low", "mythic_temple_dusk_v1")
@@ -279,6 +279,62 @@ def test_cli_generate_dry_run_and_refusal(capsys):
     from onecreations.__main__ import main
     assert main(["generate", PROMPT, "--dry-run"]) == 0
     assert "no process was started" in capsys.readouterr().out
-    assert main(["generate", PROMPT]) == 2                        # full prompt -> video is not claimed in D1
+    assert main(["generate", "--spec", str(SHOWCASE_SPEC)]) == 2     # a full run starts from a prompt (D2)
+    assert main(["generate"]) == 2
     assert main(["generate", "a dragon flying over Tokyo", "--dry-run"]) == 2
     assert main(["director", "validate", str(SHOWCASE_SPEC)]) == 0
+
+
+# --- D2: asura_v2 character asset ----------------------------------------------------------------------------------
+
+def test_asura_v2_is_the_default_attacker_and_v1_stays_selectable(reg, spec_dict):
+    v2, v1 = reg.get("asura_v2", "character"), reg.get("asura_showcase_v1", "character")
+    for k in ("oc_id", "pass_index", "rig", "rig_oc_id", "anchors", "semantic_name"):   # compatible IDs and anchors
+        assert v2.data[k] == v1.data[k]
+    assert v2.data["material_masks"] == {"skin": 1, "armour": 2, "cloth_harness": 3, "head_details": 4}
+    c = compile_shot(plan_to_spec(interpret(PROMPT, reg), reg, "d2_test"), reg)
+    assert c.scene_build["attacker_asset"] == "asura_v2" and c.scene_build["material_index_pass"] is True
+    asura = next(o for o in c.semantic_objects if o.id == "ASURA")
+    assert asura.material_masks == v2.data["material_masks"] and "breastplate" in c.generation.prompt
+    # the archived Showcase v1 spec still names v1 and still compiles to the v1 builder without the material pass
+    c1 = compile_shot(spec_of(spec_dict), reg)
+    assert c1.scene_build["attacker_asset"] == "asura_showcase_v1" and c1.scene_build["material_index_pass"] is False
+    assert interpret(PROMPT.replace("horned Asura", "showcase asura"), reg).characters["attacker"] == \
+        "asura_showcase_v1"
+
+
+def test_per_part_masks_from_the_material_index_pass(reg, tmp_path, monkeypatch):
+    c = compile_shot(plan_to_spec(interpret(PROMPT, reg), reg, "d2_test"), reg)
+    h, w = 8, 10
+    obj = np.zeros((49, h, w), np.uint16)
+    mat = np.zeros_like(obj)
+    obj[:, 2:6, 2:8] = 1                        # the asura
+    mat[:, 2:4, 2:8], mat[:, 4:6, 2:8] = 1, 2   # skin above, armour below
+    mat[:, 0, :] = 2                            # armour material elsewhere (not the asura) must not leak in
+
+    class B:
+        def passes(self):
+            return {"object_index": obj, "material_index": mat}
+    monkeypatch.setattr("onecreations.blender_bundle.load_bundle", lambda d: B())
+    written = []
+    monkeypatch.setattr(executor, "_write_png_gray", lambda m, p: written.append((p.name, int(m.sum()))))
+    idx = executor.write_masks(c, tmp_path, tmp_path / "masks")
+    parts = idx["ASURA"]["parts"]
+    assert parts["skin"]["frames"]["29"]["pixels"] == 12 and parts["armour"]["frames"]["29"]["pixels"] == 12
+    assert parts["cloth_harness"]["frames"]["29"]["pixels"] == 0
+    assert ("asura_armour_f29.png", 12) in written
+
+
+def test_character_admission_metrics_are_deterministic():
+    from tools.admission import character_admission as ca
+    blob = np.zeros((40, 40), bool)
+    blob[10:30, 10:30] = True
+    limbs = blob.copy()
+    limbs[10:30, 18:22] = False                 # two separated forms in the same hull
+    sb, sl = ca.silhouette(blob), ca.silhouette(limbs)
+    assert sb["solidity"] > 0.95 and sl["solidity"] < sb["solidity"] and sl["outline"] > sb["outline"]
+    n = np.zeros((40, 40, 3), np.float32)
+    n[..., 2] = 1
+    assert ca.surface_definition(n, blob)["crease_frac"] == 0.0
+    n[:, 20:, :] = (1, 0, 0)                    # a 90 degree crease down the middle
+    assert ca.surface_definition(n, blob)["crease_frac"] > 0

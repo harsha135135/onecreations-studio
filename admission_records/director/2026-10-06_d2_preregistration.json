@@ -1,0 +1,274 @@
+{
+ "id": "2026-10-06_d2_preregistration",
+ "date": "2026-10-06",
+ "milestone": "D2 one-command prompt -> final video",
+ "registered_before_run": true,
+ "code_commit": "the commit that adds this file (pushed before the run)",
+ "parent_commit": "40fb6b4",
+ "prompt": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+ "run_id": "d2_run1",
+ "command": "uv run onecreations generate \"Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.\" --run-id d2_run1",
+ "run_root": "G:/onecreations/runs",
+ "registry_sha256": "91521b296823693a7cff8db3b121b0d5cf75ad808b5ca2cd0e10b1ee95c11617",
+ "spec_sha256": "4c9dc2476c650d8e8ae404f9e6098d1230db7bebe8feae0f9cd4fff41ad20d4f",
+ "expected_plan": {
+  "characters": {
+   "attacker": "asura_v2",
+   "defender": "ascetic_defender_v1"
+  },
+  "actions": {
+   "attacker": "mace_slam_v1",
+   "defender": "defender_guard_v1"
+  },
+  "environment": "temple_courtyard_v1",
+  "camera": [
+   "orbit_push_v1",
+   "low"
+  ],
+  "look": "mythic_temple_dusk_v1",
+  "vfx": [
+   "impact_dust_v1",
+   "debris_v1",
+   "sparks_v1",
+   "floor_cracks_v1"
+  ],
+  "protection": {
+   "MACE": "fast_weapon_v2"
+  }
+ },
+ "character_version": {
+  "used": "asura_v2",
+  "admission": "admission_records/director/2026-10-06_asura_v2_admission.json"
+ },
+ "events": {
+  "strike.START": 0,
+  "strike.GUARD_END": 7,
+  "strike.APEX": 23,
+  "strike.CONTACT": 29,
+  "strike.HOLD_END": 34,
+  "strike.RECOVERY_START": 34,
+  "strike.END": 48,
+  "guard.START": 0,
+  "guard.END": 48
+ },
+ "generation": {
+  "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+  "workflow": "workflows/ltx25/showcase_v1_api.json",
+  "workflow_sha256": "9d08be3077904c4fd3d892d78f319a091a9a4f33b427aa2ed119cd22f5fc4989",
+  "prompt": "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain.",
+  "seed": 1000,
+  "steps": 8,
+  "resolution": [
+   768,
+   448
+  ],
+  "frames": 49,
+  "note": "INT8 ConvRot + Union IC-LoRA, first-frame conditioning, as admitted (workflow sha above)"
+ },
+ "grade": {
+  "contrast": 1.05,
+  "brightness": 0.0,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "shadows_cool": 0.03,
+  "highlights_warm": 0.03,
+  "vignette_angle": 0.45,
+  "sharpen": 0.35,
+  "grain": 3,
+  "grain_seed": 1000,
+  "shake": []
+ },
+ "layers": [
+  {
+   "id": "mace_protect",
+   "kind": "protected_geometry",
+   "trigger": null
+  },
+  {
+   "id": "impact_fx",
+   "kind": "effect",
+   "trigger": {
+    "timeline": "sc_mace_slam_v1",
+    "phase": "impact",
+    "edge": "start"
+   }
+  }
+ ],
+ "qc": {
+  "video_valid": {
+   "stage": "post_generation",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 25.0,
+    "spike_rel": 6.0,
+    "on_fail": "regenerate"
+   }
+  },
+  "subject_framing": {
+   "stage": "post_generation",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "max_offset_px": 32,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   }
+  },
+  "contact_timing": {
+   "stage": "post_generation",
+   "params": {
+    "search_frames": 4,
+    "radius_px": 24,
+    "onset_frac": 0.9,
+    "tol_frames": 2,
+    "max_offset_px": 6,
+    "min_ncc": 0.45,
+    "on_fail": "fail"
+   }
+  },
+  "apex_presence": {
+   "stage": "post_generation",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "fail"
+   }
+  },
+  "weapon_integrity": {
+   "stage": "post_generation",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "repair"
+   }
+  },
+  "camera_progression": {
+   "stage": "post_generation",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "margin_px": 8,
+    "max_offset_px": 24,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   }
+  },
+  "output_integrity": {
+   "stage": "post_generation",
+   "params": {
+    "max_hole_frac": 0.005,
+    "on_fail": "regenerate"
+   }
+  },
+  "final_valid": {
+   "stage": "final",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 40.0,
+    "spike_rel": 8.0
+   }
+  },
+  "protected_weapon_present": {
+   "stage": "final",
+   "params": {
+    "min_ncc": 0.7
+   }
+  },
+  "effects_begin_at_contact": {
+   "stage": "final",
+   "params": {
+    "min_change": 8,
+    "max_change_before": 2
+   }
+  },
+  "bounded_repair": {
+   "stage": "final",
+   "params": {
+    "allowed_pass_indices": [
+     [
+      8,
+      9
+     ]
+    ],
+    "band_px": 10,
+    "max_outside_frac": 0.001
+   }
+  },
+  "no_holes": {
+   "stage": "final",
+   "params": {
+    "max_hole_frac": 0.005
+   }
+  }
+ },
+ "generation_policy": {
+  "generations": 1,
+  "second_generation_only_if": [
+   "LTX_GENERATE technical failure (non-zero exit or no output; not the RAM guard)",
+   "a post-generation check whose on_fail is 'regenerate' fails (video_valid, output_integrity)"
+  ],
+  "max_generations": 2,
+  "seed": 1000,
+  "seed_change_on_regenerate": false,
+  "never": "regenerate for a failure deterministic repair handles (weapon_integrity -> repair)"
+ },
+ "acceptance": {
+  "D2_PASS": "AUTONOMY, CONTROL, PIPELINE and FINAL_INTEGRITY all PASS",
+  "D2_PARTIAL": "a final video was delivered by the pipeline but one class is not PASS",
+  "D2_FAIL": "no final video delivered, or a delivered video fails FINAL_INTEGRITY",
+  "AUTONOMY": {
+   "PASS": [
+    "one invocation of the command above produced deliverables/final.mp4 with exit code 0",
+    "no manual Blender / ComfyUI / compositor / frame / file / parameter action between invocation and delivery",
+    "no code or configuration change and no --resume needed to reach delivery"
+   ],
+   "FAIL": "any of the above violated (a resume after a fix is reported, and AUTONOMY is FAIL)"
+  },
+  "CONTROL": {
+   "PASS": [
+    "post-generation subject_framing, contact_timing (onset within +-2 frames of strike.CONTACT), apex_presence, camera_progression pass",
+    "weapon geometry protected: REPAIR ran from the policy (mace_protect) and final protected_weapon_present passes",
+    "visual (recorded separately, not a score): the strike reads guard -> apex -> contact -> recovery in final.mp4"
+   ],
+   "FAIL": "a 'fail' post-generation check fails (the run then stops by itself)"
+  },
+  "PIPELINE": {
+   "PASS": [
+    "all 15 stages status done (or cached only on an identical key), in order",
+    "every stage records key, start, finish, duration, outputs with sha256",
+    "effect layers start at the frame derived from strike.CONTACT (VFX blender_frames)",
+    "REPAIR executed because the compiled policy marks MACE geometry=protected",
+    "the run status is set by QC (no manual verdict)"
+   ]
+  },
+  "FINAL_INTEGRITY": {
+   "PASS": [
+    "final_valid (decodes, 49 frames, 768x448), protected_weapon_present, effects_begin_at_contact, bounded_repair, no_holes all pass",
+    "final sha256 recorded",
+    "visual: no major compositing corruption"
+   ]
+  },
+  "APPEARANCE": {
+   "classes": [
+    "IMPROVED",
+    "SHOWCASE-COMPARABLE",
+    "REGRESSED"
+   ],
+   "against": "Showcase v1 final (G:/onecreations/experiments/2026-10-06_showcase-v1-run1)",
+   "note": "reported separately; does not decide D2"
+  }
+ },
+ "rehearsal": "before this registration, all stages except LTX ran on the same prompt with Showcase run 1's raw video standing in for LTX (G:/onecreations/runs/rehearsal_d2_*); not a D2 result"
+}

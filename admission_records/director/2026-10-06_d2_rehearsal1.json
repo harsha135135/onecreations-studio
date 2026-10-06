@@ -1,0 +1,678 @@
+{
+ "id": "2026-10-06_d2_rehearsal1",
+ "note": "rehearsal: every stage real except LTX_GENERATE, which copied Showcase v1 run 1's raw video (v1 character); not a D2 result",
+ "execution": {
+  "run_id": "rehearsal_d2_1",
+  "pipeline": "d2.1",
+  "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender guards with a trident. Use a low orbit and push-in. Add dust, debris, sparks and floor cracks on impact.",
+  "started": "2026-10-06T21:29:44+05:30",
+  "options": {
+   "first_frame_samples": 1024,
+   "reference_samples": 64,
+   "layer_samples": null,
+   "device": "OPTIX",
+   "min_free_ram_gb": 20.0,
+   "technical_retries": 1,
+   "ltx_timeout_s": 3600
+  },
+  "stages": [
+   {
+    "id": "PLAN",
+    "key": "620124b1dfb007bc30505f53e6b59947afe3151455355c2f707982fe235a8b19",
+    "started": "2026-10-06T21:29:44+05:30",
+    "status": "done",
+    "outputs": {
+     "director_plan": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\director_plan.json",
+      "sha256": "0c3465be089e05f8c9a66aeb661b644d65a4d73865b78ffbdfd9b848966842ba"
+     },
+     "shot_spec": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\shot_spec.json",
+      "sha256": "d2dbb60f86a575ee0e995d9e36655b11c8633b1af3d581860009734e60e6bcc2"
+     }
+    },
+    "info": {
+     "warnings": []
+    },
+    "finished": "2026-10-06T21:29:45+05:30",
+    "duration_s": 0.02
+   },
+   {
+    "id": "VALIDATE",
+    "key": "b4ff9e83deeae7e82ca9ffdd3574f1f38e4ab3227ef02da0508302b6b894e023",
+    "started": "2026-10-06T21:29:45+05:30",
+    "status": "done",
+    "outputs": {},
+    "info": {
+     "issues": []
+    },
+    "finished": "2026-10-06T21:29:45+05:30",
+    "duration_s": 0.01
+   },
+   {
+    "id": "COMPILE",
+    "key": "70e17e30b45e84dedb24b36089bbb4d22a30158dcf7744118c39668581c0db76",
+    "started": "2026-10-06T21:29:45+05:30",
+    "status": "done",
+    "outputs": {
+     "compiled_shot": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\compiled_shot.json",
+      "sha256": "f8899bb91f8fd6e1e810dc1a8fb01ca14ff3248f2d4a1ae5ebbc0e2e2c5177d0"
+     }
+    },
+    "info": {
+     "events": {
+      "strike.START": 0,
+      "strike.GUARD_END": 7,
+      "strike.APEX": 23,
+      "strike.CONTACT": 29,
+      "strike.HOLD_END": 34,
+      "strike.RECOVERY_START": 34,
+      "strike.END": 48,
+      "guard.START": 0,
+      "guard.END": 48
+     }
+    },
+    "finished": "2026-10-06T21:29:45+05:30",
+    "duration_s": 0.02
+   },
+   {
+    "id": "BLENDER_BUILD",
+    "key": "51d9ce40d9dae4e99eea3021f00f7a175c50b1e961f71ef3ef0b98e434037105",
+    "started": "2026-10-06T21:29:45+05:30",
+    "status": "done",
+    "outputs": {
+     "blend": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\preflight\\scene.blend",
+      "sha256": "78db994415fac273052cd60205b6ee9eeac0481c199cd091d68a2e25518256dc"
+     },
+     "shot_spec": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\preflight\\shot_spec.json",
+      "sha256": "d0de45cf058471ea4eb77f465ff140462d487209cafaac2d3052d8528ae1ce5f"
+     }
+    },
+    "info": {},
+    "finished": "2026-10-06T21:29:48+05:30",
+    "duration_s": 3.95
+   },
+   {
+    "id": "CONTROL_RENDER",
+    "key": "276ed926841acd321cdb42d35e2f0c85d3b4a03728ea8c413f04435713647de6",
+    "started": "2026-10-06T21:29:48+05:30",
+    "status": "done",
+    "outputs": {
+     "export_manifest": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\preflight\\export\\export_manifest.json",
+      "sha256": "7496d5ab3ed3c3d4154286d83ce1eb77b1809b62f6f27c007ba0efc6757fb370"
+     },
+     "depth_control": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\controls\\depth_control.mp4",
+      "sha256": "9cc8ee3fc5228981bca64a21198d891bafdc52ca10d4dc7beee5587cf2272f1e"
+     },
+     "depth_sidecar": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\controls\\depth_control.json",
+      "sha256": "ea7cd3f74a336ebfa7aaacc93c15223dcac701c864efe0050e54712785cb8dc6"
+     },
+     "reference": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\preflight\\reference_preview.mp4",
+      "sha256": "999b4e9e49d81d1e819d0f80bbd9a498e0c2b893e4dda8e172914cd4e4fe0afb"
+     },
+     "reference_blur": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\preflight\\reference_motionblur.mp4",
+      "sha256": "3977fa25486ae201b03afaf6dfe768c9b8224b9dfab41f3c3e3847f28a0fa209"
+     }
+    },
+    "info": {},
+    "finished": "2026-10-06T21:33:51+05:30",
+    "duration_s": 242.33
+   },
+   {
+    "id": "FIRST_FRAME",
+    "key": "bb22a3c601d5c7d11440c260a4e6fc3842cb85d4eb1a0ef6bdd1696bb758a26b",
+    "started": "2026-10-06T21:33:51+05:30",
+    "status": "done",
+    "outputs": {
+     "first_frame": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\controls\\first_frame.png",
+      "sha256": "43ce5798ac7034ef027f5c984ddc17fd93fb554bddb3d9ce6701f900fcddea04"
+     }
+    },
+    "info": {
+     "samples": 1024
+    },
+    "finished": "2026-10-06T21:34:09+05:30",
+    "duration_s": 18.39
+   },
+   {
+    "id": "PREFLIGHT_QC",
+    "key": "8b401af279b1c4d80da55b2458f5609f1b05bbb0f7a37a2af5e380acfdcf8e96",
+    "started": "2026-10-06T21:34:09+05:30",
+    "status": "done",
+    "outputs": {
+     "report": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\qc\\preflight.json",
+      "sha256": "fc8cc8f20bca8ba14abae48647f86eac67c64b6387874ded0ec0224741ff9eb8"
+     }
+    },
+    "info": {
+     "passed": true,
+     "masks": [
+      "ARCHITECTURE",
+      "ASURA",
+      "BANNERS",
+      "BRAZIERS",
+      "DEFENDER",
+      "GROUND",
+      "MACE",
+      "PILLARS",
+      "RUBBLE",
+      "SHRINE",
+      "TRIDENT",
+      "WALLS"
+     ]
+    },
+    "finished": "2026-10-06T21:34:17+05:30",
+    "duration_s": 7.87
+   },
+   {
+    "id": "LTX_GENERATE",
+    "key": "d9c5f74b60150f699c6875d3a6d7e45f9ab4ec10a040aa608fab3b999bfad4fc",
+    "started": "2026-10-06T21:34:17+05:30",
+    "status": "done",
+    "outputs": {
+     "raw": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\generation\\raw.mp4",
+      "sha256": "b9a030171e53fdaf5a86a25cc7fc6084fb822a4899e88b04226470f680798a86"
+     }
+    },
+    "info": {
+     "rehearsal": true,
+     "source_raw": "G:\\onecreations\\experiments\\2026-10-06_showcase-v1-run1\\showcase_v1\\showcase_v1_00001_.mp4",
+     "note": "LTX not invoked: rehearsal copy of an earlier generation"
+    },
+    "finished": "2026-10-06T21:34:17+05:30",
+    "duration_s": 0.01
+   },
+   {
+    "id": "POST_GENERATION_QC",
+    "key": "c5e6ac8c5b6cd36eaf5c48d35949c39c0f7c9691458ac28a9b8e8870729f0fb1",
+    "started": "2026-10-06T21:34:17+05:30",
+    "status": "done",
+    "outputs": {
+     "report": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\qc\\post_generation.json",
+      "sha256": "8d534acc48ba6738cf31589270a8d14efa2f415bc7b45871623b743437a1c7ff"
+     }
+    },
+    "info": {
+     "decision": {
+      "status": "proceed",
+      "repairs": [
+       {
+        "object": "MACE",
+        "action": "protected_layer",
+        "reason": "policy (geometry=protected), not QC",
+        "qc_evidence": [
+         "weapon_integrity"
+        ]
+       }
+      ],
+      "regenerate_for": [],
+      "fail_for": []
+     },
+     "passed": {
+      "video_valid": true,
+      "subject_framing": true,
+      "contact_timing": true,
+      "apex_presence": true,
+      "weapon_integrity": false,
+      "camera_progression": true,
+      "output_integrity": true
+     }
+    },
+    "finished": "2026-10-06T21:34:22+05:30",
+    "duration_s": 5.39
+   },
+   {
+    "id": "REPAIR",
+    "key": "c6d5c225a3b083e6dab89b0750f35d8fc32e560a6f433b09a58b1e4768a7a11f",
+    "started": "2026-10-06T21:34:22+05:30",
+    "status": "done",
+    "outputs": {
+     "repaired": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\repair\\repaired.mp4",
+      "sha256": "3f78ca8ec094f91d041d7e20d57d3558fb41d75fcf7f9b7a2f47bfd2d94da0f2"
+     },
+     "report": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\repair\\composite_report.json",
+      "sha256": "c5ca32e7a7931143a9975f608a8179db72132889a331d167106f37ef5b7d4ec7"
+     }
+    },
+    "info": {
+     "layers": {
+      "mace_protect": {
+       "protected_frames": 49,
+       "ghost_mode": "swept_band",
+       "ghost_fill": "temporal",
+       "gain": [
+        1.075,
+        1.0709,
+        1.3398
+       ]
+      }
+     },
+     "layer_dirs": {
+      "mace_protect": "G:\\onecreations\\runs\\rehearsal_d2_1\\repair\\layers\\mace_protect"
+     }
+    },
+    "finished": "2026-10-06T21:36:07+05:30",
+    "duration_s": 104.98
+   },
+   {
+    "id": "VFX",
+    "key": "2606d11794384521fa8bfff9bf2ff3c7b6e7c1735b1d0af8be6af38bbd533d3c",
+    "started": "2026-10-06T21:36:07+05:30",
+    "status": "done",
+    "outputs": {},
+    "info": {
+     "layer_dirs": {
+      "impact_fx": "G:\\onecreations\\runs\\rehearsal_d2_1\\vfx\\layers\\impact_fx"
+     },
+     "layer_hashes": {
+      "impact_fx": "dcc8f110df5171511f7d219e161f691a5e2712fb9aabd83e77bfccf8e8b53da0"
+     },
+     "blender_frames": {
+      "impact_fx": "30-49"
+     }
+    },
+    "finished": "2026-10-06T21:37:13+05:30",
+    "duration_s": 65.91
+   },
+   {
+    "id": "COMPOSITE",
+    "key": "ae0a6a4f6f2b18c56889e764f2a94f42297e1f0106810242330088bbd866bf7b",
+    "started": "2026-10-06T21:37:13+05:30",
+    "status": "done",
+    "outputs": {
+     "composite": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\composite\\composite.mp4",
+      "sha256": "84d5609afa3135dc2b7b0942fbabfc905e391f97896a563efad4f45f787cbd43"
+     },
+     "reference_with_effects": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\composite\\reference_with_effects.mp4",
+      "sha256": "0fc3128e997c83c0b3497fb01661f56532ce16bbed7a96be4d0c45ea81a9c2fa"
+     }
+    },
+    "info": {
+     "order": [
+      "raw",
+      "mace_protect",
+      "impact_fx",
+      "grade"
+     ],
+     "effects": {
+      "impact_fx": 29
+     }
+    },
+    "finished": "2026-10-06T21:37:20+05:30",
+    "duration_s": 6.41
+   },
+   {
+    "id": "GRADE",
+    "key": "ee2848cbda58ee03e80997c0122249e4a318f112bd9a8493c28739428cc1ca88",
+    "started": "2026-10-06T21:37:20+05:30",
+    "status": "done",
+    "outputs": {
+     "final_master": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\grade\\final_master.mp4",
+      "sha256": "7eb343d9dfb768ab6a462dfb012e81c78741f62afc2b08b669c7d6acb21f1feb"
+     },
+     "final_view": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\grade\\final.mp4",
+      "sha256": "8dc6a523db4bae7a73dae0acf16ec5c876b61675f5ad51c1b7384eb8bb894f0f"
+     }
+    },
+    "info": {
+     "filter_chain": "eq=contrast=1.05:brightness=0.0:saturation=1.0:gamma=1.0,colorbalance=rs=-0.03:bs=0.03:rh=0.03:bh=-0.03,vignette=angle=0.45,unsharp=lx=5:ly=5:la=0.35:cx=3:cy=3:ca=0,format=yuv444p,noise=c0s=3:c0f=t:all_seed=1000",
+     "shake": []
+    },
+    "finished": "2026-10-06T21:37:21+05:30",
+    "duration_s": 1.34
+   },
+   {
+    "id": "FINAL_QC",
+    "key": "df56fd2e0879fd3b5398ccbc29fb4c4f7337ef37b9b94ee71e6efd18fdbacd5f",
+    "started": "2026-10-06T21:37:21+05:30",
+    "status": "done",
+    "outputs": {
+     "report": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\qc\\final.json",
+      "sha256": "90458d1215c1de5a77b94fcea3c85263d963f74397210205770463d35648f791"
+     }
+    },
+    "info": {
+     "passed": true,
+     "checks": {
+      "final_valid": true,
+      "protected_weapon_present": true,
+      "effects_begin_at_contact": true,
+      "bounded_repair": true,
+      "no_holes": true
+     }
+    },
+    "finished": "2026-10-06T21:37:32+05:30",
+    "duration_s": 10.92
+   },
+   {
+    "id": "DELIVER",
+    "key": "ce91a912c2afe000d4f8bebbbc5752699a521aeb77866f00eed3ad5b8469cac3",
+    "started": "2026-10-06T21:37:32+05:30",
+    "status": "done",
+    "outputs": {
+     "final": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\deliverables\\final.mp4",
+      "sha256": "8dc6a523db4bae7a73dae0acf16ec5c876b61675f5ad51c1b7384eb8bb894f0f"
+     },
+     "preview": {
+      "path": "G:\\onecreations\\runs\\rehearsal_d2_1\\deliverables\\preview.mp4",
+      "sha256": "9a4ff7f26a151ac1bf8f726ffc0df1002967e9b4250c1753549f3860e5022927"
+     }
+    },
+    "info": {
+     "final_sha256": "8dc6a523db4bae7a73dae0acf16ec5c876b61675f5ad51c1b7384eb8bb894f0f"
+    },
+    "finished": "2026-10-06T21:37:32+05:30",
+    "duration_s": 0.38
+   }
+  ],
+  "status": "succeeded",
+  "storage_free_gib_before": 236.94,
+  "free_ram_gb_before": 20.3,
+  "finished": "2026-10-06T21:37:32+05:30",
+  "wall_s": 468.0,
+  "storage_free_gib_after": 236.52
+ },
+ "preflight": {
+  "passed": true,
+  "checks": {
+   "events_resolved": {
+    "passed": true,
+    "events": {
+     "strike.START": 0,
+     "strike.GUARD_END": 7,
+     "strike.APEX": 23,
+     "strike.CONTACT": 29,
+     "strike.HOLD_END": 34,
+     "strike.RECOVERY_START": 34,
+     "strike.END": 48,
+     "guard.START": 0,
+     "guard.END": 48
+    }
+   },
+   "timeline_matches_engine": {
+    "passed": true
+   },
+   "weapon_bone_projection": {
+    "passed": true,
+    "max_px": 2.11
+   },
+   "stationary_root": {
+    "passed": true,
+    "max_move_m": 0.0
+   },
+   "camera_contract": {
+    "passed": true,
+    "max_position_err_m": 4.69140244874211e-07,
+    "max_angle_err_deg": 3.8e-05
+   },
+   "camera_clearance": {
+    "passed": true,
+    "min_distance_m": 1.95
+   },
+   "actors_in_frame": {
+    "passed": true,
+    "objects": {
+     "sc_asura": {
+      "min_px": 25705,
+      "touches_border_frames": 0
+     },
+     "sc_defender": {
+      "min_px": 7800,
+      "touches_border_frames": 0
+     }
+    },
+    "frame": [
+     768,
+     448
+    ]
+   },
+   "weapon_visible": {
+    "passed": true,
+    "objects": {
+     "sc_mace_head": {
+      "min_px": 2471,
+      "touches_border_frames": 0
+     }
+    },
+    "frame": [
+     768,
+     448
+    ]
+   },
+   "depth_valid": {
+    "passed": true,
+    "isolated_background_px": 21,
+    "finite_depth_on_objects": true
+   },
+   "first_frame_aligned": {
+    "passed": true,
+    "method": "same .blend, camera and frame as the passes"
+   }
+  },
+  "not_run": [
+   "video_valid",
+   "subject_framing",
+   "contact_timing",
+   "apex_presence",
+   "weapon_integrity",
+   "camera_progression",
+   "output_integrity",
+   "final_valid",
+   "protected_weapon_present",
+   "effects_begin_at_contact",
+   "bounded_repair",
+   "no_holes"
+  ]
+ },
+ "post_generation": {
+  "checks": {
+   "video_valid": {
+    "passed": true,
+    "frames": 49,
+    "size": [
+     768,
+     448
+    ],
+    "blank_frames": [],
+    "abrupt_frames": [],
+    "median_frame_diff": 6.13,
+    "on_fail": "regenerate"
+   },
+   "subject_framing": {
+    "passed": true,
+    "frames": {
+     "0": {
+      "ncc": 0.812,
+      "offset_px": 0.0
+     },
+     "12": {
+      "ncc": 0.771,
+      "offset_px": 2.8
+     },
+     "24": {
+      "ncc": 0.778,
+      "offset_px": 2.0
+     },
+     "36": {
+      "ncc": 0.772,
+      "offset_px": 2.0
+     },
+     "48": {
+      "ncc": 0.767,
+      "offset_px": 2.0
+     }
+    },
+    "on_fail": "fail"
+   },
+   "contact_timing": {
+    "passed": true,
+    "contact_frame": 29,
+    "observed_onset": 29,
+    "offset_frames": 0,
+    "best_ncc": 0.554,
+    "per_frame_ncc": {
+     "25": 0.466,
+     "26": 0.468,
+     "27": 0.478,
+     "28": 0.394,
+     "29": 0.518,
+     "30": 0.542,
+     "31": 0.552,
+     "32": 0.554,
+     "33": 0.552
+    },
+    "on_fail": "fail"
+   },
+   "apex_presence": {
+    "passed": true,
+    "apex_frame": 23,
+    "ncc": 0.508,
+    "offset_px": 7.1,
+    "on_fail": "fail"
+   },
+   "weapon_integrity": {
+    "passed": false,
+    "failed_frames": [
+     25,
+     26,
+     27
+    ],
+    "per_frame_ncc": {
+     "23": {
+      "ncc": 0.508,
+      "offset_px": 7.1
+     },
+     "24": {
+      "ncc": 0.512,
+      "offset_px": 8.2
+     },
+     "25": {
+      "ncc": 0.488,
+      "offset_px": 11.4
+     },
+     "26": {
+      "ncc": 0.6,
+      "offset_px": 16.5
+     },
+     "27": {
+      "ncc": 0.423,
+      "offset_px": 12.8
+     },
+     "28": {
+      "ncc": 0.489,
+      "offset_px": 8.2
+     },
+     "29": {
+      "ncc": 0.518,
+      "offset_px": 4.2
+     }
+    },
+    "meaning": "raw generated weapon unreliable in these frames",
+    "on_fail": "repair"
+   },
+   "camera_progression": {
+    "passed": true,
+    "frames": {
+     "0": {
+      "ncc": 0.974,
+      "offset_px": 0.0
+     },
+     "12": {
+      "ncc": 0.936,
+      "offset_px": 0.0
+     },
+     "24": {
+      "ncc": 0.867,
+      "offset_px": 4.0
+     },
+     "36": {
+      "ncc": 0.82,
+      "offset_px": 4.0
+     },
+     "48": {
+      "ncc": 0.805,
+      "offset_px": 4.0
+     }
+    },
+    "note": "background registered to the authored move (image space)",
+    "on_fail": "fail"
+   },
+   "output_integrity": {
+    "passed": true,
+    "hole_frames": [],
+    "on_fail": "regenerate"
+   }
+  },
+  "decision": {
+   "status": "proceed",
+   "repairs": [
+    {
+     "object": "MACE",
+     "action": "protected_layer",
+     "reason": "policy (geometry=protected), not QC",
+     "qc_evidence": [
+      "weapon_integrity"
+     ]
+    }
+   ],
+   "regenerate_for": [],
+   "fail_for": []
+  }
+ },
+ "final": {
+  "checks": {
+   "final_valid": {
+    "passed": true,
+    "frames": 49,
+    "size": [
+     768,
+     448
+    ],
+    "blank_frames": [],
+    "abrupt_frames": [],
+    "median_frame_diff": 7.06
+   },
+   "protected_weapon_present": {
+    "passed": true,
+    "frames_checked": 49,
+    "min_ncc": 0.805
+   },
+   "effects_begin_at_contact": {
+    "passed": true,
+    "contact_frame": 29,
+    "first_changed_frame": 29,
+    "max_change_before_contact": 0
+   },
+   "bounded_repair": {
+    "passed": true,
+    "max_changed_outside_frac": 0.0
+   },
+   "no_holes": {
+    "passed": true,
+    "hole_frames": []
+   }
+  },
+  "passed": true,
+  "final_sha256": "7eb343d9dfb768ab6a462dfb012e81c78741f62afc2b08b669c7d6acb21f1feb"
+ }
+}

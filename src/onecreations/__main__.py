@@ -16,6 +16,8 @@
     onecreations director compile SPEC.json [--out compiled.json]
     onecreations generate "PROMPT" --dry-run [--json]         (or --spec SPEC.json instead of a prompt)
     onecreations generate "PROMPT" --preflight DIR [--samples 64]   (Blender controls + first frame + masks + QC; no LTX)
+    onecreations generate "PROMPT" [--output RUNS_ROOT] [--run-id ID]  (D2: full unattended run -> final.mp4)
+    onecreations generate --resume RUN_DIR [--from-stage STAGE]
 """
 
 from __future__ import annotations
@@ -206,8 +208,7 @@ def cmd_generate(args) -> int:
     from onecreations.director.executor import dry_run, plan_request, preflight
     from onecreations.director.registry import load_registry
     if not (args.dry_run or args.preflight):
-        print("full prompt -> final video is not orchestrated yet (D1): use --dry-run or --preflight DIR")
-        return 2
+        return _generate_run(args)
     if bool(args.prompt) == bool(args.spec):
         print("give a PROMPT or --spec SPEC.json")
         return 2
@@ -230,6 +231,34 @@ def cmd_generate(args) -> int:
     summary["qc_passed"] = report["qc"]["passed"]
     _print(summary)
     return 0 if report["qc"]["passed"] else 1
+
+
+def _generate_run(args) -> int:
+    """D2: the full unattended pipeline for a supported prompt (or --resume an existing run directory)."""
+    from onecreations.director import pipeline
+    if args.spec:
+        print("a full run starts from a prompt (the director plans it); --spec works with --dry-run / --preflight")
+        return 2
+    if args.resume:
+        run_dir = Path(args.resume)
+    elif args.prompt:
+        run_dir = pipeline.new_run_dir(args.output, args.run_id)
+        if run_dir.exists():
+            print(f"{run_dir} exists: use --resume {run_dir}")
+            return 2
+    else:
+        print("give a PROMPT (or --resume RUN_DIR)")
+        return 2
+    opts = pipeline.Options(first_frame_samples=args.first_frame_samples, reference_samples=args.reference_samples)
+    rec = pipeline.execute(run_dir, request=args.prompt, options=opts, from_stage=args.from_stage)
+    for st in rec["stages"]:
+        note = f"  {st['failure']}" if st.get("failure") else ""
+        print(f"  {st['id']:<20} {st['status']:<10} {st.get('duration_s', '')}{note}")
+    print(f"run {rec['run_id']}: {rec['status'].upper()} in {rec['wall_s']} s")
+    if rec["status"] == "succeeded":
+        print(f"final video: {run_dir / 'deliverables' / 'final.mp4'}")
+    print(f"report: {run_dir / 'deliverables' / 'report.md'}")
+    return 0 if rec["status"] == "succeeded" else 1
 
 
 def _print_dry_run(out: dict) -> None:
@@ -351,6 +380,12 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--samples", type=int, default=64)
     g.add_argument("--shot-id", default="d1_shot")
     g.add_argument("--json", action="store_true")
+    g.add_argument("--output", help="runs root (default <data root>/runs)")
+    g.add_argument("--run-id")
+    g.add_argument("--resume", metavar="RUN_DIR")
+    g.add_argument("--from-stage", help="force re-execution from this stage on --resume")
+    g.add_argument("--first-frame-samples", type=int, default=1024)
+    g.add_argument("--reference-samples", type=int, default=64)
     return p
 
 

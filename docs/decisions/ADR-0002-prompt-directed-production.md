@@ -108,10 +108,20 @@ Every renderable is a SemanticObject that records:
 This keeps "make the Asura's armour black" possible later: it needs per-material masks (Cryptomatte or a material
 index pass) and a masked-edit backend, neither of which exists yet. Nothing in the spec prevents them.
 
+*D2 clarification (2026-10-06):* the material-index pass now exists (`oc_export --material-index`, Cycles IndexMA)
+and a character entry may declare `material_masks` (part → material pass index; `asura_v2`: skin, armour,
+cloth_harness, head_details). A per-part mask is the object mask AND the material index. The masked-edit backend
+still does not exist.
+
 ### 10. QC is data
 
 QC checks are declared per stage (`preflight` / `post_generation` / `final`) with an `implemented` flag. D1
 evaluates the preflight checks; post-generation checks are declared so automatic QC can plug in later.
+
+*D2 clarification (2026-10-06):* the post-generation and final checks are implemented (`director/video_qc.py`).
+Each post-generation check declares its failure action (`on_fail`: `repair`, `regenerate` or `fail`). A repair is
+never triggered by QC alone: the compiled ProcessingPolicy (geometry `protected`) schedules it, and QC's weapon
+evidence is recorded with it. Only `regenerate` checks may cause a second generation, once, with the same seed.
 
 ### 11. The director is replaceable
 

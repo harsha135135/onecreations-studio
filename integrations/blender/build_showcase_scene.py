@@ -65,16 +65,17 @@ FX = {"components": ["dust", "debris", "sparks", "cracks"], "flash": True, "seed
       "dust_decay_s": 0.6, "flash_energy_w": [2200.0, 1100.0, 420.0, 140.0, 40.0]}
 FX_KINDS = {"dust": ("plume", "ring"), "debris": ("chip",), "sparks": ("spark",), "cracks": ("crack",)}
 LAYERS = None                                         # compiled CompositeManifest (dict); None: layers_manifest()
+ATTACKER_ASSET = "asura_showcase_v1"                  # D2: "asura_v2" builds the upgraded character
 
 
 def apply_config(cfg: dict) -> None:
     """Apply a compiled scene_build configuration (D1). Unknown keys are errors: the compiler and this builder must
     agree on the interface."""
     global RES, ROOT_AT, ASURA_YAW_DEG, DEFENDER_AT, DEFENDER_YAW_DEG, DEFENDER_SCALE, CAMERA_MOVE, SUN, STRIKE_FRAMES
-    global SHOT_ID, TIMELINE_ID, TIMELINE_ACTORS, LAYERS
+    global SHOT_ID, TIMELINE_ID, TIMELINE_ACTORS, LAYERS, ATTACKER_ASSET
     known = {"engine", "shot_id", "timeline_id", "timeline_actors", "frames", "fps", "resolution", "root_at",
              "asura_yaw_deg", "defender_at", "defender_yaw_deg", "defender_scale", "camera_move", "sun", "look",
-             "strike_frames", "fx", "layers"}
+             "strike_frames", "fx", "layers", "attacker_asset", "material_index_pass"}
     unknown = set(cfg) - known
     if unknown:
         raise ValueError(f"scene_build: unknown keys {sorted(unknown)}")
@@ -95,6 +96,9 @@ def apply_config(cfg: dict) -> None:
     TIMELINE_ID = cfg.get("timeline_id", TIMELINE_ID)
     TIMELINE_ACTORS = dict(cfg.get("timeline_actors", TIMELINE_ACTORS))
     LAYERS = cfg.get("layers")
+    ATTACKER_ASSET = cfg.get("attacker_asset", ATTACKER_ASSET)
+    if ATTACKER_ASSET not in ("asura_showcase_v1", "asura_v2"):
+        raise ValueError(f"this engine builds asura_showcase_v1 or asura_v2, not {ATTACKER_ASSET}")
 LOOK = {"sun": 3.2, "fill": 220.0, "firekey": 700.0, "coolrim": 1500.0, "fire": 420.0, "sanctum": 90.0,
         "world": 0.15, "haze": 0.005, "exposure": -0.7, "look": "AgX - High Contrast",
         "fire_emission": 1.8, "door_emission": 0.3, "fill_color": (0.40, 0.55, 1.0), "skin": (0.19, 0.022, 0.017), "skin_dark": (0.065, 0.008, 0.006)}
@@ -134,6 +138,15 @@ def materials() -> dict:
         "coal": lk.plain("sc_coal", (0.03, 0.01, 0.005), 0.8, emission=(1.0, 0.2, 0.03), strength=3.0),
         "banner": lk.cloth("sc_banner", (0.16, 0.025, 0.02), weave=90.0, sheen=0.25, folds=4.0),
     }
+
+
+MATERIAL_GROUPS = {"skin": 1, "iron": 2, "bronze": 2, "leather": 3, "loincloth": 3, "horn": 4, "tusk": 4, "eye": 4,
+                   "hair": 4, "gold": 5}                 # 1 skin, 2 armour, 3 cloth/harness, 4 head details, 5 weapon
+
+
+def tag_material_groups(m: dict) -> None:
+    for key, index in MATERIAL_GROUPS.items():
+        m[key].pass_index = index
 
 
 # --- surface fitting helpers (rig rest space) --------------------------------------------------------------------
@@ -252,7 +265,108 @@ def arm_elements(s: int) -> list[dict]:
     return out
 
 
+HEAD_PIVOT, HEAD_SCALE_V2 = Vector((0.0, 0.01, 2.21)), 1.12
+K_V2, K_SHRINK = 2.7, 0.93          # firmer muscle fields (less blending); visible size compensated (measured ~+7%)
+
+
+def _hs(p, k=HEAD_SCALE_V2):
+    """v2 head scale about the neck base."""
+    return tuple(HEAD_PIVOT + (Vector(p) - HEAD_PIVOT) * k)
+
+
+def _firm(co, semi, **kw):
+    return ch.ell(co, tuple(v * K_SHRINK for v in semi), stiffness=K_V2, **kw)
+
+
+def torso_elements_v2() -> list[dict]:
+    """v2: narrower waist, broader lats/back, firmer pectorals/abdominals/serratus/traps (defined, not fused)."""
+    e = ch.ell
+    out = [e((0, 0.02, 1.16), (0.29, 0.21, 0.17)),
+           e((0.14, 0.10, 1.07), (0.15, 0.13, 0.15)), e((-0.14, 0.10, 1.07), (0.15, 0.13, 0.15)),
+           e((0, 0.0, 1.40), (0.27, 0.20, 0.16)), e((0, -0.06, 1.57), (0.26, 0.18, 0.20)),
+           e((0, 0.0, 1.87), (0.41, 0.26, 0.30)), e((0, 0.16, 1.93), (0.36, 0.10, 0.30)),
+           e((0, 0.02, 2.20), (0.14, 0.14, 0.13))]
+    for s in (1, -1):
+        out += [_firm((s * 0.19, -0.17, 1.98), (0.21, 0.10, 0.13), rot_deg=(0, s * -14, 0)),
+                _firm((s * 0.36, 0.05, 1.82), (0.13, 0.18, 0.28)),
+                _firm((s * 0.18, 0.06, 2.14), (0.18, 0.12, 0.09), rot_deg=(0, s * 22, 0)),
+                e((s * 0.49, 0.0, 2.06), (0.16, 0.15, 0.13))]
+        for z in (1.72, 1.62, 1.52):
+            out.append(_firm((s * 0.075, -0.215, z), (0.07, 0.035, 0.045)))
+        for k, z in enumerate((1.80, 1.70, 1.60)):                       # serratus
+            out.append(_firm((s * (0.30 - 0.02 * k), -0.12, z), (0.05, 0.04, 0.035), rot_deg=(0, s * 30, 0)))
+    out += head_elements_v2()
+    out += leg_elements_v2()
+    return out
+
+
+def head_elements_v2() -> list[dict]:
+    e, b = ch.ell, ch.ball
+    k = HEAD_SCALE_V2
+    raw = [((0, 0.03, 2.47), (0.19, 0.21, 0.22), {}), ((0, -0.155, 2.535), (0.18, 0.065, 0.05), {}),
+           ((0, -0.09, 2.31), (0.16, 0.15, 0.10), {}), ((0, -0.18, 2.27), (0.075, 0.055, 0.055), {}),
+           ((0, -0.205, 2.47), (0.03, 0.03, 0.06), {}),                     # nose bridge
+           ((0, -0.22, 2.42), (0.045, 0.05, 0.05), {}),
+           ((0, -0.205, 2.33), (0.09, 0.04, 0.014), {"negative": True})]
+    for s in (1, -1):
+        raw += [((s * 0.105, -0.145, 2.41), (0.075, 0.06, 0.05), {}), ((s * 0.035, -0.23, 2.405), (0.022, 0.02, 0.018), {}),
+                ((s * 0.12, -0.02, 2.62), (0.06, 0.06, 0.05), {})]           # horn bases fused into the skull
+    out = [e(_hs(c), tuple(v * k for v in semi), **kw) for c, semi, kw in raw]
+    for s in (1, -1):
+        out.append(b(_hs((s * 0.07, -0.195, 2.48)), 0.034 * k, negative=True))
+    return out
+
+
+def leg_elements_v2() -> list[dict]:
+    e, b = ch.ell, ch.ball
+    out = []
+    for s, j in LEG.items():
+        out += ch.limb(j["hip"], j["knee"], 0.17, 0.11)
+        out += [_firm((s * 0.28, -0.11, 0.86), (0.20, 0.10, 0.10), axis=Vector(j["knee"]) - Vector(j["hip"])),
+                _firm((s * 0.20, -0.05, 0.80), (0.16, 0.07, 0.07), axis=Vector(j["knee"]) - Vector(j["hip"])),
+                b((s * 0.33, -0.15, 0.58), 0.075)]
+        out += ch.limb(j["knee"], j["ankle"], 0.095, 0.06)
+        out += [_firm((s * 0.36, 0.05, 0.41), (0.10, 0.10, 0.16)), e((s * 0.42, -0.12, 0.06), (0.09, 0.19, 0.06)),
+                b((s * 0.40, 0.05, 0.07), 0.07)]
+        for dx in (-0.045, 0.0, 0.045):
+            out.append(b((s * 0.42 + dx, -0.31, 0.04), 0.034))
+    return out
+
+
+def arm_elements_v2(s: int) -> list[dict]:
+    """v2 arm (rest pose): firmer deltoid/biceps/triceps, elbow point, tapered forearm, slimmer wrist; palm only
+    (the fingers are swept tubes, see finger_tubes)."""
+    e, b = ch.ell, ch.ball
+    x = s * 0.68
+    out = [_firm((s * 0.65, 0.0, 2.02), (0.18, 0.17, 0.17))]
+    out += ch.limb((x, 0, 2.0), (x, 0, 1.58), 0.115, 0.09)
+    out += [_firm((x, -0.065, 1.80), (0.105, 0.10, 0.165)), _firm((x + s * 0.01, 0.065, 1.84), (0.10, 0.10, 0.19)),
+            b((x, 0.05, 1.555), 0.07)]
+    out += ch.limb((x, 0, 1.55), (x, 0, 1.13), 0.10, 0.058)
+    out += [_firm((x - s * 0.01, -0.025, 1.45), (0.10, 0.09, 0.12)), b((x, 0, 1.11), 0.052),
+            e((x - s * 0.015, 0.0, 1.035), (0.06, 0.085, 0.06))]        # palm / back of hand
+    return out
+
+
+def finger_tubes(s: int, m, prefix: str, grip: bool = True) -> list:
+    """Four fingers wrapped around the grip axis (along Y through (x, *, 0.98)) and a thumb over them; without a grip
+    the fingers close into a fist around a filled palm (no hole)."""
+    x, gz, r = s * 0.68, (0.98 if grip else 1.0), (0.072 if grip else 0.04)
+    out = [] if grip else [ch.metaball_mesh(f"{prefix}fist", [ch.ell((x, 0.0, gz), (0.05, 0.085, 0.05))], m["skin"],
+                                            resolution=0.008, smooth_iters=2)]
+    for k, y in enumerate((-0.066, -0.022, 0.022, 0.066)):
+        pts = []
+        for a in np.linspace(math.radians(95), math.radians(-150), 7):      # top -> outer side -> under the grip
+            pts.append((x + s * r * math.cos(a), y, gz + r * math.sin(a)))
+        out.append(ch.tube(f"{prefix}{k}", pts, [0.03, 0.029, 0.028, 0.027, 0.025, 0.022, 0.018], m["skin"], ring=10))
+    thumb = [(x - s * 0.055, -0.05, gz + 0.055), (x - s * 0.035, -0.085, gz + 0.075), (x + s * 0.01, -0.085, gz + 0.07)]
+    out.append(ch.tube(f"{prefix}t", thumb, [0.03, 0.027, 0.02], m["skin"], ring=10))
+    return out
+
+
 def build_asura(m, rig):
+    if ATTACKER_ASSET == "asura_v2":
+        return build_asura_v2(m, rig)
     rigid = ch.rigid
     torso = ch.metaball_mesh("sc_asura_torso", torso_elements(), m["skin"], resolution=0.016)
     zc = ch.vertex_coords(torso)[:, 2]
@@ -394,6 +508,164 @@ def build_asura(m, rig):
     ch.bind(mace_head, rig)
     temple.tag(mace_head, "sc_mace_head", 8)
     return body, shaft, mace_head
+
+
+def build_asura_v2(m, rig):
+    """asura_v2 (D2): same rig, anchors, oc_ids and pass indices as asura_showcase_v1; upgraded surfaces."""
+    rigid = ch.rigid
+    torso = ch.metaball_mesh("sc_asura_torso", torso_elements_v2(), m["skin"], resolution=0.011, smooth_iters=8,
+                             smooth_factor=0.6)
+    zc = ch.vertex_coords(torso)[:, 2]
+    ch.assign_weights(torso, ch.chain_weights(zc, [(1.42, 1.72, "pelvis", "chest")]))
+    parts = [torso]
+    for s, side in ((1, "L"), (-1, "R")):
+        arm = ch.metaball_mesh(f"sc_asura_arm{side}", arm_elements_v2(s), m["skin"], resolution=0.010,
+                               smooth_iters=8, smooth_factor=0.6)
+        z = ch.vertex_coords(arm)[:, 2]
+        weapon = side == strike.WEAPON_SIDE
+        stops = ([(1.06, 1.12, "mace", f"forearm.{side}")] if weapon else []) + \
+                [(1.50, 1.62, f"forearm.{side}", f"upper_arm.{side}")]
+        ch.assign_weights(arm, ch.chain_weights(z, stops))
+        fingers = finger_tubes(s, m, f"sc_finger{side}", grip=weapon)
+        for f in fingers:
+            rigid(f, "mace" if weapon else f"forearm.{side}")
+        parts += [arm] + fingers
+
+    k = HEAD_SCALE_V2
+    head = []
+    for s in (1, -1):
+        horn = [(s * 0.12, -0.02, 2.62), (s * 0.31, 0.0, 2.76), (s * 0.46, -0.04, 2.99), (s * 0.44, -0.13, 3.19),
+                (s * 0.36, -0.22, 3.30)]
+        head.append(ch.tube(f"sc_horn{s}", [_hs(p) for p in horn], [0.085, 0.068, 0.045, 0.024, 0.0], m["horn"], ring=20))
+        tusk = [(s * 0.085, -0.18, 2.29), (s * 0.10, -0.245, 2.36), (s * 0.135, -0.26, 2.44)]
+        head.append(ch.tube(f"sc_tusk{s}", [_hs(p) for p in tusk], [0.024 * k, 0.016 * k, 0.0], m["tusk"], ring=12))
+        ear = [(s * 0.17, 0.02, 2.46), (s * 0.23, 0.05, 2.50), (s * 0.28, 0.08, 2.56)]
+        head.append(ch.tube(f"sc_ear{s}", [_hs(p) for p in ear], [0.045 * k, 0.03 * k, 0.0], m["skin"], ring=12, flat=0.45))
+        head.append(ch.metaball_mesh(f"sc_eye{s}", [ch.ell(_hs((s * 0.07, -0.19, 2.48)), (0.028, 0.013, 0.017))],
+                                     m["eye"], resolution=0.004, smooth_iters=0))
+    head.append(ch.metaball_mesh("sc_topknot", [ch.ell(_hs((0, 0.10, 2.70)), (0.10, 0.10, 0.11)),
+                                                ch.ell(_hs((0, 0.13, 2.81)), (0.065, 0.065, 0.075))], m["hair"],
+                                 resolution=0.01))
+    head.append(ch.tube("sc_knotring", [_hs((0, 0.07, 2.73)), _hs((0, 0.13, 2.75))], [0.078, 0.078], m["bronze"], ring=16))
+    rng = random.Random(5)
+    for kk in range(9):
+        a = -0.5 + kk / 8.0
+        x0, x1 = a * 0.30, a * 0.46
+        head.append(ch.tube(f"sc_lock{kk}", [_hs((x0 * 0.8, 0.12, 2.62)), (x0, 0.23, 2.44),
+                                             (x1, 0.27 + rng.uniform(0, 0.03), 2.20),
+                                             (x1 * 1.1, 0.26 + rng.uniform(0, 0.04), 1.98 - rng.uniform(0, 0.08))],
+                            [0.05, 0.044, 0.032, 0.0], m["hair"], ring=10))
+    # integrated armour: breastplate, shoulder straps tying in the pauldrons, gorget, medallion
+    head.append(ch.shell("sc_breastplate", (0.0, -0.02, 1.90), (0.45, 0.31, 0.33), m["iron"], cut=0.05,
+                         thickness=0.035, rot_deg=(90, 0, 0)))
+    head.append(ch.tube("sc_gorget", ring_path(torso, 2.22, 0.035, n=20), [0.055] * 21, m["iron"], ring=12, flat=0.55))
+    for s in (1, -1):
+        head.append(ch.tube(f"sc_shoulderstrap{s}", [(s * 0.27, -0.30, 2.12), (s * 0.40, -0.10, 2.27),
+                                                     (s * 0.40, 0.12, 2.26), (s * 0.28, 0.28, 2.08)],
+                            [0.05] * 4, m["leather"], ring=10, flat=0.35, up=(0.0, 0.0, 1.0)))
+        head.append(ch.tube(f"sc_platerim{s}", [(s * 0.41, -0.10, 1.62), (s * 0.43, -0.20, 1.90), (s * 0.30, -0.30, 2.15)],
+                            [0.022] * 3, m["bronze"], ring=8))
+    head.append(ch.tube("sc_medallion", [(0, -0.31, 1.86), (0, -0.37, 1.86)], [0.095, 0.085], m["bronze"], ring=24))
+    head.append(ch.metaball_mesh("sc_boss", [ch.ell((0, -0.38, 1.86), (0.045, 0.028, 0.045))], m["bronze"],
+                                 resolution=0.006, smooth_iters=1))
+    for o in head:
+        rigid(o, "chest")
+    parts += head
+
+    hips = [ch.tube("sc_belt", ring_path(torso, 1.33, 0.03, n=24), [0.065] * 25, m["leather"], ring=12, flat=0.4)]
+    bf = hit_front(torso, 0.0, 1.33, 0.075)
+    hips.append(lk.rounded_box((0.22, 0.05, 0.17), bf, m["bronze"], bevel=0.02, subdiv=1))
+    hips.append(ch.cloth_panel("sc_loin_front", (0, bf[1] + 0.02, 1.27), (0, bf[1] - 0.06, 0.58), 0.36, 0.46,
+                               m["loincloth"], folds=4, depth=0.022, sag=0.03))
+    hips.append(ch.cloth_panel("sc_loin_back", (0, 0.27, 1.27), (0, 0.34, 0.56), 0.40, 0.48, m["loincloth"],
+                               folds=4, depth=0.022, facing=(0, 1, 0)))
+    for s in (1, -1):
+        for kk, ang in enumerate((-0.35, 0.05, 0.45)):
+            ax, ay = math.cos(ang) * s, -math.sin(ang) - 0.2
+            top = hit_radial(torso, math.atan2(ay, ax), 1.27, 0.03)
+            hips.append(ch.cloth_panel(f"sc_tasset{s}{kk}", top, (top[0] + ax * 0.08, top[1] + ay * 0.08, 0.86),
+                                       0.15, 0.17, m["iron"], folds=1, depth=0.006, facing=(ax, ay, 0.0), thickness=0.02))
+        j = LEG[s]
+        shin = [Vector(j["knee"]).lerp(Vector(j["ankle"]), t) + Vector((0, -0.02, 0)) for t in (0.08, 0.5, 0.9)]
+        hips.append(ch.tube(f"sc_greave{s}", [tuple(p) for p in shin], [0.11, 0.095, 0.082], m["iron"], ring=16))
+        hips.append(ch.shell(f"sc_kneeguard{s}", (j["knee"][0], j["knee"][1] - 0.06, j["knee"][2]), (0.10, 0.08, 0.10),
+                             m["iron"], cut=0.0, thickness=0.02, rot_deg=(90, 0, 0)))
+        hips.append(ch.tube(f"sc_anklet{s}", [(s * 0.40, -0.02, 0.15), (s * 0.40, -0.02, 0.10)], [0.085, 0.085],
+                            m["bronze"], ring=16))
+    for o in hips:
+        rigid(o, "pelvis")
+    parts += hips
+
+    for s, side in ((1, "L"), (-1, "R")):
+        x = s * 0.68
+        plates = [ch.shell(f"sc_pauldron{side}{kk}", (x + s * dx, 0.0, z), semi, m["iron"], cut=-0.25, thickness=0.035,
+                           rot_deg=(0, s * tilt, 0))
+                  for kk, (dx, z, semi, tilt) in enumerate(((0.0, 2.12, (0.27, 0.26, 0.18), 18),
+                                                            (0.06, 2.02, (0.25, 0.245, 0.15), 34),
+                                                            (0.11, 1.93, (0.22, 0.23, 0.13), 50)))]
+        plates.append(ch.tube(f"sc_pauldronrim{side}", [(x - s * 0.20, -0.20, 2.10), (x + s * 0.10, -0.24, 2.05),
+                                                       (x + s * 0.22, -0.10, 1.95)], [0.02] * 3, m["bronze"], ring=8))
+        for kk, dy in enumerate((-0.12, 0.0, 0.12)):
+            base = Vector((x + s * 0.03, dy, 2.25))
+            tip = base + Vector((s * 0.13, dy * 0.4, 0.22))
+            plates.append(ch.tube(f"sc_spike{side}{kk}", [tuple(base), tuple(base.lerp(tip, 0.5)), tuple(tip)],
+                                  [0.05, 0.028, 0.0], m["iron"], ring=10))
+        plates.append(ch.tube(f"sc_armband{side}", [(x, 0, 1.78), (x, 0, 1.72)], [0.13, 0.13], m["bronze"], ring=20))
+        for o in plates:
+            rigid(o, f"upper_arm.{side}")
+        bracer = ch.tube(f"sc_bracer{side}", [(x, -0.015, 1.42), (x, -0.012, 1.28), (x, 0.0, 1.15)],
+                         [0.115, 0.10, 0.080], m["leather"], ring=18)
+        studs = ch.tube(f"sc_bracerband{side}", [(x, -0.012, 1.35), (x, -0.012, 1.32)], [0.118, 0.118], m["iron"],
+                        ring=18)
+        for o in (bracer, studs):
+            rigid(o, f"forearm.{side}")
+        parts += plates + [bracer, studs]
+
+    body = temple.join(parts, "sc_asura")
+    temple.set_origin(body, (0.0, 0.0, 0.0))
+    SKINNING["sc_asura"] = ch.weight_stats(body)
+    ch.bind(body, rig)
+    temple.tag(body, "sc_asura", 1)
+    return (body,) + build_mace(m, rig)
+
+
+def build_mace(m, rig):
+    rigid = ch.rigid
+    gx, gz, ml = 0.68, 0.98, strike.MACE_LENGTH
+    shaft = [ch.tube("sc_shaft", [(gx, 0.18, gz), (gx, -(ml - 0.12), gz)], [0.042, 0.042], m["iron"], ring=14),
+             ch.tube("sc_grip", [(gx, 0.13, gz), (gx, -0.13, gz)], [0.05, 0.05], m["leather"], ring=14),
+             ch.metaball_mesh("sc_pommel", [ch.ell((gx, 0.21, gz), (0.06, 0.05, 0.06))], m["bronze"], resolution=0.008)]
+    for y in (-0.22, -(ml - 0.30)):
+        shaft.append(ch.tube(f"sc_collar{y:.2f}", [(gx, y + 0.03, gz), (gx, y - 0.03, gz)], [0.06, 0.06], m["bronze"],
+                             ring=14))
+    shaft = temple.join([rigid(o, "mace") for o in shaft], "sc_mace_shaft")
+    ch.bind(shaft, rig)
+    temple.tag(shaft, "sc_mace_shaft", 9)
+    hc = Vector((gx, -ml, gz))
+    mh = [ch.metaball_mesh("sc_mace_core", [ch.ell(tuple(hc), (0.25, 0.27, 0.25))], m["gold"], resolution=0.012)]
+    for kk in range(8):
+        a = 2 * math.pi * kk / 8
+        d = Vector((math.cos(a), 0.0, math.sin(a)))
+        mh.append(ch.metaball_mesh(f"sc_flange{kk}", [ch.ell(tuple(hc + d * 0.22), (0.12, 0.24, 0.035),
+                                                                rot_deg=(0, -math.degrees(a), 0))],
+                                   m["gold"], resolution=0.01, smooth_iters=2))
+    golden = math.pi * (3 - math.sqrt(5))
+    for kk in range(12):
+        yv = 1 - (kk + 0.5) * 2 / 12
+        rr = math.sqrt(1 - yv * yv)
+        th = golden * kk
+        d = Vector((math.cos(th) * rr, -yv, math.sin(th) * rr))
+        if d.y > 0.55:
+            continue
+        base = hc + d * 0.24
+        mh.append(ch.tube(f"sc_mspike{kk}", [tuple(base), tuple(base + d * 0.09), tuple(base + d * 0.17)],
+                          [0.045, 0.024, 0.0], m["gold"], ring=10))
+    mh.append(ch.tube("sc_mtip", [tuple(hc + Vector((0, -0.25, 0))), tuple(hc + Vector((0, -0.45, 0)))],
+                      [0.05, 0.0], m["gold"], ring=12))
+    mace_head = temple.join([rigid(o, "mace") for o in mh], "sc_mace_head")
+    ch.bind(mace_head, rig)
+    temple.tag(mace_head, "sc_mace_head", 8)
+    return shaft, mace_head
 
 
 # --- the defender (static) -------------------------------------------------------------------------------------
@@ -874,6 +1146,7 @@ def build(out_path: str, spec_path: str | None) -> dict:
     scene = temple.setup_scene(RES)
     base = temple.make_materials()
     m = materials()
+    tag_material_groups(m)
     cam = temple.add_camera(scene)
     finial = lk.plain("sc_finial_marker", (1.0, 0.0, 1.0))
     temple.build_environment(base, finial=finial)

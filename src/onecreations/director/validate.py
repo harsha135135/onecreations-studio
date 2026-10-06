@@ -170,14 +170,17 @@ def validate_spec(spec: ShotSpec, reg: Registry) -> list[Issue]:
     return out
 
 
+ATTACKERS = ("asura_v2", "asura_showcase_v1")             # the builder's attacker variants (scene_build.attacker_asset)
+
+
 def engine_issues(spec: ShotSpec, reg: Registry) -> list[Issue]:
     """Capabilities of the current blender_showcase_v1 builder (honest limits, not general rules)."""
     out = []
     if spec.environment.asset != "temple_courtyard_v1":
         out.append(_e("ENGINE_ENVIRONMENT", "this engine builds temple_courtyard_v1 only", "environment"))
     roles = [(c.role, c.asset) for c in spec.characters]
-    if sorted(roles) != [("attacker", "asura_showcase_v1"), ("defender", "ascetic_defender_v1")]:
-        out.append(_e("ENGINE_CAST", f"this engine stages exactly one asura_showcase_v1 attacker and one "
+    if len(roles) != 2 or sorted(r for r, _ in roles) != ["attacker", "defender"] or             dict(roles)["attacker"] not in ATTACKERS or dict(roles)["defender"] != "ascetic_defender_v1":
+        out.append(_e("ENGINE_CAST", f"this engine stages exactly one {' or '.join(ATTACKERS)} attacker and one "
                                      f"ascetic_defender_v1 defender (got {roles})", "characters"))
     attackers = {c.id for c in spec.characters if c.role == "attacker"}
     slams = [a for a in spec.actions if a.actor in attackers and a.preset == "mace_slam_v1"]

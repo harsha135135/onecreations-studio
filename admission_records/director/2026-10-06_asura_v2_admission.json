@@ -1,0 +1,294 @@
+{
+ "id": "2026-10-06_asura_v2_admission",
+ "date": "2026-10-06",
+ "asset": "asura_v2",
+ "baseline": "asura_showcase_v1",
+ "commit_base": "40fb6b4",
+ "method": {
+  "builds": "build_showcase_scene.py (defaults = Showcase v1 shot) with and without --config {attacker_asset: asura_v2}",
+  "frames_0based": [
+   4,
+   23,
+   25,
+   29,
+   40
+  ],
+  "frames_named": {
+   "opening": 4,
+   "apex": 23,
+   "fast_strike": 25,
+   "contact": 29,
+   "recovery": 40
+  },
+  "stills": "render_stills.py Cycles OptiX 128 spp",
+  "export": "oc_export --passes (v2 also --material-index)",
+  "tool": "tools/admission/character_admission.py",
+  "criteria": [
+   "rig motion identical (joints.npz) and pass indices identical",
+   "lower silhouette solidity (forms separate) at every frame",
+   "longer outline at every frame",
+   "higher crease fraction from the normal pass (less blob) at every frame",
+   "weapon hand on the shaft at every frame",
+   "every character pixel in a material group",
+   "visual: no fused/blob anatomy regressions, no severe clipping, no broken joints"
+  ],
+  "note": "metric proxies were chosen with the comparison, not pre-registered; the decision rule was 'all improve, rig identical'"
+ },
+ "iterations": [
+  {
+   "n": 1,
+   "finding": "off-hand finger tubes wrapped an empty grip and read as a hook/ring at contact/recovery",
+   "fix": "finger_tubes(grip=False): tight curl around a filled palm (closed fist)"
+  },
+  {
+   "n": 2,
+   "finding": "no remaining defect seen at the five frames"
+  }
+ ],
+ "measured": {
+  "rig": {
+   "keys_equal": true,
+   "max_joint_diff_m": 0.0
+  },
+  "pass_indices": {
+   "base": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    13,
+    14,
+    15,
+    16
+   ],
+   "candidate": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    13,
+    14,
+    15,
+    16
+   ],
+   "equal": true
+  },
+  "frames": {
+   "4": {
+    "base": {
+     "area_px": 24808,
+     "solidity": 0.5802,
+     "outline": 14.209,
+     "crease_frac": 0.4414,
+     "mean_angle_deg": 19.798,
+     "hand_on_shaft_px": 94,
+     "shading_std": 37.37
+    },
+    "candidate": {
+     "area_px": 26073,
+     "solidity": 0.564,
+     "outline": 14.863,
+     "crease_frac": 0.4727,
+     "mean_angle_deg": 21.312,
+     "hand_on_shaft_px": 164,
+     "shading_std": 39.67,
+     "material_groups_px": {
+      "1": 10936,
+      "2": 8971,
+      "3": 3793,
+      "4": 2373,
+      "5": 0
+     },
+     "unassigned_px": 0
+    }
+   },
+   "23": {
+    "base": {
+     "area_px": 25351,
+     "solidity": 0.5281,
+     "outline": 12.561,
+     "crease_frac": 0.45,
+     "mean_angle_deg": 20.255,
+     "hand_on_shaft_px": 75,
+     "shading_std": 37.17
+    },
+    "candidate": {
+     "area_px": 26560,
+     "solidity": 0.5145,
+     "outline": 13.119,
+     "crease_frac": 0.4848,
+     "mean_angle_deg": 21.657,
+     "hand_on_shaft_px": 132,
+     "shading_std": 39.94,
+     "material_groups_px": {
+      "1": 10460,
+      "2": 9657,
+      "3": 4057,
+      "4": 2386,
+      "5": 0
+     },
+     "unassigned_px": 0
+    }
+   },
+   "25": {
+    "base": {
+     "area_px": 26752,
+     "solidity": 0.5054,
+     "outline": 13.072,
+     "crease_frac": 0.4449,
+     "mean_angle_deg": 19.637,
+     "hand_on_shaft_px": 105,
+     "shading_std": 36.88
+    },
+    "candidate": {
+     "area_px": 28268,
+     "solidity": 0.4966,
+     "outline": 13.87,
+     "crease_frac": 0.479,
+     "mean_angle_deg": 21.303,
+     "hand_on_shaft_px": 178,
+     "shading_std": 39.94,
+     "material_groups_px": {
+      "1": 10911,
+      "2": 10456,
+      "3": 4300,
+      "4": 2601,
+      "5": 0
+     },
+     "unassigned_px": 0
+    }
+   },
+   "29": {
+    "base": {
+     "area_px": 28756,
+     "solidity": 0.4886,
+     "outline": 13.835,
+     "crease_frac": 0.4286,
+     "mean_angle_deg": 18.554,
+     "hand_on_shaft_px": 113,
+     "shading_std": 37.21
+    },
+    "candidate": {
+     "area_px": 30257,
+     "solidity": 0.479,
+     "outline": 14.671,
+     "crease_frac": 0.469,
+     "mean_angle_deg": 20.199,
+     "hand_on_shaft_px": 161,
+     "shading_std": 40.71,
+     "material_groups_px": {
+      "1": 11004,
+      "2": 11725,
+      "3": 4627,
+      "4": 2901,
+      "5": 0
+     },
+     "unassigned_px": 0
+    }
+   },
+   "40": {
+    "base": {
+     "area_px": 30684,
+     "solidity": 0.4984,
+     "outline": 13.838,
+     "crease_frac": 0.4304,
+     "mean_angle_deg": 18.087,
+     "hand_on_shaft_px": 62,
+     "shading_std": 36.68
+    },
+    "candidate": {
+     "area_px": 32189,
+     "solidity": 0.4853,
+     "outline": 14.759,
+     "crease_frac": 0.4629,
+     "mean_angle_deg": 19.77,
+     "hand_on_shaft_px": 120,
+     "shading_std": 40.37,
+     "material_groups_px": {
+      "1": 11905,
+      "2": 12218,
+      "3": 5093,
+      "4": 2973,
+      "5": 0
+     },
+     "unassigned_px": 0
+    }
+   }
+  }
+ },
+ "improved_on_all_frames": {
+  "solidity": true,
+  "outline": true,
+  "crease_frac": true,
+  "hand_on_shaft_px": true
+ },
+ "skinning": {
+  "sc_asura": {
+   "groups": [
+    "chest",
+    "forearm.L",
+    "forearm.R",
+    "mace",
+    "pelvis",
+    "upper_arm.L",
+    "upper_arm.R"
+   ],
+   "max_sum_error": 9.5e-05,
+   "unweighted": 0,
+   "vertices": 157219
+  }
+ },
+ "skinning_baseline": {
+  "sc_asura": {
+   "groups": [
+    "chest",
+    "forearm.L",
+    "forearm.R",
+    "mace",
+    "pelvis",
+    "upper_arm.L",
+    "upper_arm.R"
+   ],
+   "max_sum_error": 9.1e-05,
+   "unweighted": 0,
+   "vertices": 98347
+  }
+ },
+ "visual": [
+  "torso: separated pectorals/abdominals below a breastplate instead of one fused crimson mass",
+  "head: larger, nose bridge and horn bases fused into the skull; longer horns",
+  "armour: breastplate tied to the pauldrons by shoulder straps; knee guards; bronze plate rims",
+  "hands: fingers wrap the mace grip; off-hand closed fist",
+  "remaining: stylised metaball look; fingers rigid; tassets/loincloth still plain panels"
+ ],
+ "stills_sha256": {
+  "v1": {
+   "still_0005.png": "3e68bcdd6c019f92d65733e6520608613b09ff27caea191633ea5744664abc40",
+   "still_0024.png": "c155ecf8aff4d219660cf0b80ff24c2eecd5f3989fa698ad493ea17f36f9c00a",
+   "still_0026.png": "89670ddb27aa800a92dca81cb5d1e199adbf8ae1839fec0c21dea46eaa49e69d",
+   "still_0030.png": "bc48ea2101b9d7d2e366d34ea3f8ebd4044715bb85634f776eec995a117dcee7",
+   "still_0041.png": "f90e9b7e15f4bcd0ce1fc51b1c7aa6f498850d9d3c5c52472b5862aad24f3e70"
+  },
+  "v2": {
+   "still_0005.png": "b6a23ae4ef427496208cea4a39932b8c525708a7d61443731522fde86f142e81",
+   "still_0024.png": "8663f1758828e829696479156c5415191191b0c8dcc2fcbb4849e3af1711e7d5",
+   "still_0026.png": "0c947bf6445691005c68e8184686ca318313065756e474685d61e423ba9246c8",
+   "still_0030.png": "acb8a877bbb8339e02a77fdf1e68d5f175b08ec80606e7f0fcb2b1e73f934896",
+   "still_0041.png": "5f95e49a5ee66eaee6611f93c3bdaec7f9d229a302100e2c49c2796253bba41c"
+  }
+ },
+ "decision": "ADMIT asura_v2 for D2 (materially better on every measured proxy at every frame; rig and IDs unchanged)",
+ "media": "G:/onecreations/renders/asura_v2_admission (sheet.png, crops.png; not in Git)"
+}

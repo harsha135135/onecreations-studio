@@ -208,7 +208,11 @@ def _encode(frames: np.ndarray, out: Path, fps: str = "24") -> None:
                    input=np.ascontiguousarray(frames).tobytes(), check=True)
 
 
-def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: bool = False) -> dict:
+def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: bool = False,
+        kinds: tuple[str, ...] = ("protected_geometry", "effect"), layer_dirs: dict | None = None,
+        output_name: str = "hybrid.mp4") -> dict:
+    """kinds: which layer kinds this pass applies (D2 runs protected_geometry = REPAIR, then effect = COMPOSITE on the
+    repaired video); layer_dirs: layer id -> directory of its rendered frames (default render_dir/layers/<id>)."""
     from onecreations.blender_bundle import load_bundle
     from onecreations.contracts import CompositeManifest
     from onecreations.geometry.intrinsics import project
@@ -230,8 +234,11 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
     report = {"generated": str(generated), "render_dir": str(render_dir), "frames": n,
               "method": "v2 (ghost under layer)" if ghost_under_layer else "v1 (pre-registered)", "layers": {}}
 
+    layer_dirs = {k: Path(v) for k, v in (layer_dirs or {}).items()}
     for layer in sorted(manifest.layers, key=lambda ly: ly.order):
-        ldir = render_dir / "layers" / layer.id
+        if layer.kind not in kinds:
+            continue
+        ldir = layer_dirs.get(layer.id, render_dir / "layers" / layer.id)
         frames_rgba = {int(p.stem.split("_")[1]) - 1: p for p in sorted(ldir.glob("f_*.png"))}  # output index
         entry = {"kind": layer.kind, "layer_frames_available": sorted(frames_rgba)}
         if layer.kind == "protected_geometry":
@@ -343,16 +350,16 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
         report["layers"][layer.id] = entry
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    _encode(out, out_dir / "hybrid.mp4")
+    _encode(out, out_dir / output_name)
     # A: authored truth = sharp Blender reference + effect layers at their trigger frames
     truth = sharp[:n].copy()
     for lid, entry in report["layers"].items():
         if entry["kind"] == "effect":
             for f in entry["frames"]:
-                truth[f] = apply_effect(truth[f], _png_rgba(render_dir / "layers" / lid / f"f_{f + 1:04d}.png"),
-                                        entry.get("blend", "over"))
+                ldir = layer_dirs.get(lid, render_dir / "layers" / lid)
+                truth[f] = apply_effect(truth[f], _png_rgba(ldir / f"f_{f + 1:04d}.png"), entry.get("blend", "over"))
     _encode(truth, out_dir / "reference_with_effects.mp4")
-    report["outputs"] = {"hybrid": "hybrid.mp4", "reference_with_effects": "reference_with_effects.mp4"}
+    report["outputs"] = {"hybrid": output_name, "reference_with_effects": "reference_with_effects.mp4"}
     (out_dir / "composite_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     return {"report": report, "truth": truth, "raw": raw[:n], "hybrid": out}
 

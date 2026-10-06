@@ -155,6 +155,7 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
         semantic.append(SemanticObject(id=c.id, kind="character", asset=c.asset, oc_ids=[e.data["oc_id"]],
                                        pass_indices=[e.data["pass_index"]], mask_separable=True,
                                        material_groups=e.data.get("material_groups", []),
+                                       material_masks=e.data.get("material_masks", {}),
                                        policy=pol.policy_for("character", True)))
     env = reg.get(spec.environment.asset)
     for sid, part in env.data["semantic_objects"].items():
@@ -187,11 +188,15 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
         "sun": dict(look.data["sun"]), "look": dict(look.data["lighting"], **spec.look.params),
         "strike_frames": int(act.action_params(p_entry, primary.params)["strike_frames"]), "fx": fx,
         "layers": manifest.model_dump(mode="json", exclude_none=False),
+        "attacker_asset": a_entry.data.get("builder_variant", a_entry.id),
+        "material_index_pass": bool(a_entry.data.get("material_masks")),
     }
     ctx = {"required_events": ["CONTACT", "APEX"], "rig": a_entry.data["rig_oc_id"],
            "weapon_track": reg.get(next(p.asset for p in spec.props if p.asset == "heavy_mace_v1")).data["track_part"],
            "actors": [a_entry.data["oc_id"], d_entry.data["oc_id"]], "resolution": list(spec.resolution),
-           "fps": spec.fps}
+           "fps": spec.fps,
+           "weapon_pass_indices": [pi for o in semantic if o.kind == "weapon" and o.mask_separable
+                                   for pi in o.pass_indices]}
     stages = [
         Stage(id="parse", implemented=True, in_dry_run=True, notes="keyword_v1 interpreter (replaceable)"),
         Stage(id="plan", implemented=True, in_dry_run=True),

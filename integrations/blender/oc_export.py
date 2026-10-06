@@ -54,6 +54,8 @@ CONVENTIONS = {
 }
 DEFERRED = ["cryptomatte_decoding", "beauty_render", "motion_vectors", "joint_visibility", "subframe_pass_rendering"]
 PASS_SLOTS = (("depth", "Depth"), ("normal", "Normal"), ("index", "IndexOB"))
+MATERIAL_SLOT = ("matindex", "IndexMA")       # --material-index (D2): per-material masks (material.pass_index)
+ACTIVE_SLOTS = list(PASS_SLOTS)
 BACKGROUND_DEPTH = 1e9
 
 
@@ -71,6 +73,7 @@ def parse_args(argv):
     p.add_argument("--allow-subframe-passes", action="store_true")
     p.add_argument("--keep-exr", action="store_true")
     p.add_argument("--probes", action="store_true")
+    p.add_argument("--material-index", action="store_true", help="also export a material-index pass")
     return p.parse_args(argv)
 
 
@@ -103,7 +106,9 @@ def set_frame(scene, bf: Fraction) -> None:
     scene.frame_set(int(whole), subframe=float(bf - whole))
 
 
-def setup_passes(scene, exr_dir: str, samples: int):
+def setup_passes(scene, exr_dir: str, samples: int, material_index: bool = False):
+    global ACTIVE_SLOTS
+    ACTIVE_SLOTS = list(PASS_SLOTS) + ([MATERIAL_SLOT] if material_index else [])
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.samples = samples
@@ -118,6 +123,7 @@ def setup_passes(scene, exr_dir: str, samples: int):
     scene.use_nodes = True
     vl = bpy.context.view_layer
     vl.use_pass_z = vl.use_pass_normal = vl.use_pass_object_index = True
+    vl.use_pass_material_index = material_index
     tree = scene.node_tree
     for node in list(tree.nodes):
         tree.nodes.remove(node)
@@ -130,7 +136,7 @@ def setup_passes(scene, exr_dir: str, samples: int):
     fo.format.color_depth = "32"
     fo.format.exr_codec = "ZIP"
     fo.file_slots.clear()
-    for slot_name, socket in PASS_SLOTS:
+    for slot_name, socket in ACTIVE_SLOTS:
         fo.file_slots.new(slot_name)
         if socket not in rl.outputs:
             raise RuntimeError(f"render layer has no {socket!r} output; available: {list(rl.outputs.keys())}")
@@ -152,11 +158,11 @@ def read_exr(path: str) -> np.ndarray:
 
 
 def render_passes(scene, fo, exr_dir: str, k: int) -> dict:
-    for slot, (slot_name, _) in zip(fo.file_slots, PASS_SLOTS):
+    for slot, (slot_name, _) in zip(fo.file_slots, ACTIVE_SLOTS):
         slot.path = f"{slot_name}_k{k:05d}_"
     bpy.ops.render.render(write_still=False)
     out = {}
-    for slot_name, _ in PASS_SLOTS:
+    for slot_name, _ in ACTIVE_SLOTS:
         files = glob.glob(os.path.join(exr_dir, f"{slot_name}_k{k:05d}_*.exr"))
         if len(files) != 1:
             raise RuntimeError(f"expected one {slot_name} EXR for output frame {k}, found {files}")
@@ -215,7 +221,7 @@ def export(args) -> str:
     excluded_volumes, excluded_flagged = [], []
     if args.passes:
         os.makedirs(exr_dir, exist_ok=True)
-        fo = setup_passes(scene, exr_dir, args.samples)
+        fo = setup_passes(scene, exr_dir, args.samples, args.material_index)
         rendered = {o.name for o in bpy.context.view_layer.objects}
         for o in scene.objects:                       # passes are geometric: volume-only helpers would scatter rays
             if o.name not in rendered or o.hide_render:
@@ -232,6 +238,8 @@ def export(args) -> str:
     joint_rows = {str(a["oc_id"]): ([], []) for a in armatures}
     probe_points, probe_ndc, probe_labels = [], [], []
     pass_rows = {"depth_m": [], "object_index": [], "normal": []}
+    if args.passes and args.material_index:
+        pass_rows["material_index"] = []
     depth_check = None
     factor = None
 
@@ -276,6 +284,8 @@ def export(args) -> str:
             depth[background] = np.inf
             pass_rows["depth_m"].append(depth.astype(np.float32))
             pass_rows["object_index"].append(np.rint(raw["index"][..., 0]).astype(np.uint16))
+            if "material_index" in pass_rows:
+                pass_rows["material_index"].append(np.rint(raw["matindex"][..., 0]).astype(np.uint16))
             pass_rows["normal"].append(raw["normal"][..., :3].astype(np.float32))
 
     c2w_all = np.stack(cam_rows["c2w"])
@@ -334,6 +344,9 @@ def export(args) -> str:
         }
         if excluded_volumes:
             manifest["passes"]["excluded_volume_objects"] = sorted(excluded_volumes)
+        if "material_index" in pass_rows:
+            manifest["passes"]["material_index_map"] = {m.name: int(m.pass_index) for m in bpy.data.materials
+                                                        if m.pass_index}
         if excluded_flagged:
             manifest["passes"]["excluded_objects"] = sorted(excluded_flagged)
         if not args.keep_exr:

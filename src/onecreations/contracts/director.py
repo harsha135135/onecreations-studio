@@ -194,7 +194,9 @@ class SemanticObject(Model):
     mask_source: Literal["object_index_pass", "effect_layer_alpha", "none"] = "object_index_pass"
     mask_separable: bool = Field(description="False when it shares pass indices with another object")
     depth: Literal["depth_pass", "none"] = "depth_pass"
-    material_groups: list[str] = Field(default=[], description="finer edit regions (future: per-material masks)")
+    material_groups: list[str] = Field(default=[], description="finer edit regions (material names)")
+    material_masks: dict[str, int] = Field(default={}, description="per-part masks: part -> material-index pass value "
+                                           "(object mask AND material index; empty: no per-part masks)")
     policy: ProcessingPolicy
     protected_layer: Id | None = None
 

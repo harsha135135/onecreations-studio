@@ -400,6 +400,15 @@
           "title": "Height",
           "type": "integer"
         },
+        "material_index_map": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "default": {},
+          "description": "material name -> material pass index (--material-index): per-part masks; written only when the pass is exported",
+          "title": "Material Index Map",
+          "type": "object"
+        },
         "normal_space": {
           "const": "world",
           "default": "world",

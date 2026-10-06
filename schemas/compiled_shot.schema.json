@@ -837,12 +837,21 @@
         },
         "material_groups": {
           "default": [],
-          "description": "finer edit regions (future: per-material masks)",
+          "description": "finer edit regions (material names)",
           "items": {
             "type": "string"
           },
           "title": "Material Groups",
           "type": "array"
+        },
+        "material_masks": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "default": {},
+          "description": "per-part masks: part -> material-index pass value (object mask AND material index; empty: no per-part masks)",
+          "title": "Material Masks",
+          "type": "object"
         },
         "oc_ids": {
           "items": {
