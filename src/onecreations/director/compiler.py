@@ -227,7 +227,16 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
                         "weapon": reg.get(d_prop.asset).data["track_part"],
                         "weapon_bone": reg.get(d_prop.asset).data["mount"]["bone"],
                         "contact_event": contact["event"], "contact_frame": events[contact["event"]],
-                        "defender_start_event": f"{d_action.id}.GUARD_END"}
+                        "defender_start_event": f"{d_action.id}.GUARD_END",
+                        # D3(b) ownership-aligned profile
+                        "attacker": a_entry.data["oc_id"], "strike_action": primary.id, "parry_action": d_action.id,
+                        "attacker_weapon_bone": reg.get(next(p.asset for p in spec.props if p.owner == attacker.id
+                                                             and reg.get(p.asset).data["parts"])).data["mount"]["bone"],
+                        "attacker_weapon_parts": [pt["oc_id"] for p in spec.props if p.owner == attacker.id
+                                                  for pt in reg.get(p.asset).data["parts"]],
+                        "bind_frames": int(reg.get(primary.preset).data.get("contact", {}).get("bind_frames", 0)),
+                        "arrive_before": int(reg.get(d_action.preset).data.get("arrive_before_contact", 0)),
+                        "protected_layers": [ly["id"] for ly in layers if ly["kind"] == "protected_geometry"]}
     stages = [
         Stage(id="parse", implemented=True, in_dry_run=True, notes="keyword_v1 interpreter (replaceable)"),
         Stage(id="plan", implemented=True, in_dry_run=True),

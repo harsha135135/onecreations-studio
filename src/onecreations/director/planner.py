@@ -40,9 +40,11 @@ def plan_to_spec(plan: DirectorPlan, reg: Registry, shot_id: str = "d1_shot") ->
                               trigger=EventRef(action=instance("attacker"), event=reg.get(v).data["trigger_event"]))
               for v in plan.vfx]
     gp = reg.get(DEFAULT_PROFILE)
+    # D3(b): a contact action may name an ownership-aligned QC profile; other shots keep the ShotSpec default
+    qc_profile = reg.get(plan.actions["attacker"]).data.get("qc_profile")
     return ShotSpec(id=shot_id, description=plan.request, duration_frames=int(gp.data["frames"]),
                     fps=int(gp.data["fps"]), resolution=tuple(gp.data["resolution"]),
                     environment=EnvironmentSpec(asset=plan.environment), characters=chars, props=props,
                     actions=acts, camera=camera, look=LookSpec(preset=plan.look), events=events,
                     generation=GenerationSettings(profile=DEFAULT_PROFILE, seed=DEFAULT_SEED),
-                    grade=GradeSpec(preset=DEFAULT_GRADE))
+                    grade=GradeSpec(preset=DEFAULT_GRADE), **({"qc_profile": qc_profile} if qc_profile else {}))

@@ -1,0 +1,778 @@
+{
+ "id": "2026-10-07_d3b_preregistration",
+ "date": "2026-10-07",
+ "milestone": "D3(b) hybrid parry with ownership-aligned QC",
+ "registered_before_run": true,
+ "code_commit": "the commit that adds this file (pushed before the run)",
+ "parent_commit": "8b8bdae",
+ "relation_to_d3a": "D3(a) (admission_records/director/2026-10-07_d3_preregistration.json, run d3_run1) is FAIL and stays FAIL; its pre-registration and records are unchanged and its ShotSpec still compiles to its archived v1 QC. D3(b) is a NEW experiment with a QC contract aligned to the declared ownership of each component; it does not re-judge D3(a).",
+ "question": "Can LTX follow the two actors' synchronized choreography closely enough that the system can automatically bind deterministic contact-critical weapon geometry to them and produce one readable, correctly timed parry?",
+ "ownership": {
+  "generative (LTX)": [
+   "actor appearance",
+   "actor body motion",
+   "actor hand / grip motion",
+   "broad reaction timing",
+   "camera-conditioned appearance"
+  ],
+  "deterministic (Blender, protected)": [
+   "mace geometry (P1 fast_weapon_v2)",
+   "trident geometry (P6 contact_weapon_v1)",
+   "exact weapon-to-weapon contact (solved, preflight contact_geometry)",
+   "critical weapon continuity (protected layers, all frames)",
+   "weapon occlusion / holdouts",
+   "contact sparks and flash"
+  ],
+  "rule": "QC judges each component by what it owns: actor motion on the generated actors; weapon contact on the authored / delivered weapon layers; raw weapon renders are DIAGNOSTIC (they are replaced)"
+ },
+ "unchanged_from_d3a": [
+  "prompt",
+  "cast and rigs",
+  "blocked strike and trident parry choreography (engine code unchanged)",
+  "contact geometry",
+  "camera",
+  "resolution 768x448",
+  "49 frames",
+  "LTX profile, workflow and seed 1000",
+  "look and grade",
+  "protection policies",
+  "compositor (ghost suppression and gain fit unchanged)"
+ ],
+ "changed_from_d3a": [
+  "QC profile showcase_class_contact_v2 (selected by mace_strike_blocked_v1's qc_profile) instead of showcase_class_preflight_v1",
+  "contact_timing (raw mace head, fail) -> raw_mace_contact (same evaluator and params, DIAGNOSTIC)",
+  "new fail checks: parry_contact_timing_v2 (attacker hand vs authored grip), defender_reaction_timing (defender rear hand vs authored grip)",
+  "new final checks: mace_attached, trident_attached, final_weapon_contact",
+  "QC evaluators that raise on a measurement are recorded as failed checks (no executor crash); declared checks without an evaluator still raise"
+ ],
+ "prompt": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.",
+ "run_id": "d3b_run1",
+ "command": "uv run onecreations generate \"Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.\" --run-id d3b_run1",
+ "run_root": "G:/onecreations/runs",
+ "registry_sha256": "5b8f8f65d054bcc9e674d7e8f13a5c26200f334096c450b83a9cd01a88fe8bde",
+ "spec_sha256": "5c7e901d27c4a096d1caefa4ac701f33f173179bda8fd5c9334625abad0db4ef",
+ "qc_profile": "showcase_class_contact_v2",
+ "expected_plan": {
+  "characters": {
+   "attacker": "asura_v2",
+   "defender": "ascetic_defender_v2"
+  },
+  "actions": {
+   "attacker": "mace_strike_blocked_v1",
+   "defender": "trident_parry_v1"
+  },
+  "weapons": {
+   "attacker": "heavy_mace_v1",
+   "defender": "trident_v2"
+  },
+  "action_params": {},
+  "environment": "temple_courtyard_v1",
+  "camera": [
+   "orbit_push_v1",
+   "low"
+  ],
+  "look": "mythic_temple_dusk_v1",
+  "vfx": [
+   "sparks_v1",
+   "clash_flash_v1"
+  ],
+  "protection": {
+   "MACE": "fast_weapon_v2",
+   "TRIDENT": "contact_weapon_v1"
+  }
+ },
+ "events": {
+  "strike.START": 0,
+  "strike.GUARD_END": 7,
+  "strike.APEX": 23,
+  "strike.CONTACT": 29,
+  "strike.HOLD_END": 34,
+  "strike.RECOVERY_START": 34,
+  "strike.END": 48,
+  "parry.START": 0,
+  "parry.GUARD_END": 8,
+  "parry.CONTACT": 29,
+  "parry.HOLD_END": 34,
+  "parry.END": 48
+ },
+ "contact": [
+  {
+   "id": "mace_on_trident",
+   "participants": [
+    "asura.mace",
+    "defender.trident"
+   ],
+   "start": "29/24",
+   "end": "29/24",
+   "contact_points": [
+    "asura.mace.head"
+   ],
+   "required": true,
+   "event": "strike.CONTACT"
+  }
+ ],
+ "generation": {
+  "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+  "workflow": "workflows/ltx25/showcase_v1_api.json",
+  "workflow_sha256": "9d08be3077904c4fd3d892d78f319a091a9a4f33b427aa2ed119cd22f5fc4989",
+  "prompt": "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain.",
+  "seed": 1000,
+  "steps": 8,
+  "resolution": [
+   768,
+   448
+  ],
+  "frames": 49
+ },
+ "grade": {
+  "contrast": 1.05,
+  "brightness": 0.0,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "shadows_cool": 0.03,
+  "highlights_warm": 0.03,
+  "vignette_angle": 0.45,
+  "sharpen": 0.35,
+  "grain": 3,
+  "grain_seed": 1000,
+  "shake": []
+ },
+ "layers": [
+  {
+   "id": "mace_protect",
+   "kind": "protected_geometry",
+   "objects": [
+    "sc_mace_head",
+    "sc_mace_shaft"
+   ],
+   "grade": "per_channel_gain",
+   "trigger": null,
+   "ghost_frames": "unreliable"
+  },
+  {
+   "id": "trident_protect",
+   "kind": "protected_geometry",
+   "objects": [
+    "sc_trident"
+   ],
+   "grade": "per_channel_gain",
+   "trigger": null,
+   "ghost_frames": "all"
+  },
+  {
+   "id": "impact_fx",
+   "kind": "effect",
+   "objects": [],
+   "grade": "none",
+   "trigger": {
+    "timeline": "sc_mace_strike_blocked_v1",
+    "phase": "rebound",
+    "edge": "start"
+   },
+   "ghost_frames": null
+  },
+  {
+   "id": "impact_flash",
+   "kind": "effect",
+   "objects": [],
+   "grade": "none",
+   "trigger": {
+    "timeline": "sc_mace_strike_blocked_v1",
+    "phase": "rebound",
+    "edge": "start"
+   },
+   "ghost_frames": null
+  }
+ ],
+ "policies": {
+  "MACE": {
+   "rule": "fast_weapon_v2",
+   "provenance": "P1: heavy_blunt weapon, mace_strike_blocked_v1 estimated peak 1.51 head widths/frame >= 0.7 (local observation, M2-B/768/M3-A/Showcase)"
+  },
+  "TRIDENT": {
+   "rule": "contact_weapon_v1",
+   "provenance": "P6: TRIDENT takes part in an authored weapon-on-weapon contact"
+  }
+ },
+ "qc": {
+  "events_resolved": {
+   "stage": "preflight",
+   "kind": "events",
+   "params": {
+    "required": [
+     "CONTACT",
+     "APEX"
+    ]
+   },
+   "provenance": "D1 event graph"
+  },
+  "timeline_matches_engine": {
+   "stage": "preflight",
+   "kind": "timeline",
+   "params": {},
+   "provenance": "D1: compiler and Blender builder compute the same timeline"
+  },
+  "weapon_bone_projection": {
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_asura_rig",
+    "bone": "mace",
+    "object": "sc_mace_head",
+    "max_px": 4.5,
+    "min_visible_frac": 0.9
+   },
+   "provenance": "M2-B joint cross-check; Showcase 2.1 px; D3: frames where the weapon is < 90 % visible (ray-cast) are excluded and reported"
+  },
+  "stationary_root": {
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_asura_rig",
+    "bones": [
+     "root",
+     "pelvis",
+     "thigh.L",
+     "thigh.R",
+     "shin.L",
+     "shin.R"
+    ],
+    "max_m": 0.001
+   },
+   "provenance": "M2-B: root and legs never keyed"
+  },
+  "camera_contract": {
+   "stage": "preflight",
+   "kind": "camera",
+   "params": {
+    "max_position_err_m": 0.001,
+    "max_angle_err_deg": 0.05
+   },
+   "provenance": "M2-C camera contract"
+  },
+  "camera_clearance": {
+   "stage": "preflight",
+   "kind": "clearance",
+   "params": {
+    "min_m": 1.0
+   },
+   "provenance": "M2-C clearance rule"
+  },
+  "actors_in_frame": {
+   "stage": "preflight",
+   "kind": "framing",
+   "params": {
+    "objects": [
+     "sc_asura",
+     "sc_defender"
+    ],
+    "min_px": 400
+   },
+   "provenance": "M2/M3 gate: subjects in frame"
+  },
+  "weapon_visible": {
+   "stage": "preflight",
+   "kind": "framing",
+   "params": {
+    "objects": [
+     "sc_mace_head"
+    ],
+    "min_px": 200
+   },
+   "provenance": "M2-B gate"
+  },
+  "depth_valid": {
+   "stage": "preflight",
+   "kind": "passes",
+   "params": {
+    "max_isolated_background_px": 200
+   },
+   "provenance": "M3-A / Showcase pass cleanliness"
+  },
+  "first_frame_aligned": {
+   "stage": "preflight",
+   "kind": "first_frame",
+   "params": {
+    "resolution": [
+     768,
+     448
+    ]
+   },
+   "provenance": "first frame rendered from the same scene, camera and frame as the passes (exact by construction)"
+  },
+  "defender_stationary_root": {
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_defender_rig",
+    "bones": [
+     "root",
+     "pelvis",
+     "thigh.L",
+     "thigh.R",
+     "shin.L",
+     "shin.R"
+    ],
+    "max_m": 0.001
+   },
+   "provenance": "D3: the defender's root and legs are never keyed"
+  },
+  "defender_weapon_axis": {
+   "stage": "preflight",
+   "kind": "joints",
+   "params": {
+    "rig": "sc_defender_rig",
+    "bone": "trident",
+    "object": "sc_trident",
+    "max_median_px": 3.0
+   },
+   "provenance": "D3: the trident bone lies on the rendered trident (median pixel distance to the projected bone line)"
+  },
+  "contact_geometry": {
+   "stage": "preflight",
+   "kind": "contact",
+   "params": {
+    "max_abs_gap_m": 0.01,
+    "before_frames": 4,
+    "min_gap_before_m": 0.3,
+    "min_gap_m": -0.005,
+    "min_body_clearance_m": 0.1
+   },
+   "provenance": "D3: the mace head touches the shaft on CONTACT (solved by construction), was clear of it 4 frames before, and no weapon passes through a weapon or a body (vertex distances, ~1 cm resolution)"
+  },
+  "contact_visible": {
+   "stage": "preflight",
+   "kind": "contact",
+   "params": {
+    "objects": [
+     "sc_mace_head",
+     "sc_trident"
+    ],
+    "radius_px": 16,
+    "min_border_px": 64
+   },
+   "provenance": "D3: both weapons visible at the projected contact"
+  },
+  "defender_weapon_visible": {
+   "stage": "preflight",
+   "kind": "framing",
+   "params": {
+    "objects": [
+     "sc_trident"
+    ],
+    "min_px": 150
+   },
+   "provenance": "D3: trident in frame"
+  },
+  "video_valid": {
+   "stage": "post_generation",
+   "kind": "video",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 25.0,
+    "spike_rel": 6.0,
+    "on_fail": "regenerate"
+   },
+   "provenance": "technical validity (decode, count, size, blank or corrupt frames)"
+  },
+  "subject_framing": {
+   "stage": "post_generation",
+   "kind": "framing",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "max_offset_px": 32,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   },
+   "provenance": "M2 position check (about half a 64-px guide cell)"
+  },
+  "raw_mace_contact": {
+   "stage": "post_generation",
+   "kind": "diagnostic",
+   "params": {
+    "search_frames": 4,
+    "radius_px": 24,
+    "onset_frac": 0.9,
+    "tol_frames": 2,
+    "max_offset_px": 6,
+    "min_ncc": 0.45,
+    "on_fail": "diagnostic"
+   },
+   "provenance": "D3(b): D3(a)'s contact_timing on the raw mace head, kept as DIAGNOSTIC - the protected mace layer replaces that geometry in every frame"
+  },
+  "apex_presence": {
+   "stage": "post_generation",
+   "kind": "timing",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "fail"
+   },
+   "provenance": "M2-B apex; calibrated on Showcase v1 run 1"
+  },
+  "weapon_integrity": {
+   "stage": "post_generation",
+   "kind": "weapon",
+   "params": {
+    "radius_px": 24,
+    "min_ncc": 0.4,
+    "max_offset_px": 10,
+    "on_fail": "repair"
+   },
+   "provenance": "raw fast-weapon failure detector (M2-B / M3-A / Showcase); repaired by the protection policy"
+  },
+  "camera_progression": {
+   "stage": "post_generation",
+   "kind": "camera",
+   "params": {
+    "frames": [
+     0,
+     12,
+     24,
+     36,
+     48
+    ],
+    "margin_px": 8,
+    "max_offset_px": 24,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   },
+   "provenance": "M2-C (generated move ~0.9x the authored one)"
+  },
+  "output_integrity": {
+   "stage": "post_generation",
+   "kind": "video",
+   "params": {
+    "max_hole_frac": 0.005,
+    "on_fail": "regenerate"
+   },
+   "provenance": "no black holes"
+  },
+  "defender_framing": {
+   "stage": "post_generation",
+   "kind": "framing",
+   "params": {
+    "object": "sc_defender",
+    "frames": [
+     0,
+     12,
+     24,
+     29,
+     36,
+     48
+    ],
+    "max_offset_px": 32,
+    "min_ncc": 0.5,
+    "on_fail": "fail"
+   },
+   "provenance": "D3: the reacting defender follows the authored pose (the subject_framing rule, plus the contact frame)"
+  },
+  "trident_integrity": {
+   "stage": "post_generation",
+   "kind": "weapon",
+   "params": {
+    "object": "sc_trident",
+    "from_event": "parry.GUARD_END",
+    "dilate_px": 2,
+    "min_ncc": 0.4,
+    "on_fail": "repair"
+   },
+   "provenance": "D3: thin raw weapon detector (masked NCC on the authored trident); evidence for the P6 repair"
+  },
+  "parry_contact_timing_v2": {
+   "stage": "post_generation",
+   "kind": "grip",
+   "params": {
+    "half_box_px": 24,
+    "radius_px": 24,
+    "search_frames": 4,
+    "tol_frames": 2,
+    "max_median_offset_px": 6,
+    "max_offset_px": 12,
+    "min_ncc": 0.45,
+    "min_mask_px": 60,
+    "min_frames_frac": 0.8,
+    "rig": "sc_asura_rig",
+    "bone": "mace",
+    "owner_objects": [
+     "sc_asura"
+    ],
+    "exclude_objects": [
+     "sc_mace_head",
+     "sc_mace_shaft",
+     "sc_trident"
+    ],
+    "settled_event": "strike.CONTACT",
+    "settled_offset": 0,
+    "from_event": "strike.CONTACT",
+    "from_offset": -2,
+    "to_event": "strike.CONTACT",
+    "to_offset": 3,
+    "on_fail": "fail"
+   },
+   "provenance": "D3(b): the generated attacker's hand follows the authored grip from 2 frames before CONTACT to the end of the bind (spatial, trajectory, temporal); thresholds from D2 contact_timing and M3-A attachment"
+  },
+  "defender_reaction_timing": {
+   "stage": "post_generation",
+   "kind": "grip",
+   "params": {
+    "half_box_px": 24,
+    "radius_px": 24,
+    "search_frames": 4,
+    "tol_frames": 2,
+    "max_median_offset_px": 6,
+    "max_offset_px": 12,
+    "min_ncc": 0.45,
+    "min_mask_px": 60,
+    "min_frames_frac": 0.8,
+    "rig": "sc_defender_rig",
+    "bone": "trident",
+    "owner_objects": [
+     "sc_defender"
+    ],
+    "exclude_objects": [
+     "sc_trident",
+     "sc_mace_head",
+     "sc_mace_shaft"
+    ],
+    "settled_event": "parry.CONTACT",
+    "settled_offset": -2,
+    "from_event": "parry.GUARD_END",
+    "from_offset": 0,
+    "to_event": "parry.CONTACT",
+    "to_offset": 3,
+    "on_fail": "fail"
+   },
+   "provenance": "D3(b): the generated defender's rear hand follows the authored grip through the raise and the bind"
+  },
+  "final_valid": {
+   "stage": "final",
+   "kind": "video",
+   "params": {
+    "min_std": 3.0,
+    "spike_abs": 40.0,
+    "spike_rel": 8.0
+   },
+   "provenance": "delivery validity"
+  },
+  "protected_weapon_present": {
+   "stage": "final",
+   "kind": "weapon",
+   "params": {
+    "min_ncc": 0.7
+   },
+   "provenance": "the repaired weapon survives effects and grade"
+  },
+  "effects_begin_at_contact": {
+   "stage": "final",
+   "kind": "events",
+   "params": {
+    "min_change": 8,
+    "max_change_before": 2
+   },
+   "provenance": "effects keyed from strike.CONTACT"
+  },
+  "bounded_repair": {
+   "stage": "final",
+   "kind": "composite",
+   "params": {
+    "allowed_pass_indices": [
+     [
+      8,
+      9,
+      10
+     ]
+    ],
+    "band_px": 10,
+    "max_outside_frac": 0.001
+   },
+   "provenance": "repair stays near the weapon"
+  },
+  "no_holes": {
+   "stage": "final",
+   "kind": "video",
+   "params": {
+    "max_hole_frac": 0.005
+   },
+   "provenance": "no black holes after compositing"
+  },
+  "mace_attached": {
+   "stage": "final",
+   "kind": "attachment",
+   "params": {
+    "half_box_px": 24,
+    "radius_px": 24,
+    "search_frames": 0,
+    "tol_frames": 0,
+    "max_median_offset_px": 12,
+    "max_offset_px": 12,
+    "min_ncc": 0.0,
+    "min_mask_px": 60,
+    "min_frames_frac": 0.8,
+    "rig": "sc_asura_rig",
+    "bone": "mace",
+    "owner_objects": [
+     "sc_asura"
+    ],
+    "exclude_objects": [
+     "sc_mace_head",
+     "sc_mace_shaft",
+     "sc_trident"
+    ],
+    "settled_event": "strike.CONTACT",
+    "settled_offset": 0,
+    "from_event": "strike.CONTACT",
+    "from_offset": 0,
+    "to_event": "strike.HOLD_END",
+    "to_offset": 0
+   },
+   "provenance": "D3(b): no severe separation between the delivered protected mace and the generated hand (M3-A 12 px)"
+  },
+  "trident_attached": {
+   "stage": "final",
+   "kind": "attachment",
+   "params": {
+    "half_box_px": 24,
+    "radius_px": 24,
+    "search_frames": 0,
+    "tol_frames": 0,
+    "max_median_offset_px": 12,
+    "max_offset_px": 12,
+    "min_ncc": 0.0,
+    "min_mask_px": 60,
+    "min_frames_frac": 0.8,
+    "rig": "sc_defender_rig",
+    "bone": "trident",
+    "owner_objects": [
+     "sc_defender"
+    ],
+    "exclude_objects": [
+     "sc_trident",
+     "sc_mace_head",
+     "sc_mace_shaft"
+    ],
+    "settled_event": "parry.CONTACT",
+    "settled_offset": -2,
+    "from_event": "parry.CONTACT",
+    "from_offset": -2,
+    "to_event": "parry.HOLD_END",
+    "to_offset": 0
+   },
+   "provenance": "D3(b): no severe separation between the delivered protected trident and the generated hand (12 px)"
+  },
+  "final_weapon_contact": {
+   "stage": "final",
+   "kind": "contact",
+   "params": {
+    "event": "strike.CONTACT",
+    "bind_frames": 3,
+    "layers": [
+     "mace_protect",
+     "trident_protect"
+    ],
+    "alpha_min": 128,
+    "max_gap_px": 2
+   },
+   "provenance": "D3(b): the delivered protected layers touch on the bind frames (2 px: the 1 cm 3-D tolerance is ~1 px at ~7 m with f = 683 px, plus 1 px of edge antialiasing)"
+  }
+ },
+ "threshold_provenance": {
+  "grip_follow (parry_contact_timing_v2, defender_reaction_timing)": {
+   "max_median_offset_px": "6 = D2 contact_timing max_offset_px (calibrated on Showcase v1 run 1 before D2, frozen in the D2 pre-registration)",
+   "tol_frames": "2 = D2 contact_timing tol_frames (M2-B timing tolerance)",
+   "search_frames / radius_px": "4 / 24 = D2 contact_timing search_frames / radius_px",
+   "min_ncc": "0.45 = D2 contact_timing min_ncc",
+   "max_offset_px (settled frames)": "12 = M3-A pre-registered attachment limit (grip vs generated hand)",
+   "settled sub-window": "from CONTACT (attacker) / CONTACT-2, the authored block arrival (defender): the per-frame bound skips the fast approach where LTX smears limbs (M2-B); design calibrated on D2's admitted raw only",
+   "not_from_d3a": "D3(a)'s post-hoc ~1 px grip observation was NOT used; the instrument was never run on d3_run1 before this registration"
+  },
+  "attachment (mace_attached, trident_attached)": "12 px per settled frame (M3-A attachment limit), lag 0, no appearance (NCC) requirement",
+  "final_weapon_contact": "2 px between the delivered protected layers on CONTACT..CONTACT+3: the preflight 3-D tolerance 1 cm is ~1 px at ~7 m with f = 683 px, plus 1 px edge antialiasing",
+  "deterministic 3-D contact": "unchanged from D3(a): |gap| <= 0.01 m at CONTACT, >= 0.30 m 4 frames before, min gap >= -0.005 m, body clearance >= 0.10 m"
+ },
+ "instrument_validation": "admission_records/director/2026-10-07_d3b_instrument_validation.json (D2 raw passes; 4-frame-late, 15-px-shifted and time-reversed D2 negatives fail; rehearsal exact)",
+ "known_artifacts_not_blocking": {
+  "orange_streak": "the protected mace layer's own authored 90-degree-shutter motion blur at the fastest approach frame (D2 f26, D3(a) post-hoc f28); not a raw ghost, so ghost suppression cannot address it; algorithm unchanged",
+  "trident_brightness": "the per-channel gain fit on a thin weapon picks up background (D3(a) post-hoc clipped at 1.6); an owner-relative gain was tested on D2 / rehearsal / D3(a) material and REJECTED (does not reproduce D2's admitted mace gain; unstable on the crimson owner's blue channel); fit unchanged"
+ },
+ "generation_policy": {
+  "generations": 1,
+  "second_generation_only_if": [
+   "LTX_GENERATE technical failure (non-zero exit or no output; not the RAM guard)",
+   "a post-generation check whose on_fail is 'regenerate' fails (video_valid, output_integrity)"
+  ],
+  "max_generations": 2,
+  "seed": 1000,
+  "seed_change_on_regenerate": false,
+  "never": [
+   "regenerate for a failure deterministic repair owns (weapon_integrity, trident_integrity)",
+   "regenerate for a diagnostic (raw_mace_contact)",
+   "regenerate because the result looks weaker",
+   "seed shopping"
+  ],
+  "bugs": "any code or QC change after the primary generation invalidates AUTONOMY for d3b_run1; the run is recorded as failed and a continuation needs a separately identified run"
+ },
+ "acceptance": {
+  "D3b_PASS": "AUTONOMY, CONTROL, PIPELINE, FINAL_INTEGRITY and PARRY_READABILITY all PASS",
+  "D3b_PARTIAL": "a final video was delivered by the pipeline but one class is not PASS",
+  "D3b_FAIL": "no final video delivered, or a delivered video fails FINAL_INTEGRITY",
+  "AUTONOMY": {
+   "PASS": [
+    "one invocation of the command above produced deliverables/final.mp4 with exit 0",
+    "no manual Blender / ComfyUI / compositor / repair / file movement / parameter change after launch",
+    "no fix-and-resume"
+   ],
+   "FAIL": "any of the above violated"
+  },
+  "CONTROL": {
+   "PASS": [
+    "subject_framing, camera_progression, apex_presence pass",
+    "parry_contact_timing_v2 passes (attacker hand / grip interaction timing)",
+    "defender_framing and defender_reaction_timing pass (defender reaction)",
+    "preflight contact_geometry and contact_visible pass (deterministic weapon contact)"
+   ],
+   "FAIL": "any of these fails (a 'fail' post-generation check stops the run by itself)"
+  },
+  "PIPELINE": {
+   "PASS": [
+    "all 15 stages done in order with keys, times and hashed outputs",
+    "REPAIR applied both protected layers (mace_protect P1, trident_protect P6)",
+    "effects start at strike.CONTACT (= parry.CONTACT)",
+    "QC executed with no evaluator error",
+    "no stage bypassed"
+   ]
+  },
+  "FINAL_INTEGRITY": {
+   "PASS": [
+    "final_valid, protected_weapon_present, effects_begin_at_contact, bounded_repair, no_holes pass",
+    "mace_attached, trident_attached, final_weapon_contact pass",
+    "final sha256 recorded",
+    "visual: no major composite corruption"
+   ]
+  },
+  "PARRY_READABILITY": {
+   "PASS": [
+    "visual on the final.mp4 contact sheet (separate from metrics, not a score): guard -> the defender visibly raises the trident -> the mace approaches -> the weapons meet at the authored contact -> the defender braces -> the attacker / mace recoils; no obvious impossible interpenetration; it reads as one block / parry"
+   ],
+   "PARTIAL": "the contact is on the authored frame but one element does not read",
+   "FAIL": "no visible contact, or a visible impossible interpenetration"
+  },
+  "APPEARANCE": {
+   "classes": [
+    "IMPROVED",
+    "D2-COMPARABLE",
+    "REGRESSED"
+   ],
+   "note": "reported separately"
+  }
+ },
+ "reporting": "raw LTX evidence (attacker motion, defender motion, hand/grip error, raw mace error, raw trident, camera, appearance) and hybrid-final evidence (attachment, exact contact, timing, protection, VFX, composite, readability) are reported separately",
+ "rehearsal": "before this registration all stages except LTX ran on the same prompt with the run's own Blender reference standing in (G:/onecreations/runs/rehearsal_d3b_1, 729.7 s, all 15 stages done, all checks evaluated cleanly; admission_records/director/2026-10-07_d3b_rehearsal1.json); not a D3(b) result"
+}

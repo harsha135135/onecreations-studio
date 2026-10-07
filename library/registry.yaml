@@ -282,7 +282,8 @@ entries:
       - {id: rebound, kind: recoil, start: CONTACT, end: HOLD_END}
       - {id: recovery, kind: recovery, start: HOLD_END, end: END}
     contact: {id: mace_on_trident, event: CONTACT, partner_action: trident_parry_v1, own_part: mace,
-              partner_part: trident, contact_point: mace.head}
+              partner_part: trident, contact_point: mace.head, bind_frames: 3}
+    qc_profile: showcase_class_contact_v2   # D3(b): QC aligned with ownership (LTX: actors; Blender: weapon geometry)
     peak_weapon_speed_head_widths_per_frame: {showcase_768x448: 1.51}   # D3 build: 103.7 px/frame into contact, head 68.7 px
     default_vfx: [sparks_v1, clash_flash_v1]
 
@@ -327,6 +328,7 @@ entries:
     requires_weapon_class: polearm
     partner_action: mace_strike_blocked_v1
     sync_params: [strike_frames]
+    arrive_before_contact: 2      # the block is in place 2 frames before CONTACT (engine PARRY_ARRIVE_BEFORE)
     frames: 49
     fps: 24
     events:

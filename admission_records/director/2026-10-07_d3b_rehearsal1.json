@@ -1,0 +1,148 @@
+{
+ "id": "2026-10-07_d3b_rehearsal1",
+ "note": "REHEARSAL, not a D3(b) result: every stage real except LTX_GENERATE, which copied the run's own sharp Blender reference (rehearse.py --raw reference). Proves the ownership-aligned QC executes cleanly end to end (grip follow, raw diagnostics, attachment, layer contact) with both protection policies; a perfect stand-in cannot test thresholds.",
+ "run_dir": "G:\\onecreations\\runs\\rehearsal_d3b_1",
+ "status": "succeeded",
+ "wall_s": 729.7,
+ "pipeline": "d3.0",
+ "stages": [
+  {
+   "id": "PLAN",
+   "status": "done",
+   "duration_s": 0.02
+  },
+  {
+   "id": "VALIDATE",
+   "status": "done",
+   "duration_s": 0.0
+  },
+  {
+   "id": "COMPILE",
+   "status": "done",
+   "duration_s": 0.03
+  },
+  {
+   "id": "BLENDER_BUILD",
+   "status": "done",
+   "duration_s": 27.59
+  },
+  {
+   "id": "CONTROL_RENDER",
+   "status": "done",
+   "duration_s": 243.88
+  },
+  {
+   "id": "FIRST_FRAME",
+   "status": "done",
+   "duration_s": 18.37
+  },
+  {
+   "id": "PREFLIGHT_QC",
+   "status": "done",
+   "duration_s": 7.63
+  },
+  {
+   "id": "LTX_GENERATE",
+   "status": "done",
+   "duration_s": 0.04
+  },
+  {
+   "id": "POST_GENERATION_QC",
+   "status": "done",
+   "duration_s": 11.34
+  },
+  {
+   "id": "REPAIR",
+   "status": "done",
+   "duration_s": 360.3
+  },
+  {
+   "id": "VFX",
+   "status": "done",
+   "duration_s": 36.74
+  },
+  {
+   "id": "COMPOSITE",
+   "status": "done",
+   "duration_s": 6.86
+  },
+  {
+   "id": "GRADE",
+   "status": "done",
+   "duration_s": 1.47
+  },
+  {
+   "id": "FINAL_QC",
+   "status": "done",
+   "duration_s": 14.91
+  },
+  {
+   "id": "DELIVER",
+   "status": "done",
+   "duration_s": 0.45
+  }
+ ],
+ "preflight": {
+  "events_resolved": true,
+  "timeline_matches_engine": true,
+  "weapon_bone_projection": true,
+  "stationary_root": true,
+  "camera_contract": true,
+  "camera_clearance": true,
+  "actors_in_frame": true,
+  "weapon_visible": true,
+  "depth_valid": true,
+  "first_frame_aligned": true,
+  "defender_stationary_root": true,
+  "defender_weapon_axis": true,
+  "contact_geometry": true,
+  "contact_visible": true,
+  "defender_weapon_visible": true
+ },
+ "post_generation": {
+  "video_valid": true,
+  "subject_framing": true,
+  "raw_mace_contact": true,
+  "apex_presence": true,
+  "weapon_integrity": true,
+  "camera_progression": true,
+  "output_integrity": true,
+  "defender_framing": true,
+  "trident_integrity": true,
+  "parry_contact_timing_v2": true,
+  "defender_reaction_timing": true
+ },
+ "post_generation_decision": {
+  "status": "proceed",
+  "repairs": [
+   {
+    "object": "MACE",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC"
+   },
+   {
+    "object": "TRIDENT",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC"
+   }
+  ],
+  "regenerate_for": [],
+  "fail_for": []
+ },
+ "final": {
+  "mace_attached": true,
+  "trident_attached": true,
+  "final_weapon_contact": true,
+  "final_valid": true,
+  "protected_weapon_present": true,
+  "effects_begin_at_contact": true,
+  "bounded_repair": true,
+  "no_holes": true
+ },
+ "final_weapon_contact_gaps_px": {
+  "29": 0,
+  "30": 0,
+  "31": 1,
+  "32": 0
+ }
+}

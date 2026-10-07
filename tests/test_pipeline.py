@@ -215,18 +215,46 @@ PARRY = ("Create a cinematic shot of a horned Asura attacking an ascetic defende
          "ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.")
 
 
-def test_parry_qc_is_declared_only_for_contact_shots(reg):
+D3A = Path(__file__).resolve().parents[1] / "admission_records" / "director" / "2026-10-07_d3_run1"
+
+
+def test_d3a_compiled_shot_reproduces_with_its_v1_qc(reg):
+    """D3(a)'s records stay valid: its archived ShotSpec (qc_profile v1) still compiles to its archived CompiledShot,
+    including the raw-head contact_timing rule that failed it."""
+    from onecreations.contracts import ShotSpec
+    from onecreations.contracts.director import CompiledShot
+    c = compile_shot(ShotSpec.model_validate(json.loads((D3A / "shot_spec.json").read_text())), reg)
+    old = CompiledShot.model_validate(json.loads((D3A / "compiled_shot.json").read_text())).model_dump(mode="json")
+    new = c.model_dump(mode="json")
+    assert {k for k in old if old[k] != new.get(k)} <= {"registry_sha256"}
+    q = {x.id: x for x in c.qc}
+    assert q["contact_timing"].params["on_fail"] == "fail" and "parry_contact_timing_v2" not in q
+
+
+def test_parry_prompt_uses_the_ownership_aligned_profile(reg):
     d2 = {q.id for q in _compiled(reg).qc}
     parry = _compiled(reg, PARRY)
-    ids = {q.id for q in parry.qc}
-    new = {"defender_stationary_root", "defender_weapon_axis", "contact_geometry", "contact_visible",
-           "defender_weapon_visible", "defender_framing", "trident_integrity"}
-    assert not (d2 & new) and ids == d2 | new
+    assert plan_to_spec(interpret(PARRY, reg), reg, "t").qc_profile == "showcase_class_contact_v2"
     q = {c.id: c for c in parry.qc}
-    assert q["defender_framing"].params["frames"] == [0, 12, 24, 29, 36, 48]
-    assert q["trident_integrity"].params["on_fail"] == "repair" and q["defender_framing"].params["on_fail"] == "fail"
+    pre_new = {"defender_stationary_root", "defender_weapon_axis", "contact_geometry", "contact_visible",
+               "defender_weapon_visible"}
+    post_new = {"defender_framing", "trident_integrity", "raw_mace_contact", "parry_contact_timing_v2",
+                "defender_reaction_timing"}
+    final_new = {"mace_attached", "trident_attached", "final_weapon_contact"}
+    assert set(q) == (d2 - {"contact_timing"}) | pre_new | post_new | final_new
+    assert q["raw_mace_contact"].params["on_fail"] == "diagnostic"
+    g = q["parry_contact_timing_v2"].params
+    assert (g["max_median_offset_px"], g["max_offset_px"], g["tol_frames"], g["min_ncc"]) == (6, 12, 2, 0.45)
+    assert (g["from_event"], g["from_offset"], g["to_event"], g["to_offset"]) == ("strike.CONTACT", -2, "strike.CONTACT", 3)
+    assert g["exclude_objects"] == ["sc_mace_head", "sc_mace_shaft", "sc_trident"]
+    assert q["defender_reaction_timing"].params["from_event"] == "parry.GUARD_END"
+    assert q["final_weapon_contact"].params["layers"] == ["mace_protect", "trident_protect"]
+    assert q["mace_attached"].params["max_offset_px"] == 12 and q["mace_attached"].params["search_frames"] == 0
+    assert (g["settled_event"], g["settled_offset"]) == ("strike.CONTACT", 0)
+    assert q["defender_reaction_timing"].params["settled_offset"] == -2
     assert q["weapon_bone_projection"].params["min_visible_frac"] == 0.9
     assert "min_visible_frac" not in {c.id: c for c in _compiled(reg).qc}["weapon_bone_projection"].params
+    assert plan_to_spec(interpret(PROMPT, reg), reg, "t").qc_profile == "showcase_class_preflight_v1"
 
 
 def test_parry_repair_evidence_goes_to_the_named_weapon(reg):
@@ -270,6 +298,69 @@ def test_contact_timing_without_onset_fails_instead_of_crashing(reg):
     p = {"search_frames": 4, "radius_px": 24, "onset_frac": 0.9, "tol_frames": 2, "max_offset_px": 0, "min_ncc": 0.45}
     r = video_qc.check_contact_timing(c, ref, raw, idx, 8, p)
     assert r["passed"] is False and r["observed_onset"] is None and r["offset_frames"] is None
+
+
+class _Bundle:
+    """Minimal export-bundle stand-in for the grip measurement (a rig whose 'mace' head projects to a given track)."""
+
+    def __init__(self, track, om):
+        from types import SimpleNamespace
+        self._track = np.asarray(track, float)
+        self.manifest = SimpleNamespace(armatures=[SimpleNamespace(oc_id="rig", bones=["mace"])],
+                                        passes=SimpleNamespace(object_index_map=om))
+
+
+def _grip_scene(n=49, h=96, w=128, shift=0, lag=0, seed=3):
+    """A textured 'actor' (pass 1) whose appearance changes every frame (as a pose does) while it drifts; the video
+    copies the reference with a spatial shift and/or a time lag. A lag is then a content mismatch, not just a small
+    translation."""
+    rng = np.random.default_rng(seed)
+    tex = rng.integers(0, 255, (h + n, w + n)).astype(np.float32)
+    pose = rng.integers(0, 255, (n, h, w)).astype(np.float32)
+    idx = np.zeros((n, h, w), np.uint8)
+    ref = np.zeros((n, h, w), np.float32)
+    track = []
+    for f in range(n):
+        cx, cy = 30 + f, 48
+        track.append((cx, cy))
+        idx[f, cy - 14:cy + 15, cx - 14:cx + 15] = 1
+        ref[f] = 0.4 * tex[f:f + h, :w] + 0.6 * pose[f]
+    vid = np.roll(np.stack([ref[min(max(f - lag, 0), n - 1)] for f in range(n)]), shift, axis=2)
+    return ref, vid, idx, track
+
+
+def test_grip_follow_passes_and_detects_lag_and_offset(reg, monkeypatch):
+    c = _compiled(reg, PARRY)
+    p = dict(c.qc[[q.id for q in c.qc].index("parry_contact_timing_v2")].params, rig="rig", bone="mace",
+             owner_objects=["a"], exclude_objects=[], half_box_px=12, radius_px=10, min_mask_px=20)
+    ref, vid, idx, track = _grip_scene()
+    monkeypatch.setattr(video_qc, "grip_track", lambda b, rig, bone: b._track)
+    b = _Bundle(track, {"a": 1})
+    ok = video_qc.check_grip_follow(c, ref, vid, idx, b, p)
+    assert ok["passed"] and ok["spatial"]["median_offset_px"] == 0 and ok["temporal"]["best_lag_frames"] == 0
+    ref, vid, idx, track = _grip_scene(shift=9)                    # 9 px off on every frame
+    off = video_qc.check_grip_follow(c, ref, vid, idx, b, p)
+    assert not off["passed"] and not off["spatial"]["passed"] and off["spatial"]["median_offset_px"] == 9
+    ref, vid, idx, track = _grip_scene(lag=4)                      # right place, 4 frames late
+    late = video_qc.check_grip_follow(c, ref, vid, idx, b, p)
+    assert not late["passed"] and late["temporal"]["best_lag_frames"] == 4
+
+
+def test_layer_contact_and_diagnostics_and_clean_failure(reg):
+    c = _compiled(reg, PARRY)
+    p = {"event": "strike.CONTACT", "bind_frames": 3, "layers": ["m", "t"], "alpha_min": 128, "max_gap_px": 2}
+    a, t = np.zeros((20, 20), np.uint8), np.zeros((20, 20), np.uint8)
+    a[5:10, 5:10], t[5:10, 11:15] = 255, 255                       # 1 px apart
+    touching = {"m": {f: a for f in range(29, 33)}, "t": {f: t for f in range(29, 33)}}
+    assert video_qc.check_layer_contact(c, touching, p)["passed"]
+    far = np.zeros_like(t)
+    far[5:10, 16:19] = 255
+    apart = {"m": touching["m"], "t": {f: far for f in range(29, 33)}}
+    assert not video_qc.check_layer_contact(c, apart, p)["passed"]
+    d = video_qc.decide(c, {"raw_mace_contact": {"passed": False, "on_fail": "diagnostic"}})
+    assert d["status"] == "proceed" and d["diagnostic_failures"] == ["raw_mace_contact"]
+    r = video_qc._safe(lambda: [][0])
+    assert r["passed"] is False and "IndexError" in r["evaluator_error"]
 
 
 def test_undeclared_evaluator_fails_loudly(reg):

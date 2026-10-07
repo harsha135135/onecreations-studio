@@ -15,6 +15,17 @@ generated video's brightness and contrast:
   defender_framing    D3: the reacting defender's reference patch, as subject_framing, plus the contact frame
   trident_integrity   D3: masked NCC of the raw video on the authored (thin) defender weapon; low = raw weapon failure
 
+D3(b) ownership-aligned profile (showcase_class_contact_v2; contact shots whose weapons are protected):
+  parry_contact_timing_v2  the generated attacker's hand follows the authored grip around CONTACT (spatial, temporal
+                           lag, whole-window trajectory); measured on the actor's own pixels, never on the weapon
+  defender_reaction_timing the same measurement on the defender's rear grip over the raise and the bind
+  raw_mace_contact         D3(a)'s contact_timing evaluator, recorded as a DIAGNOSTIC (the raw mace is replaced)
+  final: mace_attached / trident_attached (no severe hand-weapon separation in the delivered video) and
+         final_weapon_contact (the delivered protected layers touch on the bind frames)
+A check whose on_fail is `diagnostic` is recorded and never decides the run. An evaluator that raises on a
+measurement is recorded as a failed check with the error, not a crashed executor (D3(a)); a declared check without an
+evaluator still raises (a configuration error).
+
 What a failing check means is declared as data (QCCheck.params["on_fail"]): `repair` (a deterministic policy owns
 it), `regenerate` (technical; at most the pre-registered retry), or `fail` (no automatic remedy).
 """
@@ -151,6 +162,146 @@ def check_thin_weapon(compiled, ref, video, idx, pass_index, p: dict) -> dict:
             "meaning": "raw generated weapon unreliable in these frames" if failed else "raw weapon held"}
 
 
+def grip_track(bundle, rig: str, bone: str) -> np.ndarray:
+    """Projected authored grip (the weapon bone's head = the holding hand) per output frame, in pixel-index coords."""
+    from onecreations.geometry.intrinsics import project
+
+    arm = next(a for a in bundle.manifest.armatures if a.oc_id == rig)
+    heads = bundle.joints()[f"{rig}.heads"][:, list(arm.bones).index(bone)]
+    cam = bundle.camera_arrays()
+    out = np.zeros((len(heads), 2))
+    for f in range(len(heads)):
+        uv, _ = project(heads[f][None], cam["c2w"][f], bundle.K())
+        out[f] = uv[0] - 0.5
+    return out
+
+
+def masked_match(ref_g: np.ndarray, vid_g: np.ndarray, mask: np.ndarray, x0: int, y0: int,
+                 radius: int) -> tuple[float, int, int]:
+    """Best masked NCC of the reference box ref_g[mask] (top-left x0, y0) within +-radius px in vid_g:
+    (ncc, dx, dy). Vectorised over all offsets; off-image offsets are skipped."""
+    h, w = mask.shape
+    H, W = vid_g.shape
+    pad = np.pad(vid_g, radius, mode="edge")
+    region = pad[y0:y0 + h + 2 * radius, x0:x0 + w + 2 * radius]
+    if region.shape != (h + 2 * radius, w + 2 * radius):
+        return 0.0, 0, 0
+    win = np.lib.stride_tricks.sliding_window_view(region, (h, w))[..., mask]       # (2r+1, 2r+1, K)
+    a = ref_g[mask].astype(np.float64)
+    a = a - a.mean()
+    b = win - win.mean(axis=-1, keepdims=True)
+    den = np.sqrt((a * a).sum() * (b * b).sum(axis=-1))
+    score = np.where(den > 1e-6, (b @ a) / np.maximum(den, 1e-6), 0.0)
+    yy, xx = np.mgrid[-radius:radius + 1, -radius:radius + 1]
+    inside = (x0 + xx >= 0) & (y0 + yy >= 0) & (x0 + xx + w <= W) & (y0 + yy + h <= H)
+    score = np.where(inside, score, -1.0)
+    i = int(np.argmax(score))
+    dy, dx = np.unravel_index(i, score.shape)
+    return float(score.flat[i]), int(dx) - radius, int(dy) - radius
+
+
+def check_grip_follow(compiled, ref, video, idx, bundle, p: dict) -> dict:
+    """Does the generated actor's hand follow the authored grip? The reference patch is the owner's own pixels (the
+    weapon passes excluded) in a box around the projected authored grip; it is searched in the video.
+
+    spatial:    median per-frame offset (lag 0) over the window <= max_median_offset_px
+    trajectory: every frame of the settled sub-window (from `settled_event` + `settled_offset`: the contact / the
+                arrived block) within max_offset_px, so it is not close on one frame only; median NCC >= min_ncc.
+                The fast approach frames before it are excluded from this per-frame bound because LTX smears fast
+                limbs (M2-B; on D2's admitted raw the arm patch moves 12-29 px there while the hold holds 4-5.5 px)
+    temporal:   the lag that best matches the reference sequence over the whole window (incl. the approach, where
+                the timing information is) is within tol_frames
+    """
+    a, b = (_event(compiled, e) + o for e, o in ((p["from_event"], p["from_offset"]), (p["to_event"], p["to_offset"])))
+    frames = [f for f in range(max(0, a), min(len(video), b + 1))]
+    grip = grip_track(bundle, p["rig"], p["bone"])
+    owner = [bundle.manifest.passes.object_index_map[o] for o in p["owner_objects"]]
+    excl = [bundle.manifest.passes.object_index_map[o] for o in p["exclude_objects"]
+            if o in bundle.manifest.passes.object_index_map]
+    hb, r = p["half_box_px"], p["radius_px"]
+
+    def patch(f):
+        gx, gy = int(round(grip[f][0])), int(round(grip[f][1]))
+        x0, y0 = gx - hb, gy - hb
+        Hh, Ww = idx.shape[1:]
+        if x0 < 0 or y0 < 0 or x0 + 2 * hb + 1 > Ww or y0 + 2 * hb + 1 > Hh:
+            return None
+        sl = (slice(y0, y0 + 2 * hb + 1), slice(x0, x0 + 2 * hb + 1))
+        m = np.isin(idx[f][sl], owner) & ~np.isin(idx[f][sl], excl)
+        return (x0, y0, sl, m) if m.sum() >= p["min_mask_px"] else None
+
+    patches = {f: patch(f) for f in frames}
+    rows, lag_scores = {}, {}
+    for lag in range(-p["search_frames"], p["search_frames"] + 1):
+        scores = []
+        for f in frames:
+            pt = patches[f]
+            if pt is None or not 0 <= f + lag < len(video):
+                continue
+            x0, y0, sl, m = pt
+            v, dx, dy = masked_match(ref[f][sl], video[f + lag], m, x0, y0, r)
+            scores.append(v)
+            if lag == 0:
+                rows[str(f)] = {"ncc": round(v, 3), "offset_px": round(float(np.hypot(dx, dy)), 1),
+                                "grip_px": [round(float(grip[f][0]), 1), round(float(grip[f][1]), 1)]}
+        lag_scores[lag] = round(float(np.mean(scores)), 4) if scores else None
+    measured = [v for v in rows.values()]
+    if len(measured) < max(2, int(np.ceil(p["min_frames_frac"] * len(frames)))):
+        return {"passed": False, "reason": "too few measurable frames", "window": [a, b], "frames": rows}
+    offs = [v["offset_px"] for v in measured]
+    nccs = [v["ncc"] for v in measured]
+    s0 = _event(compiled, p["settled_event"]) + p["settled_offset"] if "settled_event" in p else a
+    settled = [v["offset_px"] for f, v in rows.items() if int(f) >= s0]
+    if not settled:
+        return {"passed": False, "reason": "no measurable settled frame", "window": [a, b], "frames": rows}
+    valid = {k: v for k, v in lag_scores.items() if v is not None}
+    best_lag = max(valid, key=lambda k: (valid[k], -abs(k)))
+    spatial = float(np.median(offs)) <= p["max_median_offset_px"]
+    trajectory = max(settled) <= p["max_offset_px"] and float(np.median(nccs)) >= p["min_ncc"]
+    temporal = abs(best_lag) <= p["tol_frames"]
+    return {"passed": bool(spatial and trajectory and temporal), "window": [a, b],
+            "spatial": {"passed": bool(spatial), "median_offset_px": round(float(np.median(offs)), 2)},
+            "trajectory": {"passed": bool(trajectory), "settled_from": s0, "max_settled_offset_px": max(settled),
+                           "max_window_offset_px": max(offs), "median_ncc": round(float(np.median(nccs)), 3)},
+            "temporal": {"passed": bool(temporal), "best_lag_frames": int(best_lag), "lag_mean_ncc": lag_scores},
+            "frames": rows}
+
+
+def check_layer_contact(compiled, layer_alpha_by_id: dict, p: dict) -> dict:
+    """The delivered protected layers touch on the bind frames: min 2-D distance between the opaque pixels of the two
+    weapon layers <= max_gap_px (the 3-D contact itself is verified before generation)."""
+    a, b = _event(compiled, p["event"]), _event(compiled, p["event"]) + p["bind_frames"]
+    rows, ok = {}, True
+    for f in range(a, b + 1):
+        la, lb = (layer_alpha_by_id.get(lid, {}).get(f) for lid in p["layers"])
+        if la is None or lb is None:
+            rows[str(f)] = None
+            ok = False
+            continue
+        ma, mb = la >= p["alpha_min"], lb >= p["alpha_min"]
+        if not ma.any() or not mb.any():
+            rows[str(f)] = None
+            ok = False
+            continue
+        gap = 0
+        while gap <= p["max_gap_px"] and not (_dilate(ma, gap) & mb).any():
+            gap += 1
+        rows[str(f)] = gap if gap <= p["max_gap_px"] else f"> {p['max_gap_px']}"
+        ok &= gap <= p["max_gap_px"]
+    return {"passed": bool(ok), "frames": rows}
+
+
+def _safe(fn, *args) -> dict:
+    """An ordinary measurement must end PASS or FAIL: an evaluator error becomes a failed, recorded check (D3(a))."""
+    try:
+        return fn(*args)
+    except Exception as exc:  # noqa: BLE001 - recorded, never swallowed silently
+        import traceback
+
+        return {"passed": False, "evaluator_error": f"{type(exc).__name__}: {exc}",
+                "traceback": traceback.format_exc(limit=4)}
+
+
 def check_camera_progression(ref, video, idx, env_indices, p: dict) -> dict:
     rows = {}
     ok = True
@@ -177,7 +328,7 @@ def check_output_integrity(ref, video, p: dict) -> dict:
     return {"passed": not holes, "hole_frames": holes}
 
 
-def post_generation(compiled, ref, raw, idx, om) -> dict:
+def post_generation(compiled, ref, raw, idx, om, bundle=None) -> dict:
     """Run the post-generation checks declared in the CompiledShot QC contract on the raw generated video."""
     checks = {q.id: q for q in compiled.qc if q.stage == "post_generation" and q.implemented}
     strike_role = next(ph.actor for ph in compiled.action_timeline.phases if ph.kind == "strike")
@@ -190,29 +341,31 @@ def post_generation(compiled, ref, raw, idx, om) -> dict:
     for cid, q in checks.items():
         p = q.params
         if cid == "video_valid":
-            r = check_video_valid(raw, compiled.frames, compiled.resolution, p)
+            r = _safe(check_video_valid, raw, compiled.frames, compiled.resolution, p)
         elif cid == "subject_framing":
-            r = check_subject_framing(ref, raw, idx, actor, p)
-        elif cid == "contact_timing":
-            r = check_contact_timing(compiled, gref, graw, idx, head, p)
+            r = _safe(check_subject_framing, ref, raw, idx, actor, p)
+        elif cid in ("contact_timing", "raw_mace_contact"):
+            r = _safe(check_contact_timing, compiled, gref, graw, idx, head, p)
         elif cid == "apex_presence":
-            r = check_apex_presence(compiled, gref, graw, idx, head, p)
+            r = _safe(check_apex_presence, compiled, gref, graw, idx, head, p)
         elif cid == "weapon_integrity":
-            r = check_weapon_integrity(compiled, gref, graw, idx, head, p)
+            r = _safe(check_weapon_integrity, compiled, gref, graw, idx, head, p)
         elif cid == "camera_progression":
-            r = check_camera_progression(ref, raw, idx, env, p)
+            r = _safe(check_camera_progression, ref, raw, idx, env, p)
         elif cid == "output_integrity":
-            r = check_output_integrity(ref, raw, p)
+            r = _safe(check_output_integrity, ref, raw, p)
         elif cid == "defender_framing":
-            r = check_subject_framing(ref, raw, idx, om[p["object"]], p)
+            r = _safe(check_subject_framing, ref, raw, idx, om[p["object"]], p)
         elif cid == "trident_integrity":
-            r = check_thin_weapon(compiled, gref, graw, idx, om[p["object"]], p)
+            r = _safe(check_thin_weapon, compiled, gref, graw, idx, om[p["object"]], p)
+        elif cid in ("parry_contact_timing_v2", "defender_reaction_timing"):
+            r = _safe(check_grip_follow, compiled, gref, graw, idx, bundle, p)
         else:
             raise ValueError(f"post-generation check {cid!r} is declared implemented but has no evaluator")
         r["on_fail"] = p["on_fail"]
         if "object" in p:                              # the engine object the check measured (repair evidence target)
             r["object"] = p["object"]
-        elif cid in ("contact_timing", "apex_presence", "weapon_integrity") and weapon:
+        elif cid in ("contact_timing", "raw_mace_contact", "apex_presence", "weapon_integrity") and weapon:
             r["object"] = weapon.oc_ids[0]
         out[cid] = r
     return out
@@ -225,11 +378,14 @@ def decide(compiled, results: dict) -> dict:
     repairs = [{"object": o, "action": "protected_layer", "reason": "policy (geometry=protected), not QC"}
                for o in protected]
     owner = {oc: o.id for o in weapons for oc in o.oc_ids}
-    regenerate, fail = [], []
+    regenerate, fail, diagnostics = [], [], []
     for cid, r in results.items():
         if r["passed"]:
             continue
         action = r["on_fail"]
+        if action == "diagnostic":                     # D3(b): recorded evidence about a replaced component
+            diagnostics.append(cid)
+            continue
         if action.startswith("repair"):
             target = owner.get(r.get("object")) if r.get("object") else None
             if not protected or (r.get("object") and target is None):
@@ -243,13 +399,28 @@ def decide(compiled, results: dict) -> dict:
         else:
             fail.append(cid)
     status = "fail" if fail else ("regenerate" if regenerate else "proceed")
-    return {"status": status, "repairs": repairs, "regenerate_for": regenerate, "fail_for": fail}
+    out = {"status": status, "repairs": repairs, "regenerate_for": regenerate, "fail_for": fail}
+    if diagnostics:
+        out["diagnostic_failures"] = diagnostics
+    return out
 
 
-def final(compiled, ref, raw, repaired, composite, final_video, idx, om, layer_alpha: dict, fx_alpha: dict) -> dict:
+def final(compiled, ref, raw, repaired, composite, final_video, idx, om, layer_alpha: dict, fx_alpha: dict,
+          bundle=None, layer_alpha_by_id: dict | None = None) -> dict:
     """Deterministic integrity checks of the delivered video and of the compositing steps."""
     checks = {q.id: q.params for q in compiled.qc if q.stage == "final" and q.implemented}
     out = {}
+    known = {"final_valid", "protected_weapon_present", "effects_begin_at_contact", "bounded_repair", "no_holes",
+             "mace_attached", "trident_attached", "final_weapon_contact"}
+    unknown = set(checks) - known
+    if unknown:
+        raise ValueError(f"final checks {sorted(unknown)} are declared implemented but have no evaluator")
+    for cid in ("mace_attached", "trident_attached"):
+        if cid in checks:
+            out[cid] = _safe(check_grip_follow, compiled, Greys(ref), Greys(final_video), idx, bundle, checks[cid])
+    if "final_weapon_contact" in checks:
+        out["final_weapon_contact"] = _safe(check_layer_contact, compiled, layer_alpha_by_id or {},
+                                            checks["final_weapon_contact"])
     p = checks.get("final_valid")
     if p is not None:
         out["final_valid"] = check_video_valid(final_video, compiled.frames, compiled.resolution, p)

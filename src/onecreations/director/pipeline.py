@@ -311,7 +311,7 @@ def st_post_qc(ctx: Ctx) -> dict:
     b, ref = _load_video_inputs(ctx)
     raw = media.decode_rgb(Path(ctx.outputs["LTX_GENERATE"]["raw"]))
     res = video_qc.post_generation(ctx.compiled, ref, raw, b.passes()["object_index"],
-                                   b.manifest.passes.object_index_map)
+                                   b.manifest.passes.object_index_map, bundle=b)
     decision = video_qc.decide(ctx.compiled, res)
     p = ctx.path("qc", "post_generation.json")
     p.write_text(json.dumps({"checks": res, "decision": decision}, indent=1), encoding="utf-8")
@@ -422,13 +422,15 @@ def st_final_qc(ctx: Ctx) -> dict:
     repaired = media.decode_rgb(Path(ctx.outputs["REPAIR"]["repaired"]))
     composite = media.decode_rgb(Path(ctx.outputs["COMPOSITE"]["composite"]))
     final = media.decode_rgb(Path(ctx.outputs["GRADE"]["final_master"]))
-    alpha = {}
+    alpha, by_layer = {}, {}
     for lid, d in ctx.info.get("REPAIR", {}).get("layer_dirs", {}).items():
         for p in sorted(Path(d).glob("f_*.png")):
             f = int(p.stem.split("_")[1]) - 1
             a = hc._png_rgba(p)[..., 3]
             alpha[f] = np.maximum(alpha.get(f, 0), a)
-    res = video_qc.final(ctx.compiled, ref, raw, repaired, composite, final, idx, om, alpha, {})
+            by_layer.setdefault(lid, {})[f] = a
+    res = video_qc.final(ctx.compiled, ref, raw, repaired, composite, final, idx, om, alpha, {}, bundle=b,
+                         layer_alpha_by_id=by_layer)
     passed = all(v["passed"] for v in res.values())
     p = ctx.path("qc", "final.json")
     p.write_text(json.dumps({"checks": res, "passed": passed, "final_sha256": _out_sha(ctx, "GRADE", "final_master")},
