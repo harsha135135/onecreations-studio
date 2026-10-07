@@ -70,3 +70,13 @@ def test_soften_premultiplied_keeps_colour_and_spreads_alpha():
     assert out[4, 4, 3] < 255 and out[4, 5, 3] > 0 and out[0, 0, 3] == 0
     assert out[4, 5, :3].tolist() == [200, 100, 50]            # no dark fringe: colour kept where alpha spreads
     assert np.array_equal(hc.soften(layer, 0.0), layer)
+
+
+def test_protection_rule_ghost_frames_default_and_all():
+    """D3: ghost suppression defaults to the unreliable (authored-fast / low-retention) frames, as in M3-A / Showcase /
+    D2; contact_weapon_v1 asks for every protected frame (a long thin weapon is never 'fast' in its own widths)."""
+    from onecreations.contracts.composite import ProtectionRule
+    assert ProtectionRule(track_object="sc_mace_head").ghost_frames == "unreliable"
+    assert ProtectionRule(track_object="sc_trident", ghost_frames="all").ghost_frames == "all"
+    with pytest.raises(ValueError):
+        ProtectionRule(track_object="sc_trident", ghost_frames="some")

@@ -14,7 +14,10 @@ Rules (heuristics from this project's own runs, not universal truths about LTX):
   P3 integrated prop (e.g. the trident inside the defender mesh): follows its owner; never separately editable.
   P4 environment part: generative (trusted); editable iff separable.
   P5 effect: deterministic appearance and timing (rendered layers keyed from semantic events).
-  An explicit ShotSpec.protection entry overrides P1 (rule id, or "none").
+  P6 contact weapon (D3): a weapon that takes part in an authored weapon-on-weapon contact (an action's `contact`,
+     e.g. the mace and the trident of a parry) gets protected geometry, so both weapons meet where they were authored.
+     Checked after P1, so a fast mace keeps its P1 rule.
+  An explicit ShotSpec.protection entry overrides P1 and P6 (rule id, or "none").
 """
 
 from __future__ import annotations
@@ -34,8 +37,22 @@ def estimated_peak_speed(action_entry, params: dict) -> float | None:
     return round(peak, 3)
 
 
+def contact_props(spec: ShotSpec, reg: Registry) -> set[str]:
+    """Prop ids that take part in an authored contact: for each action with a `contact`, the weapon its actor holds
+    and the weapon held by the actor of the partner action."""
+    out = set()
+    for a in spec.actions:
+        if not reg.has(a.preset, "action") or "contact" not in reg.get(a.preset).data:
+            continue
+        partner = reg.get(a.preset).data["contact"]["partner_action"]
+        actors = {a.actor} | {b.actor for b in spec.actions if b.preset == partner}
+        out |= {p.id for p in spec.props if p.owner in actors and reg.has(p.asset, "weapon")
+                and reg.get(p.asset).data["mount"]["type"] == "rig_bone"}
+    return out
+
+
 def weapon_rule(spec: ShotSpec, reg: Registry, prop) -> tuple[str | None, str]:
-    """(rule id or None, provenance) for one weapon prop, applying P1 and explicit overrides."""
+    """(rule id or None, provenance) for one weapon prop, applying P1, P6 and explicit overrides."""
     explicit = next((p for p in spec.protection if p.object == prop.id), None)
     if explicit is not None:
         return (None if explicit.rule == "none" else explicit.rule), "ShotSpec.protection (explicit)"
@@ -51,10 +68,14 @@ def weapon_rule(spec: ShotSpec, reg: Registry, prop) -> tuple[str | None, str]:
                 continue
             speed = estimated_peak_speed(reg.get(a.preset), a.params)
             trig = rule.data.get("trigger", {}).get("min_peak_speed_head_widths_per_frame", 0.0)
-            if speed is not None and speed >= trig:
+            if "min_peak_speed_head_widths_per_frame" in rule.data.get("trigger", {}) and speed is not None                     and speed >= trig:
                 return rule.id, (f"P1: {w.data['weapon_class']} weapon, {a.preset} estimated peak {speed} head "
                                  f"widths/frame >= {trig} (local observation, M2-B/768/M3-A/Showcase)")
-    return None, "P1 not triggered: generative output trusted"
+    if prop.id in contact_props(spec, reg):
+        for rule in reg.of_kind("protection_rule"):
+            if rule.data.get("trigger", {}).get("in_contact") and                     w.data["weapon_class"] in rule.data["applies_to_weapon_class"]:
+                return rule.id, f"P6: {prop.id} takes part in an authored weapon-on-weapon contact"
+    return None, "P1/P6 not triggered: generative output trusted"
 
 
 def policy_for(kind: str, separable: bool, rule: str | None = None, provenance: str = "") -> ProcessingPolicy:
@@ -69,12 +90,18 @@ def policy_for(kind: str, separable: bool, rule: str | None = None, provenance: 
                             provenance=provenance or f"{label}: generative, held by the depth control")
 
 
-def preview_rule(reg: Registry, weapon_id: str, action_id: str, params: dict) -> str | None:
-    """P1 for a planned (weapon, action) pair, before a ShotSpec exists (the director's preview)."""
+def preview_rule(reg: Registry, weapon_id: str, action_id: str, params: dict,
+                 in_contact: bool = False) -> tuple[str | None, str | None]:
+    """(rule, "P1" / "P6") for a planned (weapon, action) pair, before a ShotSpec exists (the director's preview)."""
     w = reg.get(weapon_id, "weapon")
+    if w.data["mount"]["type"] == "integrated":
+        return None, None
     speed = estimated_peak_speed(reg.get(action_id, "action"), params)
     for rule in reg.of_kind("protection_rule"):
-        trig = rule.data.get("trigger", {}).get("min_peak_speed_head_widths_per_frame", 0.0)
-        if w.data["weapon_class"] in rule.data["applies_to_weapon_class"] and speed is not None and speed >= trig:
-            return rule.id
-    return None
+        trig = rule.data.get("trigger", {})
+        if w.data["weapon_class"] in rule.data["applies_to_weapon_class"] and speed is not None and                 "min_peak_speed_head_widths_per_frame" in trig and speed >= trig["min_peak_speed_head_widths_per_frame"]:
+            return rule.id, "P1"
+    for rule in reg.of_kind("protection_rule"):
+        if in_contact and rule.data.get("trigger", {}).get("in_contact") and                 w.data["weapon_class"] in rule.data["applies_to_weapon_class"]:
+            return rule.id, "P6"
+    return None, None

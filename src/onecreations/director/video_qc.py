@@ -12,6 +12,8 @@ generated video's brightness and contrast:
   weapon_integrity    per-frame NCC of the weapon head in the strike interval; a low value = raw weapon failure
   camera_progression  the background (environment-only pixels) stays registered to the authored camera move
   output_integrity    no holes (exact-black regions the reference does not have)
+  defender_framing    D3: the reacting defender's reference patch, as subject_framing, plus the contact frame
+  trident_integrity   D3: masked NCC of the raw video on the authored (thin) defender weapon; low = raw weapon failure
 
 What a failing check means is declared as data (QCCheck.params["on_fail"]): `repair` (a deterministic policy owns
 it), `regenerate` (technical; at most the pre-registered retry), or `fail` (no automatic remedy).
@@ -129,6 +131,23 @@ def check_weapon_integrity(compiled, ref, video, idx, pass_index, p: dict) -> di
             "meaning": "raw generated weapon unreliable in these frames" if failed else "raw weapon held"}
 
 
+def check_thin_weapon(compiled, ref, video, idx, pass_index, p: dict) -> dict:
+    """A long thin weapon (D3 trident): its bounding box is mostly background, so compare only the authored weapon
+    pixels (dilated) between the reference and the raw video, at zero offset (the camera holds to ~4 px)."""
+    start = _event(compiled, p["from_event"])
+    per = {}
+    for f in range(start, len(video)):
+        m = idx[f] == pass_index
+        if m.sum() < 30:
+            per[str(f)] = None
+            continue
+        m = _dilate(m, p["dilate_px"])
+        per[str(f)] = round(media.ncc(ref[f][m], video[f][m]), 3)
+    failed = [int(f) for f, v in per.items() if v is not None and v < p["min_ncc"]]
+    return {"passed": not failed, "failed_frames": failed, "per_frame_ncc": per,
+            "meaning": "raw generated weapon unreliable in these frames" if failed else "raw weapon held"}
+
+
 def check_camera_progression(ref, video, idx, env_indices, p: dict) -> dict:
     rows = {}
     ok = True
@@ -181,29 +200,41 @@ def post_generation(compiled, ref, raw, idx, om) -> dict:
             r = check_camera_progression(ref, raw, idx, env, p)
         elif cid == "output_integrity":
             r = check_output_integrity(ref, raw, p)
+        elif cid == "defender_framing":
+            r = check_subject_framing(ref, raw, idx, om[p["object"]], p)
+        elif cid == "trident_integrity":
+            r = check_thin_weapon(compiled, gref, graw, idx, om[p["object"]], p)
         else:
-            continue
+            raise ValueError(f"post-generation check {cid!r} is declared implemented but has no evaluator")
         r["on_fail"] = p["on_fail"]
+        if "object" in p:                              # the engine object the check measured (repair evidence target)
+            r["object"] = p["object"]
+        elif cid in ("contact_timing", "apex_presence", "weapon_integrity") and weapon:
+            r["object"] = weapon.oc_ids[0]
         out[cid] = r
     return out
 
 
 def decide(compiled, results: dict) -> dict:
     """Turn check results + declared on_fail actions + object policies into the run decision (data, not code)."""
-    protected = [o.id for o in compiled.semantic_objects if o.policy.geometry == "protected" and o.kind == "weapon"]
+    weapons = [o for o in compiled.semantic_objects if o.policy.geometry == "protected" and o.kind == "weapon"]
+    protected = [o.id for o in weapons]
     repairs = [{"object": o, "action": "protected_layer", "reason": "policy (geometry=protected), not QC"}
                for o in protected]
+    owner = {oc: o.id for o in weapons for oc in o.oc_ids}
     regenerate, fail = [], []
     for cid, r in results.items():
         if r["passed"]:
             continue
         action = r["on_fail"]
         if action.startswith("repair"):
-            if not protected:
+            target = owner.get(r.get("object")) if r.get("object") else None
+            if not protected or (r.get("object") and target is None):
                 fail.append(f"{cid}: needs repair but no protection policy covers it")
             else:
-                for rep in repairs:
-                    rep.setdefault("qc_evidence", []).append(cid)
+                for rep in repairs:                    # a check that names its object is evidence for that object only
+                    if target is None or rep["object"] == target:
+                        rep.setdefault("qc_evidence", []).append(cid)
         elif action == "regenerate":
             regenerate.append(cid)
         else:

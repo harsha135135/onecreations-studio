@@ -211,6 +211,61 @@ def test_qc_decisions_are_data(reg):
     assert video_qc.decide(unprotected, {"weapon_integrity": weapon})["status"] == "fail"
 
 
+PARRY = ("Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient "
+         "ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.")
+
+
+def test_parry_qc_is_declared_only_for_contact_shots(reg):
+    d2 = {q.id for q in _compiled(reg).qc}
+    parry = _compiled(reg, PARRY)
+    ids = {q.id for q in parry.qc}
+    new = {"defender_stationary_root", "defender_weapon_axis", "contact_geometry", "contact_visible",
+           "defender_weapon_visible", "defender_framing", "trident_integrity"}
+    assert not (d2 & new) and ids == d2 | new
+    q = {c.id: c for c in parry.qc}
+    assert q["defender_framing"].params["frames"] == [0, 12, 24, 29, 36, 48]
+    assert q["trident_integrity"].params["on_fail"] == "repair" and q["defender_framing"].params["on_fail"] == "fail"
+    assert q["weapon_bone_projection"].params["min_visible_frac"] == 0.9
+    assert "min_visible_frac" not in {c.id: c for c in _compiled(reg).qc}["weapon_bone_projection"].params
+
+
+def test_parry_repair_evidence_goes_to_the_named_weapon(reg):
+    c = _compiled(reg, PARRY)
+    d = video_qc.decide(c, {"trident_integrity": {"passed": False, "on_fail": "repair", "object": "sc_trident"},
+                            "weapon_integrity": {"passed": False, "on_fail": "repair", "object": "sc_mace_head"}})
+    ev = {r["object"]: r.get("qc_evidence", []) for r in d["repairs"]}
+    assert d["status"] == "proceed" and ev == {"MACE": ["weapon_integrity"], "TRIDENT": ["trident_integrity"]}
+    legacy = video_qc.decide(c, {"weapon_integrity": {"passed": False, "on_fail": "repair"}})  # D2 record: no object
+    assert all(r["qc_evidence"] == ["weapon_integrity"] for r in legacy["repairs"])
+    unknown = video_qc.decide(c, {"x": {"passed": False, "on_fail": "repair", "object": "sc_nothing"}})
+    assert unknown["status"] == "fail"
+
+
+def test_thin_weapon_check_uses_only_the_weapon_pixels(reg):
+    c = _compiled(reg, PARRY)
+    rng = np.random.default_rng(0)
+    n, h, w = 49, 40, 60
+    idx = np.zeros((n, h, w), np.uint8)
+    idx[:, 18:21, 5:55] = 10                                     # a long thin "trident" across the frame
+    ref = rng.integers(0, 255, (n, h, w)).astype(np.float32)
+    good = ref + rng.normal(0, 4, ref.shape)                     # weapon (and everything else) held
+    bad = good.copy()
+    bad[30][17:22, :] = rng.integers(0, 255, (5, w))             # frame 30: only the weapon's pixels break
+    p = {"from_event": "parry.GUARD_END", "dilate_px": 1, "min_ncc": 0.4}
+    assert video_qc.check_thin_weapon(c, ref, good, idx, 10, p)["passed"]
+    r = video_qc.check_thin_weapon(c, ref, bad, idx, 10, p)
+    assert r["failed_frames"] == [30] and r["per_frame_ncc"]["29"] > 0.9 and "7" not in r["per_frame_ncc"]
+
+
+def test_undeclared_evaluator_fails_loudly(reg):
+    c = _compiled(reg).model_copy(deep=True)
+    c.qc = [c.qc[-1].model_copy(update={"id": "made_up", "stage": "post_generation"})]
+    v = np.zeros((49, 448, 768, 3), np.uint8)
+    idx = np.zeros((49, 448, 768), np.uint8)
+    with pytest.raises(ValueError, match="made_up"):
+        video_qc.post_generation(c, v, v, idx, {"sc_asura": 1, "sc_mace_head": 8})
+
+
 def test_video_validity_and_holes():
     good = np.random.default_rng(0).integers(0, 255, (5, 20, 30, 3), dtype=np.uint8)
     p = {"min_std": 3.0, "spike_abs": 300.0, "spike_rel": 1e9}

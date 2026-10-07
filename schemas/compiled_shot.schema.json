@@ -670,6 +670,16 @@
           "title": "Dilate Frames",
           "type": "integer"
         },
+        "ghost_frames": {
+          "default": "unreliable",
+          "description": "where swept-band ghost suppression runs: only the authored-fast / low-retention frames, or every protected frame (D3: a long thin weapon is never 'fast' in its own widths)",
+          "enum": [
+            "unreliable",
+            "all"
+          ],
+          "title": "Ghost Frames",
+          "type": "string"
+        },
         "include_frames": {
           "default": [],
           "description": "output frames always protected (e.g. the whole shot, so the weapon never switches source mid-shot)",

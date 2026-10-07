@@ -34,7 +34,7 @@ from onecreations.hashing import content_hash
 
 STAGES = ["PLAN", "VALIDATE", "COMPILE", "BLENDER_BUILD", "CONTROL_RENDER", "FIRST_FRAME", "PREFLIGHT_QC",
           "LTX_GENERATE", "POST_GENERATION_QC", "REPAIR", "VFX", "COMPOSITE", "GRADE", "FINAL_QC", "DELIVER"]
-PIPELINE_VERSION = "d2.1"
+PIPELINE_VERSION = "d3.0"
 DATA_ROOT = Path(os.environ.get("ONECREATIONS_DATA", r"G:\onecreations"))
 
 

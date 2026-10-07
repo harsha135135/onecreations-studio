@@ -1,4 +1,5 @@
-# OneCreations asset registry (D1, 2026-10-06; D2 adds asura_v2). Validated by onecreations.contracts.registry.AssetRegistry.
+# OneCreations asset registry (D1, 2026-10-06; D2 adds asura_v2; D3 adds the rigged defender, trident_v2 and the
+# parry pair). Validated by onecreations.contracts.registry.AssetRegistry.
 # Only assets, actions, cameras, effects, looks, grades and profiles that actually exist and were used in Showcase v1
 # are registered. Builders are the current Blender engine (integrations/blender/build_showcase_scene.py).
 schema_version: 1
@@ -98,6 +99,40 @@ entries:
     material_groups: [ash_skin, white_cloth, shawl, sash, beads, hair, steel]
     prompt: a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl
 
+- id: ascetic_defender_v2
+  kind: character
+  status: experimental
+  description: >-
+    Rigged ascetic defender (D3): v1's body, dhoti, shawl, beads and matted hair rebuilt in a rest pose on a 16-bone
+    rig with the M2-B topology and the ascetic's proportions, two-handed grip on a separate trident (trident_v2).
+    Its held guard reproduces v1's baked guard (same IK targets and elbow poles).
+  aliases: [ascetic, defender, sage, yogi, shiva, lord shiva, mahadeva]
+  builder: integrations/blender/build_showcase_scene.py:build_defender_v2 (scene_build.defender_asset = ascetic_defender_v2)
+  provenance: >-
+    D3 character admission (2026-10-07, admission_records/director/2026-10-07_ascetic_defender_v2_admission.json):
+    held guard silhouette IoU 0.943 vs v1 (thicker trident, closed fists), attacker joints unchanged (0.0 m), 0
+    unweighted vertices; built for the parry pair (trident_parry_v1)
+  limitations:
+    - "root and legs never move: the lunge is fixed; only the torso and arms are keyed"
+    - stylised metaball surfaces; the hands are closed fists rigid to the trident (no finger articulation)
+    - "keyed on every frame from interpolated targets (two-handed grip): the hands sit on the shaft at whole frames"
+  data:
+    oc_id: sc_defender
+    pass_index: 2
+    rig: m2b_humanoid_16bone_ascetic
+    rig_oc_id: sc_defender_rig
+    semantic_name: DEFENDER
+    proper_names: {shiva: SHIVA, lord shiva: SHIVA, mahadeva: SHIVA}
+    roles: [defender]
+    motion: rigged
+    builder_variant: ascetic_defender_v2
+    anchors: {root: root bone, chest: chest bone, weapon_hand: trident bone (hand.L tail)}
+    weapon_classes: [polearm]
+    default_weapon: trident_v2
+    default_placement: {position: [0.70, -3.55, 0.0], yaw_deg: -65.0, scale: 1.08}
+    material_groups: [ash_skin, white_cloth, shawl, sash, beads, hair, steel]
+    prompt: a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl
+
 # --- weapons ------------------------------------------------------------------------------------------------------
 - id: heavy_mace_v1
   kind: weapon
@@ -126,6 +161,22 @@ entries:
     parts: []
     weapon_class: polearm
     mount: {type: integrated, owner_asset: ascetic_defender_v1}
+    prompt: holds a steel trident
+
+- id: trident_v2
+  kind: weapon
+  status: experimental
+  description: Steel trident as its own object (sc_trident), rigid to the defender rig's trident bone; v1 proportions, shaft 0.035 m.
+  aliases: [trident, trishula, trishul]
+  builder: integrations/blender/build_showcase_scene.py:build_trident_v2
+  provenance: D3 (built for the parry; shaft thickened from v1's 0.022 m, which is ~4-5 px wide at 768x448)
+  limitations: [one size; must be held by an m2b_humanoid_16bone_ascetic rig with a trident bone]
+  data:
+    parts:
+      - {oc_id: sc_trident, pass_index: 10, part: trident}
+    track_part: sc_trident
+    weapon_class: polearm
+    mount: {type: rig_bone, rig: m2b_humanoid_16bone_ascetic, bone: trident}
     prompt: holds a steel trident
 
 # --- environment --------------------------------------------------------------------------------------------------
@@ -167,6 +218,8 @@ entries:
     strike_frames: {type: integer, default: 6, min: 2, max: 9, description: apex -> contact duration (9 = M2-B retry speed)}
   data:
     actor_motion: rigged
+    roles: [attacker]
+    instance_id: strike
     requires_rig: m2b_humanoid_16bone
     requires_weapon_class: heavy_blunt
     frames: 49
@@ -189,20 +242,104 @@ entries:
     peak_weapon_speed_head_widths_per_frame: {showcase_768x448: 1.27, m2b_512x320: 1.25}
     default_vfx: [impact_dust_v1, debris_v1, sparks_v1, floor_cracks_v1, impact_flash_v1, camera_jolt_v1]
 
+- id: mace_strike_blocked_v1
+  kind: action
+  status: experimental
+  description: >-
+    The mace slam's guard, wind-up and apex, then an overhead downswing stopped on the defender's raised trident
+    (weapon-on-weapon contact), a one-frame bind, a rebound and a re-chamber. Chosen as the partner of a parry.
+  aliases: []
+  builder: >-
+    build_showcase_scene.py:blocked_keys + solve_blocked_pose (the contact pose is solved against the defender's block
+    so the mace head touches the shaft on CONTACT by construction)
+  provenance: D3 (pending)
+  limitations:
+    - only as the partner of trident_parry_v1 by ascetic_defender_v2; root and legs fixed
+    - 49-frame / 24 fps profile only
+  params:
+    strike_frames: {type: integer, default: 6, min: 2, max: 9, description: apex -> contact duration}
+  data:
+    actor_motion: rigged
+    roles: [attacker]
+    instance_id: strike
+    requires_rig: m2b_humanoid_16bone
+    requires_weapon_class: heavy_blunt
+    frames: 49
+    fps: 24
+    timeline_version: {default: 1.0.0, other: "1.0.0-strike{strike_frames}f"}
+    events:
+      START: {frame: 0}
+      GUARD_END: {frame: 7}
+      APEX: {frame: 23}
+      CONTACT: {frame: 23, plus_param: strike_frames}
+      HOLD_END: {frame: 34}
+      RECOVERY_START: {frame: 34}
+      END: {frame: 48}
+    phases:
+      - {id: guard, kind: idle, start: START, end: GUARD_END}
+      - {id: windup, kind: other, start: GUARD_END, end: APEX}
+      - {id: strike, kind: strike, start: APEX, end: CONTACT}
+      - {id: rebound, kind: recoil, start: CONTACT, end: HOLD_END}
+      - {id: recovery, kind: recovery, start: HOLD_END, end: END}
+    contact: {id: mace_on_trident, event: CONTACT, partner_action: trident_parry_v1, own_part: mace,
+              partner_part: trident, contact_point: mace.head}
+    peak_weapon_speed_head_widths_per_frame: {showcase_768x448: 1.51}   # D3 build: 103.7 px/frame into contact, head 68.7 px
+    default_vfx: [sparks_v1, clash_flash_v1]
+
 - id: defender_guard_v1
   kind: action
   description: Static defensive guard held for the whole shot (trident forward toward the attacker).
-  aliases: [guard, guards, guarding, block, blocks, blocking, defend, defends, brace, braces, stands, parry, parries]
-  builder: static pose of ascetic_defender_v1 (no keys)
+  aliases: [guard, guards, guarding, defend, defends, brace, braces, stands]
+  builder: static pose of ascetic_defender_v1 (no keys); ascetic_defender_v2 holds the same guard (one key)
   provenance: Showcase v1
-  limitations: [no motion; a requested block or parry is rendered as a held guard without weapon contact]
+  limitations: [no motion and no weapon contact (D3 moved the block / parry words to trident_parry_v1)]
   data:
     actor_motion: static
+    roles: [defender]
+    instance_id: guard
     frames: 49
     fps: 24
     events: {START: {frame: 0}, END: {frame: 48}}
     phases:
       - {id: defender_hold, kind: defense, start: START, end: END}
+    prompt: in a guarding stance
+
+- id: trident_parry_v1
+  kind: action
+  status: experimental
+  description: >-
+    A reactive parry: from the forward guard the defender pulls the trident up and back as the wind-up begins, brings
+    it over into a hanging guard (hands high, shaft slanting down toward the attacker) two frames before the blow,
+    takes the mace on the shaft at CONTACT, holds the bind for a frame, drives the shaft up and settles in a high guard.
+  aliases: [block, blocks, blocking, blocked, parry, parries, parrying, parried, deflect, deflects, deflecting]
+  builder: build_showcase_scene.py:defender_parry_poses + key_defender (interpolated targets keyed on every frame)
+  provenance: D3 (pending)
+  limitations:
+    - only with ascetic_defender_v2 against mace_strike_blocked_v1; root and legs fixed (no footwork)
+    - one block line (hanging guard); the contact point on the shaft is fixed (1.10 m from the rear hand)
+  params:
+    strike_frames: {type: integer, default: 6, min: 2, max: 9, description: synchronised to the attacker's strike}
+  data:
+    actor_motion: rigged
+    roles: [defender]
+    instance_id: parry
+    requires_rig: m2b_humanoid_16bone_ascetic
+    requires_weapon_class: polearm
+    partner_action: mace_strike_blocked_v1
+    sync_params: [strike_frames]
+    frames: 49
+    fps: 24
+    events:
+      START: {frame: 0}
+      GUARD_END: {frame: 8}
+      CONTACT: {frame: 23, plus_param: strike_frames}
+      HOLD_END: {frame: 34}
+      END: {frame: 48}
+    phases:
+      - {id: def_guard, kind: idle, start: START, end: GUARD_END}
+      - {id: def_raise, kind: defense, start: GUARD_END, end: CONTACT}
+      - {id: def_block, kind: contact, start: CONTACT, end: HOLD_END}
+      - {id: def_recovery, kind: recovery, start: HOLD_END, end: END}
     prompt: in a guarding stance
 
 # --- camera -------------------------------------------------------------------------------------------------------
@@ -277,6 +414,17 @@ entries:
   provenance: Showcase v1 (energy cut to ~45% after viewing)
   data: {component: flash, layer: impact_flash, trigger_event: CONTACT, duration: 5,
          energy_w: [2200.0, 1100.0, 420.0, 140.0, 40.0]}
+- id: clash_flash_v1
+  kind: vfx
+  status: experimental
+  description: Weapon-clash light flash - the impact_flash light pass at the 3D contact point, at about a quarter of its energy.
+  aliases: []
+  builder: build_showcase_scene.build_impact_fx (fx_flash at the parry contact point) -> impact_flash light pass (blend add)
+  provenance: >-
+    D3: the Showcase flash (0.4 m above the floor) blew out the defender even at ~45%; the clash flash sits ~1.6 m
+    up between both actors, so it starts lower (to be confirmed on the reference render)
+  data: {component: flash, layer: impact_flash, trigger_event: CONTACT, duration: 5,
+         energy_w: [600.0, 300.0, 120.0, 40.0, 12.0]}
 - id: camera_jolt_v1
   kind: vfx
   description: 2-px post-only camera-response jolt over three frames (never alters the authored camera).
@@ -351,6 +499,35 @@ entries:
       ghost_mode: swept_band
       ghost_fill: temporal
       ghost_band_px: 8
+      soften_px: 0.7
+      authored_speed_widths: 0.5
+      dilate_frames: 1
+      all_frames: true
+
+- id: contact_weapon_v1
+  kind: protection_rule
+  status: experimental
+  description: >-
+    A weapon that takes part in an authored weapon-on-weapon contact is owned by Blender in every frame (the
+    fast_weapon_v2 layer treatment), so the weapons in the final meet exactly where they were authored to.
+  aliases: []
+  builder: render_layers.py + tools/admission/hybrid_composite.py (CompositeManifest protected_geometry layer)
+  provenance: >-
+    D3 rule P6: thin weapons double or smear in raw LTX (M2-A: a small trident came back doubled); a parry only reads
+    if both weapons meet where they were authored to. All frames rather than a contact window, so the weapon never
+    switches source mid-shot (the mace's proven treatment)
+  limitations: [as fast_weapon_v2; the trident is long but only ~6-8 px wide at 768x448]
+  data:
+    applies_to_weapon_class: [polearm, heavy_blunt]
+    trigger: {in_contact: true}
+    layer_settings:
+      render: {holdout_others: true, motion_blur_shutter: 0.25, samples: 128}
+      grade: per_channel_gain
+      ghost_suppression: true
+      ghost_mode: swept_band
+      ghost_fill: temporal
+      ghost_band_px: 8
+      ghost_frames: all            # a long thin weapon is never 'fast' in its own widths: suppress raw doubles everywhere
       soften_px: 0.7
       authored_speed_widths: 0.5
       dilate_frames: 1

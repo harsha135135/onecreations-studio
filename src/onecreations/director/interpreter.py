@@ -36,7 +36,33 @@ UNSUPPORTED = {
     "vfx": ["explosion", "lightning", "laser", "magic", "blood", "energy beam", "fireball", "portal"],
 }
 SLOW_WORDS = ["slow", "slowly", "deliberate", "deliberately", "heavy, slow"]
-BLOCK_WORDS = ["block", "blocks", "blocking", "parry", "parries"]
+
+
+def _role_actions(reg: Registry, role: str) -> list:
+    return [e for e in reg.of_kind("action") if role in e.data.get("roles", [])]
+
+
+def _performer(reg: Registry, action, current: str) -> str | None:
+    """The staged character if it can perform `action`, else the first registered variant with the same role that can
+    (static actions suit anyone; rigged ones need the required rig)."""
+    def can(cid):
+        ce = reg.get(cid)
+        return action.data["actor_motion"] == "static" or ce.data.get("rig") == action.data.get("requires_rig")
+    if can(current):
+        return current
+    role = action.data["roles"][0]
+    return next((c.id for c in reg.of_kind("character") if role in c.data["roles"] and can(c.id)), None)
+
+
+def _holder(reg: Registry, weapon, chars: dict) -> str | None:
+    """The role whose staged character can hold `weapon` (by rig mount, or as its integrated prop)."""
+    mount = weapon.data["mount"]
+    for role, cid in chars.items():
+        ce = reg.get(cid)
+        if mount["type"] == "rig_bone" and ce.data.get("rig") == mount["rig"] or \
+                mount["type"] == "integrated" and mount["owner_asset"] == cid:
+            return role
+    return None
 
 
 def _norm(text: str) -> str:
@@ -65,43 +91,32 @@ def interpret(request: str, reg: Registry) -> DirectorPlan:
         env = reg.of_kind("environment")[0].id
         dec.append(Decision(slot="environment", choice=env, source="default", note="no setting named; the only one"))
 
-    # characters by role
-    chars, names = {}, {}
+    # characters by role (the first named entry per role; the defender may be swapped below for a variant that can
+    # perform the requested action)
+    chars, names, char_dec = {}, {}, {}
     for entry, alias, _pos in reg.match_aliases(text, "character"):
         for role in entry.data["roles"]:
             if role not in chars:
                 chars[role] = entry.id
                 proper = entry.data.get("proper_names", {})
                 names[role] = proper.get(alias, entry.data["semantic_name"])
+                char_dec[role] = len(dec)
                 dec.append(Decision(slot=role, choice=entry.id, source="prompt", evidence=alias))
     for role in ("attacker", "defender"):
         if role not in chars and "character" not in unsup_cats:
             entry = next(e for e in reg.of_kind("character") if role in e.data["roles"])
             chars[role], names[role] = entry.id, entry.data["semantic_name"]
+            char_dec[role] = len(dec)
             dec.append(Decision(slot=role, choice=entry.id, source="default",
                                 note=f"the current engine always stages a {role}"))
             warnings.append(f"no {role} named: using {entry.id}")
 
-    # weapons
-    weapons = {}
-    for entry, alias, _pos in reg.match_aliases(text, "weapon"):
-        if entry.data["mount"]["type"] == "rig_bone":
-            weapons["attacker"] = entry.id
-            dec.append(Decision(slot="attacker.weapon", choice=entry.id, source="prompt", evidence=alias))
-        else:
-            dec.append(Decision(slot="defender.weapon", choice=entry.id, source="prompt", evidence=alias,
-                                note="integrated into the defender asset"))
-    if "attacker" in chars and "attacker" not in weapons and "weapon" not in unsup_cats:
-        weapons["attacker"] = "heavy_mace_v1"
-        dec.append(Decision(slot="attacker.weapon", choice="heavy_mace_v1", source="default",
-                            note="the only weapon the attacker can wield"))
-
-    # actions
+    # actions (role-filtered; presets without aliases are only chosen as a partner)
     actions, params = {}, {}
-    rigged = [e for e in reg.of_kind("action") if e.data["actor_motion"] == "rigged"]
-    hit = [(e, a) for e in rigged for a in e.aliases if _has(text, a)]
     if "attacker" in chars and "action" not in unsup_cats:
-        e = hit[0][0] if hit else rigged[0]
+        att = [e for e in _role_actions(reg, "attacker") if e.aliases]
+        hit = [(e, a) for e in att for a in e.aliases if _has(text, a)]
+        e = hit[0][0] if hit else att[0]
         actions["attacker"] = e.id
         dec.append(Decision(slot="attacker.action", choice=e.id, source="prompt" if hit else "default",
                             evidence=hit[0][1] if hit else None))
@@ -113,14 +128,58 @@ def interpret(request: str, reg: Registry) -> DirectorPlan:
             dec.append(Decision(slot="attacker.action.strike_frames", choice="9", source="prompt", evidence=slow,
                                 note="the M2-B retry speed (x1.5 slower downswing)"))
     if "defender" in chars:
-        actions["defender"] = "defender_guard_v1"
-        guard = reg.get("defender_guard_v1")
-        g = next((a for a in guard.aliases if _has(text, a)), None)
-        dec.append(Decision(slot="defender.action", choice="defender_guard_v1", source="prompt" if g else "default",
-                            evidence=g))
-        if any(_has(text, w) for w in BLOCK_WORDS):
-            warnings.append("a block/parry with weapon contact is not supported: the defender holds a static guard "
-                            "and the mace lands beside him")
+        d_acts = _role_actions(reg, "defender")
+        hit = sorted([(e, a) for e in d_acts for a in e.aliases if _has(text, a)],
+                     key=lambda h: "partner_action" not in h[0].data)          # a parry beats a plain guard
+        e, alias = hit[0] if hit else (next(x for x in d_acts if x.data["actor_motion"] == "static"), None)
+        performer = _performer(reg, e, chars["defender"])
+        if "partner_action" in e.data and (performer is None or "attacker" not in actions):
+            warnings.append(f"'{alias}' needs {e.id}, which no registered defender can perform here: the defender "
+                            f"holds a static guard and the mace lands beside him")
+            e, alias = next(x for x in d_acts if x.data["actor_motion"] == "static"), None
+            performer = chars["defender"]
+        actions["defender"] = e.id
+        dec.append(Decision(slot="defender.action", choice=e.id, source="prompt" if alias else "default",
+                            evidence=alias))
+        if performer != chars["defender"]:
+            old = dec[char_dec["defender"]]
+            dec[char_dec["defender"]] = Decision(slot="defender", choice=performer, source=old.source,
+                                                 evidence=old.evidence,
+                                                 note=f"{e.id} needs a {e.data['requires_rig']} rig: {chars['defender']} "
+                                                      f"cannot perform it, {performer} is its rigged variant")
+            chars["defender"] = performer
+        partner = e.data.get("partner_action")
+        if partner:                                    # the attacker's strike becomes the one this action stops
+            actions["attacker"] = partner
+            dec.append(Decision(slot="attacker.action", choice=partner, source="rule",
+                                note=f"the partner of {e.id}: the strike is stopped on the defender's weapon"))
+            synced = {k: params["attacker"][k] for k in e.data.get("sync_params", []) if k in params.get("attacker", {})}
+            if synced:
+                params["defender"] = synced
+                dec += [Decision(slot=f"defender.action.{k}", choice=str(v), source="rule",
+                                 note="synchronised with the attacker (one shared CONTACT)") for k, v in synced.items()]
+
+    # weapons: a named weapon goes to the staged character that can hold it; otherwise each role's default
+    weapons = {}
+    for entry, alias, _pos in reg.match_aliases(text, "weapon"):
+        role = _holder(reg, entry, chars)
+        if role is None:
+            continue                                   # a variant for an asset not staged here (e.g. trident_v1)
+        if entry.data["mount"]["type"] == "rig_bone":
+            weapons[role] = entry.id
+            dec.append(Decision(slot=f"{role}.weapon", choice=entry.id, source="prompt", evidence=alias))
+        else:
+            dec.append(Decision(slot=f"{role}.weapon", choice=entry.id, source="prompt", evidence=alias,
+                                note=f"integrated into the {role} asset"))
+    if "attacker" in chars and "attacker" not in weapons and "weapon" not in unsup_cats:
+        weapons["attacker"] = "heavy_mace_v1"
+        dec.append(Decision(slot="attacker.weapon", choice="heavy_mace_v1", source="default",
+                            note="the only weapon the attacker can wield"))
+    d_weapon = reg.get(chars["defender"]).data.get("default_weapon") if "defender" in chars else None
+    if d_weapon and "defender" not in weapons:
+        weapons["defender"] = d_weapon
+        dec.append(Decision(slot="defender.weapon", choice=d_weapon, source="default",
+                            note=f"{chars['defender']}'s own weapon"))
 
     # camera
     cam_entry = reg.of_kind("camera")[0]
@@ -155,12 +214,14 @@ def interpret(request: str, reg: Registry) -> DirectorPlan:
                 for v in vfx]
 
     protection = {}
-    if "attacker" in weapons and "attacker" in actions:
-        rule = pol.preview_rule(reg, weapons["attacker"], actions["attacker"], params.get("attacker", {}))
-        if rule:
-            sem = reg.get(weapons["attacker"]).aliases[0].upper()
-            protection[sem] = rule
-            dec.append(Decision(slot="protection", choice=f"{sem} -> {rule}", source="rule", evidence="P1"))
+    in_contact = any("contact" in reg.get(a).data for a in actions.values())
+    for role in ("attacker", "defender"):
+        if role in weapons and role in actions:
+            rule, label = pol.preview_rule(reg, weapons[role], actions[role], params.get(role, {}), in_contact)
+            if rule:
+                sem = reg.get(weapons[role]).aliases[0].upper()
+                protection[sem] = rule
+                dec.append(Decision(slot="protection", choice=f"{sem} -> {rule}", source="rule", evidence=label))
 
     supported = not unsupported and env is not None and {"attacker", "defender"} <= set(chars) and \
         "attacker" in actions and look is not None

@@ -30,6 +30,7 @@ import argparse
 import math
 import os
 import sys
+from dataclasses import dataclass
 from fractions import Fraction
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -88,6 +89,28 @@ POSES = {
 }
 POLES = {"L": [0.7, 0.2, -0.7], "R": [-0.7, 0.25, -0.6]}
 APEX_FRAME, HOLD_END, DEFAULT_STRIKE_FRAMES = 24, 35, 6
+
+
+@dataclass(frozen=True)
+class RigProfile:
+    """Everything the rig builder and the pose solver need about one character (D3: a second, differently
+    proportioned rig shares the bone topology). Poses are rig-space targets: chest = (lean, twist) deg; the weapon by
+    `grip` (hand tail) or its tip (`mace_tip` / `weapon_tip`) plus `mace_dir` / `weapon_dir`; the other hand by
+    `off_grip`, or, for a two-handed weapon, at `off_hand_on_weapon` metres along the weapon from the grip. A pose may
+    carry its own `poles` (per side) to steer the elbows."""
+    bones: list
+    poses: dict
+    poles: dict
+    upper_arm: float
+    forearm: float
+    hand: float
+    weapon_bone: str = "mace"
+    weapon_length: float = MACE_LENGTH
+    weapon_side: str = WEAPON_SIDE
+    off_hand_on_weapon: float | None = None
+
+
+ASURA = RigProfile(bones=BONES, poses=POSES, poles=POLES, upper_arm=UPPER_ARM, forearm=FOREARM, hand=HAND)
 
 
 def choreography_frames(strike_frames: int = DEFAULT_STRIKE_FRAMES):
@@ -169,14 +192,15 @@ def build_actor(m, rig):
     return body, shaft, head
 
 
-def build_rig(rig_name: str = "m2b_asura_rig"):
+def build_rig(rig_name: str = "m2b_asura_rig", profile: "RigProfile | None" = None):
+    profile = profile or ASURA
     arm = bpy.data.armatures.new(rig_name)
     rig = bpy.data.objects.new(rig_name, arm)
     bpy.context.scene.collection.objects.link(rig)
     bpy.context.view_layer.objects.active = rig
     bpy.ops.object.mode_set(mode="EDIT")
     eb = {}
-    for name, head, tail, parent, connected in BONES:
+    for name, head, tail, parent, connected in profile.bones:
         b = arm.edit_bones.new(name)
         b.head, b.tail, b.roll = Vector(head), Vector(tail), 0.0
         if parent:
@@ -207,10 +231,11 @@ def two_bone_ik(s: Vector, g: Vector, l1: float, l2: float, pole: Vector) -> Vec
     return s + u * a + v * h
 
 
-def solve_pose(rig, pose: dict) -> dict[str, Matrix]:
+def solve_pose(rig, pose: dict, profile: RigProfile | None = None) -> dict[str, Matrix]:
     """Rig-space pose matrices for every bone (hierarchy order); unlisted bones follow their parent rigidly."""
+    pf = profile or ASURA
     rest = {b.name: b.matrix_local.copy() for b in rig.data.bones}
-    parent = {name: par for name, _, _, par, _ in BONES}
+    parent = {name: par for name, _, _, par, _ in pf.bones}
     P: dict[str, Matrix] = {}
 
     def follow(name):
@@ -224,9 +249,14 @@ def solve_pose(rig, pose: dict) -> dict[str, Matrix]:
         out.translation = head
         return out
 
+    mdir = Vector(pose.get("weapon_dir", pose.get("mace_dir"))).normalized()
+    tip = pose.get("weapon_tip", pose.get("mace_tip"))
+    grip = Vector(pose["grip"]) if "grip" in pose else Vector(tip) - mdir * pf.weapon_length
+    off = grip + mdir * pf.off_hand_on_weapon if pf.off_hand_on_weapon is not None else Vector(pose["off_grip"])
+    poles = dict(pf.poles, **pose.get("poles", {}))
     lean, twist = pose["chest"]
     side_dirs = {}
-    for name, *_ in BONES:
+    for name, *_ in pf.bones:
         base = follow(name)
         if name == "chest":
             h = base.translation.copy()
@@ -235,35 +265,31 @@ def solve_pose(rig, pose: dict) -> dict[str, Matrix]:
         elif name.startswith("upper_arm."):
             side = name[-1]
             s = base.translation.copy()
-            if side == WEAPON_SIDE:
-                mdir = Vector(pose["mace_dir"]).normalized()
-                grip = (Vector(pose["grip"]) if "grip" in pose
-                        else Vector(pose["mace_tip"]) - mdir * MACE_LENGTH)
-            else:
-                mdir, grip = None, Vector(pose["off_grip"])
-            elbow = two_bone_ik(s, grip, UPPER_ARM, FOREARM + HAND, Vector(POLES[side]))
-            side_dirs[side] = (elbow, grip, mdir)
+            g = grip if side == pf.weapon_side else off
+            elbow = two_bone_ik(s, g, pf.upper_arm, pf.forearm + pf.hand, Vector(poles[side]))
+            side_dirs[side] = (elbow, g)
             P[name] = aim(name, s, elbow - s)
         elif name.startswith("forearm."):
-            elbow, grip, _ = side_dirs[name[-1]]
-            P[name] = aim(name, elbow, grip - elbow)
-        elif name == "mace":
-            _, grip, mdir = side_dirs[WEAPON_SIDE]
+            elbow, g = side_dirs[name[-1]]
+            P[name] = aim(name, elbow, g - elbow)
+        elif name == pf.weapon_bone:
             P[name] = aim(name, base.translation.copy(), mdir)
         else:
             P[name] = base
     return P
 
 
-def key_poses(rig, keys: dict) -> dict:
+def key_poses(rig, keys: dict, profile: RigProfile | None = None) -> dict:
     """Insert quaternion keys; returns per-pose rig-space joint targets actually reached (for the spec)."""
-    parent = {name: par for name, _, _, par, _ in BONES}
+    pf = profile or ASURA
+    parent = {name: par for name, _, _, par, _ in pf.bones}
     rest = {b.name: b.matrix_local.copy() for b in rig.data.bones}
+    tip_key = "mace_head_centre" if pf.weapon_bone == "mace" else f"{pf.weapon_bone}_tip"
     prev_q = {}
     reached = {}
     for frame, (pose_name, _, _) in sorted(keys.items()):
-        P = solve_pose(rig, POSES[pose_name])
-        for name, *_ in BONES:
+        P = solve_pose(rig, pf.poses[pose_name], pf)
+        for name, *_ in pf.bones:
             par = parent[name]
             base = rest[name] if par is None else P[par] @ rest[par].inverted() @ rest[name]
             local = base.inverted() @ P[name]
@@ -276,9 +302,10 @@ def key_poses(rig, keys: dict) -> dict:
             pb = rig.pose.bones[name]
             pb.rotation_quaternion = q
             pb.keyframe_insert("rotation_quaternion", frame=frame)
-        tail = P["mace"] @ Vector((0.0, rig.data.bones["mace"].length, 0.0))
-        reached[pose_name] = {"mace_head_centre": [round(v, 4) for v in tail],
-                              "grip": [round(v, 4) for v in P["mace"].translation]}
+        wb = pf.weapon_bone
+        tail = P[wb] @ Vector((0.0, rig.data.bones[wb].length, 0.0))
+        reached[pose_name] = {tip_key: [round(v, 4) for v in tail],
+                              "grip": [round(v, 4) for v in P[wb].translation]}
     for fc in rig.animation_data.action.fcurves:
         for kp in fc.keyframe_points:
             _, interp, easing = keys[min(keys, key=lambda f: abs(f - kp.co[0]))]

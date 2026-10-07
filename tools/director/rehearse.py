@@ -4,6 +4,10 @@ existing raw generation of the same shot class (default: Showcase v1 run 1). Pro
 spent. A rehearsal is never a D2 result: its run directory is named `rehearsal_*` and its report says so.
 
     uv run python tools/director/rehearse.py "PROMPT" --raw <raw.mp4> [--run-id rehearsal_x]
+
+D3: `--raw reference` uses the run's own sharp Blender reference (preflight/reference_preview.mp4, written by
+CONTROL_RENDER) as the stand-in, for a shot class that has no earlier generation (the parry). Every check then sees a
+perfect "generation", so this proves the stage wiring, layers and delivery, not the QC thresholds.
 """
 
 from __future__ import annotations
@@ -19,19 +23,22 @@ SHOWCASE_RAW = pipeline.DATA_ROOT / "experiments" / "2026-10-06_showcase-v1-run1
     "showcase_v1_00001_.mp4"
 
 
-def fake_ltx(raw: Path):
+def fake_ltx(raw: Path | str):
     def st(ctx: pipeline.Ctx) -> dict:
         out = ctx.path("generation", "raw.mp4")
-        shutil.copyfile(raw, out)
+        src = ctx.run_dir / "preflight" / "reference_preview.mp4" if str(raw) == "reference" else Path(raw)
+        shutil.copyfile(src, out)
         return {"outputs": {"raw": out}, "info": {"rehearsal": True, "source_raw": str(raw),
-                                                  "note": "LTX not invoked: rehearsal copy of an earlier generation"}}
+                                                  "note": "LTX not invoked: rehearsal copy of an earlier generation"
+                                                          if str(raw) != "reference" else
+                                                          "LTX not invoked: the run's own Blender reference as stand-in"}}
     return st
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("prompt")
-    ap.add_argument("--raw", type=Path, default=SHOWCASE_RAW)
+    ap.add_argument("--raw", default=str(SHOWCASE_RAW), help="raw stand-in video, or 'reference' (D3)")
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--first-frame-samples", type=int, default=1024)

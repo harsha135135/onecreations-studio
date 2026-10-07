@@ -7,6 +7,10 @@ frames. All figures are measured from those files; the visual verdict (blob anat
     uv run python tools/admission/character_admission.py --base <dir> --cand <dir> --frames 4,23,25,29,40 \
         --pass-index 1 --weapon-pass 9 --out admission.json
 
+D3 (a rigged variant of a static asset whose weapon became its own object): `--cand-extra-pass 10` adds that pass to
+the candidate's silhouette, so v1 (trident inside pass 2) and v2 (pass 2 + trident pass 10) compare like for like, and
+the result carries the silhouette IoU per frame. The rig comparison covers the joint keys both bundles share.
+
 <dir> holds `export/` (bundle) and `stills/still_%04d.png` (Blender frame = index + 1).
 """
 
@@ -80,14 +84,17 @@ def _dilate(mask: np.ndarray, r: int) -> np.ndarray:
     return out
 
 
-def compare(base: Path, cand: Path, frames: list[int], pass_index: int, weapon_pass: int) -> dict:
+def compare(base: Path, cand: Path, frames: list[int], pass_index: int, weapon_pass: int,
+            cand_extra: tuple[int, ...] = ()) -> dict:
     from onecreations.blender_bundle import load_bundle
 
     bb, cb = load_bundle(base / "export"), load_bundle(cand / "export")
     bp, cp = bb.passes(), cb.passes()
     bj, cj = np.load(base / "export" / "joints.npz"), np.load(cand / "export" / "joints.npz")
-    rig = {"keys_equal": sorted(bj.files) == sorted(cj.files),
-           "max_joint_diff_m": max(float(np.abs(bj[k] - cj[k]).max()) for k in bj.files)}
+    shared = sorted(set(bj.files) & set(cj.files))
+    rig = {"keys_equal": sorted(bj.files) == sorted(cj.files), "shared_keys": shared,
+           "candidate_only_keys": sorted(set(cj.files) - set(bj.files)),
+           "max_joint_diff_m": max((float(np.abs(bj[k] - cj[k]).max()) for k in shared), default=None)}
     bids = sorted(int(v) for v in np.unique(bp["object_index"]))
     cids = sorted(int(v) for v in np.unique(cp["object_index"]))
     out = {"rig": rig, "pass_indices": {"base": bids, "candidate": cids, "equal": bids == cids}, "frames": {}}
@@ -96,14 +103,19 @@ def compare(base: Path, cand: Path, frames: list[int], pass_index: int, weapon_p
     mat_map = (mat_map.get("passes") or {}).get("material_index_map", {})
     for f in frames:
         row = {}
+        masks = {}
         for name, p, d in (("base", bp, base), ("candidate", cp, cand)):
-            m = p["object_index"][f] == pass_index
+            m = np.isin(p["object_index"][f], [pass_index] + list(cand_extra if name == "candidate" else ()))
+            masks[name] = m
             w = p["object_index"][f] == weapon_pass
             # the weapon hand holds the shaft: character pixels within 2 px of the shaft
             grip = int((_dilate(w, 2) & m).sum())
             img = media.decode_rgb(d / "stills" / f"still_{f + 1:04d}.png")[0].astype(float)
             row[name] = {**silhouette(m), **surface_definition(p["normal"][f], m), "hand_on_shaft_px": grip,
                          "shading_std": round(float(img[m].mean(-1).std()), 2)}
+        if cand_extra:
+            inter, union = (masks["base"] & masks["candidate"]).sum(), (masks["base"] | masks["candidate"]).sum()
+            row["silhouette_iou"] = round(float(inter / max(union, 1)), 4)
         if mat is not None:
             m = cp["object_index"][f] == pass_index
             groups = {}
@@ -122,9 +134,12 @@ def main(argv=None) -> int:
     ap.add_argument("--frames", default="4,23,25,29,40")
     ap.add_argument("--pass-index", type=int, default=1)
     ap.add_argument("--weapon-pass", type=int, default=9)
+    ap.add_argument("--cand-extra-pass", type=int, action="append", default=[],
+                    help="pass index added to the candidate's silhouette (e.g. its now separate weapon)")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
-    res = compare(a.base, a.cand, [int(x) for x in a.frames.split(",")], a.pass_index, a.weapon_pass)
+    res = compare(a.base, a.cand, [int(x) for x in a.frames.split(",")], a.pass_index, a.weapon_pass,
+                  tuple(a.cand_extra_pass))
     a.out.write_text(json.dumps(res, indent=1), encoding="utf-8")
     print(json.dumps(res, indent=1))
     return 0

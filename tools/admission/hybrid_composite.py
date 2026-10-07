@@ -244,7 +244,7 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
         if layer.kind == "protected_geometry":
             rule = layer.protection
             obj = rule.track_object
-            color = tracking["subjects"][obj]["color"]
+            color = tracking["subjects"].get(obj, {}).get("color")    # None: no colour rule (e.g. steel)
             gt_masks = [idx[f] == index_of[obj] for f in range(n)]
             stats = [cd.mask_stats(m) for m in gt_masks]
             cents = [(s["cx"], s["cy"]) if s else None for s in stats]
@@ -254,10 +254,10 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             def area(video, f):
                 return int((cd.color_mask(video[f], color) & band[f]).sum())
 
-            ret_blur = [round(area(raw, f) / max(area(blur, f), 1), 3) for f in range(n)]
-            ret_sharp = [round(area(raw, f) / max(area(sharp, f), 1), 3) for f in range(n)]
+            ret_blur = [round(area(raw, f) / max(area(blur, f), 1), 3) if color else None for f in range(n)]
+            ret_sharp = [round(area(raw, f) / max(area(sharp, f), 1), 3) if color else None for f in range(n)]
             authored = authored_fast_frames(cents, widths, rule.authored_speed_widths or 1e9, rule.dilate_frames)
-            low = [f for f in range(n) if rule.raw_retention_below and ret_blur[f] < rule.raw_retention_below]
+            low = [f for f in range(n) if color and rule.raw_retention_below and ret_blur[f] < rule.raw_retention_below]
             protected = sorted(set(authored) | set(low) | {f for f in rule.include_frames if 0 <= f < n})
             unreliable = set(authored) | set(low)
             missing = [f for f in protected if f not in frames_rgba]
@@ -269,15 +269,17 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
             if layer.grade == "per_channel_gain":
                 pairs = []
                 for f in range(n):
-                    if f in unreliable or f not in layers_cache or (not geometric and ret_blur[f] < 0.8):
+                    if f in unreliable or f not in layers_cache or (not geometric and (not color or ret_blur[f] < 0.8)):
                         continue
                     sel = (layers_cache[f][..., 3] >= 242) & band[f]
                     if not geometric:
                         sel &= cd.color_mask(raw[f], color)
                     pairs.append((raw[f][sel].astype(np.float32), layers_cache[f][..., :3][sel].astype(np.float32)))
                 gain = fit_gain(pairs)
-            # grip point (projected mace-bone head) for the hand-attachment check
-            jc = tracking.get("joints", {})
+            # grip point (projected weapon-bone head) for the hand-attachment check: the joints entry of the rig that
+            # holds this layer's weapon (the attacker's 'joints', or D3's 'defender_joints')
+            jc = next((j for j in (tracking.get("joints"), tracking.get("defender_joints"))
+                       if j and j.get("weapon_object") in layer.objects), {})
             grips = [None] * n
             if jc:
                 arm = next(a for a in bundle.manifest.armatures if a.oc_id == jc["rig"])
@@ -306,7 +308,7 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                 fill_info = None
                 if swept:
                     ghost = np.zeros(base.shape[:2], bool)
-                    if f in unreliable:
+                    if f in unreliable or rule.ghost_frames == "all":
                         ghost = sweep[f] & (lay[..., 3] < 230) & ~cd.dilate(keep[f], 1)
                         if layer.ghost_fill == "temporal":
                             base, fill_info = temporal_fill(source, f, ghost, sweep, keep=cd.dilate(keep[f], 1))
@@ -320,8 +322,8 @@ def run(render_dir: Path, generated: Path, out_dir: Path, ghost_under_layer: boo
                     ghost = cd.dilate(remnant & band[f] & under, GHOST_DILATE_PX)
                     base = inpaint(base, ghost)
                 out[f] = alpha_over(base, lay, gain)
-                comp = cd.mask_stats(cd.color_mask(out[f], color) & band[f])
-                refb = cd.mask_stats(cd.color_mask(blur[f], color) & band[f])
+                comp = cd.mask_stats(cd.color_mask(out[f], color) & band[f]) if color else None
+                refb = cd.mask_stats(cd.color_mask(blur[f], color) & band[f]) if color else None
                 err = (round(math.dist((comp["cx"], comp["cy"]), cents[f]), 1) if comp and cents[f] else None)
                 err_b = (round(math.dist((comp["cx"], comp["cy"]), (refb["cx"], refb["cy"])), 1)
                          if comp and refb else None)

@@ -2,7 +2,8 @@
 
 Every problem is an Issue with a stable code, so an invalid spec fails here with a clear message instead of inside
 Blender. Two families: registry/consistency rules (any engine) and ENGINE_* capability rules of the current
-blender_showcase_v1 builder (one rigged attacker with the mace slam, one static defender, the temple, 49 frames).
+blender_showcase_v1 builder (one rigged attacker with the mace slam, one static defender, the temple, 49 frames; D3:
+or the blocked strike against the rigged defender's parry).
 """
 
 from __future__ import annotations
@@ -103,6 +104,29 @@ def validate_spec(spec: ShotSpec, reg: Registry) -> list[Issue]:
                                            f"the shot has {spec.duration_frames} at {spec.fps}", field))
         action_events[a.id] = act.resolve_events(ae, a.params)
 
+    # authored contacts: a contact action needs its partner action on its target, with the same CONTACT frame
+    for a in spec.actions:
+        if a.id not in action_events:
+            continue
+        ae = reg.get(a.preset)
+        field = f"actions[{a.id}]"
+        partner_preset = ae.data.get("contact", {}).get("partner_action") or ae.data.get("partner_action")
+        if not partner_preset:
+            continue
+        partners = [b for b in spec.actions if b.preset == partner_preset and b.actor != a.actor]
+        if len(partners) != 1:
+            out.append(_e("SPEC_CONTACT_PARTNER", f"{a.preset} needs exactly one {partner_preset} by another actor",
+                          field))
+            continue
+        b = partners[0]
+        if "contact" in ae.data and a.target is not None and a.target != b.actor:
+            out.append(_e("SPEC_CONTACT_PARTNER", f"{a.id} targets {a.target}, but {partner_preset} is performed by "
+                                                  f"{b.actor}", field))
+        if b.id in action_events and action_events[a.id].get("CONTACT") != action_events[b.id].get("CONTACT"):
+            out.append(_e("SPEC_SYNC_CONTACT", f"{a.id}.CONTACT (frame {action_events[a.id].get('CONTACT')}) != "
+                                               f"{b.id}.CONTACT (frame {action_events[b.id].get('CONTACT')}): one "
+                                               f"contact needs one frame", field))
+
     # events (effects)
     for ev in spec.events:
         field = f"events[{ev.id}]"
@@ -171,6 +195,13 @@ def validate_spec(spec: ShotSpec, reg: Registry) -> list[Issue]:
 
 
 ATTACKERS = ("asura_v2", "asura_showcase_v1")             # the builder's attacker variants (scene_build.attacker_asset)
+DEFENDERS = ("ascetic_defender_v1", "ascetic_defender_v2")  # scene_build.defender_asset
+# (defender asset, attacker action, defender action): what the builder can stage (build_showcase_scene.check_cast)
+ENGINE_COMBOS = {("ascetic_defender_v1", "mace_slam_v1", "defender_guard_v1"),
+                 ("ascetic_defender_v2", "mace_slam_v1", "defender_guard_v1"),
+                 ("ascetic_defender_v2", "mace_strike_blocked_v1", "trident_parry_v1")}
+ATTACK_PRESETS = ("mace_slam_v1", "mace_strike_blocked_v1")
+DEFENCE_PRESETS = ("defender_guard_v1", "trident_parry_v1")
 
 
 def engine_issues(spec: ShotSpec, reg: Registry) -> list[Issue]:
@@ -179,17 +210,31 @@ def engine_issues(spec: ShotSpec, reg: Registry) -> list[Issue]:
     if spec.environment.asset != "temple_courtyard_v1":
         out.append(_e("ENGINE_ENVIRONMENT", "this engine builds temple_courtyard_v1 only", "environment"))
     roles = [(c.role, c.asset) for c in spec.characters]
-    if len(roles) != 2 or sorted(r for r, _ in roles) != ["attacker", "defender"] or             dict(roles)["attacker"] not in ATTACKERS or dict(roles)["defender"] != "ascetic_defender_v1":
+    if len(roles) != 2 or sorted(r for r, _ in roles) != ["attacker", "defender"] or             dict(roles)["attacker"] not in ATTACKERS or dict(roles)["defender"] not in DEFENDERS:
         out.append(_e("ENGINE_CAST", f"this engine stages exactly one {' or '.join(ATTACKERS)} attacker and one "
-                                     f"ascetic_defender_v1 defender (got {roles})", "characters"))
+                                     f"{' or '.join(DEFENDERS)} defender (got {roles})", "characters"))
+        return out
     attackers = {c.id for c in spec.characters if c.role == "attacker"}
-    slams = [a for a in spec.actions if a.actor in attackers and a.preset == "mace_slam_v1"]
-    if len(slams) != 1:
-        out.append(_e("ENGINE_ACTION", "this engine animates exactly one mace_slam_v1 by the attacker", "actions"))
     defenders = {c.id for c in spec.characters if c.role == "defender"}
-    if len([a for a in spec.actions if a.actor in defenders and a.preset == "defender_guard_v1"]) != 1:
-        out.append(_e("ENGINE_ACTION", "this engine holds the defender in exactly one defender_guard_v1", "actions"))
+    att = [a for a in spec.actions if a.actor in attackers and a.preset in ATTACK_PRESETS]
+    dfn = [a for a in spec.actions if a.actor in defenders and a.preset in DEFENCE_PRESETS]
+    if len(att) != 1:
+        out.append(_e("ENGINE_ACTION", f"this engine animates exactly one {' or '.join(ATTACK_PRESETS)} by the "
+                                       f"attacker", "actions"))
+    if len(dfn) != 1:
+        out.append(_e("ENGINE_ACTION", f"this engine gives the defender exactly one {' or '.join(DEFENCE_PRESETS)}",
+                      "actions"))
+    if len(att) == 1 and len(dfn) == 1:
+        combo = (dict(roles)["defender"], att[0].preset, dfn[0].preset)
+        if combo not in ENGINE_COMBOS:
+            out.append(_e("ENGINE_ACTION", f"this engine cannot stage {combo[0]} with {combo[1]} x {combo[2]}",
+                          "actions"))
+        if att[0].preset == "mace_strike_blocked_v1" and att[0].id != "strike":
+            out.append(_e("ENGINE_ACTION", "this engine names the blocked strike's contact event strike.CONTACT: "
+                                           "the attacker's action id must be 'strike'", "actions"))
     maces = [p for p in spec.props if p.asset == "heavy_mace_v1" and p.owner in attackers]
     if len(maces) != 1:
         out.append(_e("ENGINE_PROPS", "this engine mounts exactly one heavy_mace_v1 on the attacker", "props"))
+    if dict(roles)["defender"] == "ascetic_defender_v2" and             len([p for p in spec.props if p.asset == "trident_v2" and p.owner in defenders]) != 1:
+        out.append(_e("ENGINE_PROPS", "ascetic_defender_v2 holds exactly one trident_v2", "props"))
     return out

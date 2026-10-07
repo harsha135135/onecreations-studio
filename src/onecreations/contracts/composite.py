@@ -40,6 +40,9 @@ class ProtectionRule(Model):
     raw_retention_below: float | None = Field(default=None, gt=0, le=1)
     include_frames: list[int] = Field(default=[], description="output frames always protected (e.g. the whole shot, "
                                                               "so the weapon never switches source mid-shot)")
+    ghost_frames: Literal["unreliable", "all"] = Field(
+        default="unreliable", description="where swept-band ghost suppression runs: only the authored-fast / "
+        "low-retention frames, or every protected frame (D3: a long thin weapon is never 'fast' in its own widths)")
 
 
 class CompositeLayer(Model):

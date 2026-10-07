@@ -1,0 +1,127 @@
+{
+ "id": "2026-10-07_d3_rehearsal1",
+ "note": "REHEARSAL, not a D3 result: every stage real except LTX_GENERATE, which copied the run's own sharp Blender reference (tools/director/rehearse.py --raw reference). QC therefore sees a perfect generation: this proves stage wiring, both protected layers, the contact-keyed effects and delivery, not the QC thresholds.",
+ "run_dir": "G:\\onecreations\\runs\\rehearsal_d3_1",
+ "status": "succeeded",
+ "wall_s": 718.7,
+ "pipeline": "d3.0",
+ "stages": [
+  {
+   "id": "PLAN",
+   "status": "done",
+   "duration_s": 0.02
+  },
+  {
+   "id": "VALIDATE",
+   "status": "done",
+   "duration_s": 0.0
+  },
+  {
+   "id": "COMPILE",
+   "status": "done",
+   "duration_s": 0.01
+  },
+  {
+   "id": "BLENDER_BUILD",
+   "status": "done",
+   "duration_s": 24.94
+  },
+  {
+   "id": "CONTROL_RENDER",
+   "status": "done",
+   "duration_s": 242.89
+  },
+  {
+   "id": "FIRST_FRAME",
+   "status": "done",
+   "duration_s": 18.54
+  },
+  {
+   "id": "PREFLIGHT_QC",
+   "status": "done",
+   "duration_s": 7.72
+  },
+  {
+   "id": "LTX_GENERATE",
+   "status": "done",
+   "duration_s": 0.03
+  },
+  {
+   "id": "POST_GENERATION_QC",
+   "status": "done",
+   "duration_s": 6.9
+  },
+  {
+   "id": "REPAIR",
+   "status": "done",
+   "duration_s": 357.69
+  },
+  {
+   "id": "VFX",
+   "status": "done",
+   "duration_s": 36.19
+  },
+  {
+   "id": "COMPOSITE",
+   "status": "done",
+   "duration_s": 6.91
+  },
+  {
+   "id": "GRADE",
+   "status": "done",
+   "duration_s": 1.48
+  },
+  {
+   "id": "FINAL_QC",
+   "status": "done",
+   "duration_s": 14.85
+  },
+  {
+   "id": "DELIVER",
+   "status": "done",
+   "duration_s": 0.45
+  }
+ ],
+ "post_generation": {
+  "status": "proceed",
+  "repairs": [
+   {
+    "object": "MACE",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC"
+   },
+   {
+    "object": "TRIDENT",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC"
+   }
+  ],
+  "regenerate_for": [],
+  "fail_for": []
+ },
+ "final_qc": {
+  "final_valid": true,
+  "protected_weapon_present": true,
+  "effects_begin_at_contact": true,
+  "bounded_repair": true,
+  "no_holes": true
+ },
+ "preflight": {
+  "events_resolved": true,
+  "timeline_matches_engine": true,
+  "weapon_bone_projection": true,
+  "stationary_root": true,
+  "camera_contract": true,
+  "camera_clearance": true,
+  "actors_in_frame": true,
+  "weapon_visible": true,
+  "depth_valid": true,
+  "first_frame_aligned": true,
+  "defender_stationary_root": true,
+  "defender_weapon_axis": true,
+  "contact_geometry": true,
+  "contact_visible": true,
+  "defender_weapon_visible": true
+ },
+ "storage_mb": 478
+}

@@ -1,0 +1,126 @@
+{
+ "id": "2026-10-07_ascetic_defender_v2_admission",
+ "date": "2026-10-07",
+ "candidate": "ascetic_defender_v2 (+ trident_v2)",
+ "base": "ascetic_defender_v1",
+ "method": "both builds of the Showcase/D2 shot (asura_v2 attacker, mace slam, defender in the held guard); oc_export --passes; Cycles 128 spp stills at frames 1 and 30; tools/admission/character_admission.py --pass-index 2 --weapon-pass 10 --cand-extra-pass 10 (v1 trident is inside pass 2, v2 trident is pass 10)",
+ "rule": "not pre-registered: admit if the held guard is visibly the same pose and silhouette (IoU reported), the attacker rig is unchanged and v2 skins cleanly; stop and ask the owner if the guard diverges visibly",
+ "result": {
+  "rig": {
+   "keys_equal": false,
+   "shared_keys": [
+    "sc_asura_rig.heads",
+    "sc_asura_rig.tails"
+   ],
+   "candidate_only_keys": [
+    "sc_defender_rig.heads",
+    "sc_defender_rig.tails"
+   ],
+   "max_joint_diff_m": 0.0
+  },
+  "pass_indices": {
+   "base": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    13,
+    14,
+    15,
+    16
+   ],
+   "candidate": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    16
+   ],
+   "equal": false
+  },
+  "frames": {
+   "0": {
+    "base": {
+     "area_px": 7800,
+     "solidity": 0.4334,
+     "outline": 14.335,
+     "crease_frac": 0.6943,
+     "mean_angle_deg": 23.679,
+     "hand_on_shaft_px": 0,
+     "shading_std": 47.0
+    },
+    "candidate": {
+     "area_px": 8148,
+     "solidity": 0.4515,
+     "outline": 14.313,
+     "crease_frac": 0.7218,
+     "mean_angle_deg": 24.087,
+     "hand_on_shaft_px": 1444,
+     "shading_std": 47.39
+    },
+    "silhouette_iou": 0.9432
+   },
+   "29": {
+    "base": {
+     "area_px": 10532,
+     "solidity": 0.3825,
+     "outline": 15.376,
+     "crease_frac": 0.6768,
+     "mean_angle_deg": 21.244,
+     "hand_on_shaft_px": 0,
+     "shading_std": 44.14
+    },
+    "candidate": {
+     "area_px": 11046,
+     "solidity": 0.4012,
+     "outline": 14.805,
+     "crease_frac": 0.6996,
+     "mean_angle_deg": 21.609,
+     "hand_on_shaft_px": 1962,
+     "shading_std": 45.34
+    },
+    "silhouette_iou": 0.9349
+   }
+  }
+ },
+ "skinning": {
+  "groups": [
+   "chest",
+   "forearm.L",
+   "forearm.R",
+   "hand.L",
+   "hand.R",
+   "pelvis",
+   "trident",
+   "upper_arm.L",
+   "upper_arm.R"
+  ],
+  "max_sum_error": 8.3e-05,
+  "unweighted": 0,
+  "vertices": 62409
+ },
+ "stills_sha256": {
+  "v1/still_0001.png": "441f5545a3de69750d8388ee6b7be1b3c783cd5f6ced32aa239e5f355cb20910",
+  "v1/still_0030.png": "e20228e0f7e426a4f05a25b280e32762559d6ffb5bfd4bbb346318337370eaca",
+  "v2/still_0001.png": "58f475789b00eff89296a9c323e375550845212cf49d0824ecb4c2ee98e265c8",
+  "v2/still_0030.png": "047033a998e03cf7041f91f3249abd1f1c05da2131f8574559649f31bed71ff1"
+ },
+ "visual": "side by side at frame 1: same stance, same trident line and hand positions; the trident shaft reads thicker (0.035 vs 0.022 m) and the fists close on it; no clipping or broken joints seen",
+ "decision": "ADMIT (silhouette IoU 0.943 / 0.935 at f0 / f29, attacker joints max difference 0.0 m, 0 unweighted vertices)"
+}

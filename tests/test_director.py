@@ -13,6 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 from onecreations.contracts import ActionTimeline, CompositeManifest, ShotSpec
+from onecreations.contracts.director import CompiledShot
 from onecreations.contracts.registry import AssetRegistry
 from onecreations.director import actions as act
 from onecreations.director import camera as cam
@@ -240,16 +241,82 @@ def test_prompt_interpreter_supported_example(reg):
     assert [ly.id for ly in c.layers.layers] == ["mace_protect", "impact_fx"]
 
 
-def test_prompt_interpreter_names_slow_strike_and_block_warning(reg):
+def test_prompt_interpreter_names_slow_strike_and_parry(reg):
     plan = interpret("Lord Shiva stands inside an ancient ruined temple at dusk. A massive horned Asura slowly "
                      "attacks him with a mace. Shiva blocks using his trident. The impact throws dust and debris "
                      "into the air. Use a low cinematic orbit and push-in. Dark mythological fantasy film.", reg)
     assert plan.supported and plan.semantic_names == {"defender": "SHIVA", "attacker": "ASURA"}
-    assert plan.action_params == {"attacker": {"strike_frames": 9}}
-    assert any("block/parry" in w for w in plan.warnings)
+    # D3: "blocks" selects the parry pair; the rigged defender variant is chosen because v1 cannot move
+    assert plan.actions == {"attacker": "mace_strike_blocked_v1", "defender": "trident_parry_v1"}
+    assert plan.characters["defender"] == "ascetic_defender_v2" and plan.weapons["defender"] == "trident_v2"
+    assert plan.action_params == {"attacker": {"strike_frames": 9}, "defender": {"strike_frames": 9}}
+    assert not any("block/parry" in w for w in plan.warnings)
     c = compile_shot(plan_to_spec(plan, reg), reg)
     assert c.action_timeline.actors == {"asura": "sc_asura", "shiva": "sc_defender"}
-    assert next(e.frame for e in c.events if e.name == "strike.CONTACT") == 32
+    frames = {e.name: e.frame for e in c.events}
+    assert frames["strike.CONTACT"] == frames["parry.CONTACT"] == 32
+    (contact,) = c.action_timeline.contacts
+    assert contact.participants == ["asura.mace", "shiva.trident"] and contact.start == Fraction(32, 24)
+
+
+def test_guard_prompt_is_unchanged_by_d3(reg):
+    """A prompt without a block word still stages D2's cast and actions (static v1 defender, floor slam)."""
+    plan = interpret(PROMPT.replace("dusk.", "dusk. The defender guards with a trident."), reg)
+    assert plan.characters == {"attacker": "asura_v2", "defender": "ascetic_defender_v1"}
+    assert plan.actions == {"attacker": "mace_slam_v1", "defender": "defender_guard_v1"}
+    assert "defender" not in plan.weapons
+    c = compile_shot(plan_to_spec(plan, reg), reg)
+    assert c.action_timeline.contacts == [] and "defender_action" not in c.scene_build
+
+
+def test_d2_compiled_shot_reproduces(reg):
+    arch = ROOT / "admission_records" / "director" / "2026-10-06_d2_run1"
+    c = compile_shot(ShotSpec.model_validate(json.loads((arch / "shot_spec.json").read_text())), reg)
+    # validated through the contract, so fields added since D2 with defaults compare equal
+    old = CompiledShot.model_validate(json.loads((arch / "compiled_shot.json").read_text())).model_dump(mode="json")
+    new = c.model_dump(mode="json")
+    for d in (old, new):
+        d["scene_build"]["layers"] = CompositeManifest.model_validate(d["scene_build"]["layers"]).model_dump(mode="json")
+    assert {k for k in old if old[k] != new.get(k)} <= {"registry_sha256"}
+
+
+PARRY = ("Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient "
+         "ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.")
+
+
+def test_parry_pair_contact_sync_and_protection(reg):
+    plan = interpret(PARRY, reg)
+    assert plan.vfx == ["sparks_v1", "clash_flash_v1"]
+    assert plan.predicted_protection == {"MACE": plan.predicted_protection["MACE"], "TRIDENT": "contact_weapon_v1"}
+    spec = plan_to_spec(plan, reg, "d3_test")
+    assert [a.id for a in spec.actions] == ["strike", "parry"]
+    c = compile_shot(spec, reg)
+    objs = {o.id: o for o in c.semantic_objects}
+    assert objs["TRIDENT"].mask_separable and objs["TRIDENT"].pass_indices == [10]
+    assert objs["TRIDENT"].policy.rule == "contact_weapon_v1" and "P6" in objs["TRIDENT"].policy.provenance
+    assert objs["MACE"].policy.geometry == "protected"
+    assert [ly.id for ly in c.layers.layers] == ["mace_protect", "trident_protect", "impact_fx", "impact_flash"]
+    assert c.scene_build["fx"]["components"] == ["sparks"] and c.scene_build["fx"]["flash_energy_w"][0] == 600.0
+    assert {k: c.scene_build[k] for k in ("defender_asset", "attacker_action", "defender_action")} == {
+        "defender_asset": "ascetic_defender_v2", "attacker_action": "mace_strike_blocked_v1",
+        "defender_action": "trident_parry_v1"}
+    # the effects still hang off strike.CONTACT, which the parry shares
+    fx = next(ly for ly in c.layers.layers if ly.id == "impact_fx")
+    assert hc.trigger_frame(c.action_timeline.model_dump(mode="json"), fx.trigger.phase, fx.trigger.edge,
+                            Fraction(24)) == 29
+
+    d = spec.model_dump(mode="json")
+    d["actions"][1]["params"] = {"strike_frames": 8}               # desynchronised: two different contact frames
+    assert "SPEC_SYNC_CONTACT" in codes(validate_spec(ShotSpec.model_validate(d), reg))
+    d = spec.model_dump(mode="json")
+    d["actions"] = d["actions"][:1]                                # a blocked strike with nobody to block it
+    assert "SPEC_CONTACT_PARTNER" in codes(validate_spec(ShotSpec.model_validate(d), reg))
+    d = spec.model_dump(mode="json")
+    d["actions"][1]["preset"] = "defender_guard_v1"                 # the engine cannot stage blocked x guard
+    assert {"SPEC_CONTACT_PARTNER", "ENGINE_ACTION"} <= codes(validate_spec(ShotSpec.model_validate(d), reg))
+    d = spec.model_dump(mode="json")
+    d["characters"][1]["asset"] = "ascetic_defender_v1"             # the static ascetic cannot parry
+    assert "SPEC_ACTION_RIG_MISMATCH" in codes(validate_spec(ShotSpec.model_validate(d), reg))
 
 
 def test_prompt_interpreter_unsupported_example(reg):

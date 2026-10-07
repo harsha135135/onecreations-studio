@@ -49,6 +49,22 @@ def spec_hash(spec: ShotSpec) -> str:
     return content_hash(spec.model_dump(mode="json"))
 
 
+def _contacts(spec: ShotSpec, reg: Registry, events: dict[str, int], role: dict[str, str]) -> list[dict]:
+    """ActionTimeline contact intervals from actions that declare a weapon-on-weapon `contact` (instantaneous, on the
+    shared CONTACT frame; the engine builds the identical interval)."""
+    out = []
+    for a in spec.actions:
+        c = reg.get(a.preset).data.get("contact")
+        if not c:
+            continue
+        b = next(x for x in spec.actions if x.preset == c["partner_action"])
+        t = format_time(Fraction(events[f"{a.id}.{c['event']}"], spec.fps))
+        out.append({"id": c["id"], "participants": [f"{role[a.actor]}.{c['own_part']}", f"{role[b.actor]}.{c['partner_part']}"],
+                    "start": t, "end": t, "contact_points": [f"{role[a.actor]}.{c['contact_point']}"],
+                    "required": True, "event": f"{a.id}.{c['event']}"})
+    return out
+
+
 def _placement(c, reg) -> Placement:
     return c.placement or Placement(**reg.get(c.asset).data["default_placement"])
 
@@ -67,7 +83,7 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
     # actions -> events and timeline
     events: dict[str, int] = {}
     phases = []
-    primary = next(a for a in spec.actions if a.preset == "mace_slam_v1")
+    primary = next(a for a in spec.actions if a.actor == attacker.id)          # the attacker's strike drives the shot
     ordered = [primary] + [a for a in spec.actions if a is not primary]
     for a in ordered:
         entry = reg.get(a.preset)
@@ -79,7 +95,7 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
     timeline = {"schema_version": 1, "id": timeline_id, "version": act.timeline_version(p_entry, primary.params),
                 "duration": format_time(Fraction(spec.duration_frames, spec.fps)),
                 "actors": {role[c.id]: reg.get(c.asset).data["oc_id"] for c in spec.characters},
-                "phases": phases, "contacts": []}
+                "phases": phases, "contacts": _contacts(spec, reg, events, role)}
     resolved = [ResolvedEvent(name=n, frame=f, time=Fraction(f, spec.fps)) for n, f in events.items()]
 
     # placements, camera
@@ -120,7 +136,8 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
                 "ghost_keep_objects": moving, "soften_px": rs["soften_px"],
                 "protection": {"track_object": w.data["track_part"], "authored_speed_widths": rs["authored_speed_widths"],
                                "dilate_frames": rs["dilate_frames"], "raw_retention_below": None,
-                               "include_frames": list(range(spec.duration_frames)) if rs["all_frames"] else []}})
+                               "include_frames": list(range(spec.duration_frames)) if rs["all_frames"] else [],
+                               **({"ghost_frames": rs["ghost_frames"]} if "ghost_frames" in rs else {})}})
         semantic.append(SemanticObject(id=p.id, kind="weapon", asset=p.asset, oc_ids=oc_ids, pass_indices=passes,
                                        mask_separable=separable, protected_layer=layer_id,
                                        policy=pol.policy_for("weapon", separable, rule_id, prov)))
@@ -191,12 +208,26 @@ def compile_shot(spec: ShotSpec, reg: Registry) -> CompiledShot:
         "attacker_asset": a_entry.data.get("builder_variant", a_entry.id),
         "material_index_pass": bool(a_entry.data.get("material_masks")),
     }
+    d_action = next(a for a in spec.actions if a.actor == defender.id)
+    cast = {"defender_asset": d_entry.data.get("builder_variant", d_entry.id), "attacker_action": primary.preset,
+            "defender_action": d_action.preset}
+    if cast != {"defender_asset": "ascetic_defender_v1", "attacker_action": "mace_slam_v1",
+                "defender_action": "defender_guard_v1"}:          # D3 keys only when they differ from the D1/D2 cast
+        scene_build.update(cast)
     ctx = {"required_events": ["CONTACT", "APEX"], "rig": a_entry.data["rig_oc_id"],
            "weapon_track": reg.get(next(p.asset for p in spec.props if p.asset == "heavy_mace_v1")).data["track_part"],
            "actors": [a_entry.data["oc_id"], d_entry.data["oc_id"]], "resolution": list(spec.resolution),
            "fps": spec.fps,
            "weapon_pass_indices": [pi for o in semantic if o.kind == "weapon" and o.mask_separable
                                    for pi in o.pass_indices]}
+    if timeline["contacts"]:                                       # D3: parry checks (declared only for contact shots)
+        d_prop = next(p for p in spec.props if p.owner == defender.id and reg.get(p.asset).data["parts"])
+        contact = timeline["contacts"][0]
+        ctx["parry"] = {"defender_rig": d_entry.data["rig_oc_id"], "defender": d_entry.data["oc_id"],
+                        "weapon": reg.get(d_prop.asset).data["track_part"],
+                        "weapon_bone": reg.get(d_prop.asset).data["mount"]["bone"],
+                        "contact_event": contact["event"], "contact_frame": events[contact["event"]],
+                        "defender_start_event": f"{d_action.id}.GUARD_END"}
     stages = [
         Stage(id="parse", implemented=True, in_dry_run=True, notes="keyword_v1 interpreter (replaceable)"),
         Stage(id="plan", implemented=True, in_dry_run=True),

@@ -66,16 +66,21 @@ FX = {"components": ["dust", "debris", "sparks", "cracks"], "flash": True, "seed
 FX_KINDS = {"dust": ("plume", "ring"), "debris": ("chip",), "sparks": ("spark",), "cracks": ("crack",)}
 LAYERS = None                                         # compiled CompositeManifest (dict); None: layers_manifest()
 ATTACKER_ASSET = "asura_showcase_v1"                  # D2: "asura_v2" builds the upgraded character
+DEFENDER_ASSET = "ascetic_defender_v1"                # D3: "ascetic_defender_v2" is rigged, trident separate
+ATTACKER_ACTION, DEFENDER_ACTION = "mace_slam_v1", "defender_guard_v1"   # D3: mace_strike_blocked_v1 x trident_parry_v1
+CONTACT: dict = {}                                    # filled by the parry build: the solved weapon-on-weapon contact
 
 
 def apply_config(cfg: dict) -> None:
     """Apply a compiled scene_build configuration (D1). Unknown keys are errors: the compiler and this builder must
     agree on the interface."""
     global RES, ROOT_AT, ASURA_YAW_DEG, DEFENDER_AT, DEFENDER_YAW_DEG, DEFENDER_SCALE, CAMERA_MOVE, SUN, STRIKE_FRAMES
-    global SHOT_ID, TIMELINE_ID, TIMELINE_ACTORS, LAYERS, ATTACKER_ASSET
+    global SHOT_ID, TIMELINE_ID, TIMELINE_ACTORS, LAYERS, ATTACKER_ASSET, DEFENDER_ASSET, ATTACKER_ACTION
+    global DEFENDER_ACTION
     known = {"engine", "shot_id", "timeline_id", "timeline_actors", "frames", "fps", "resolution", "root_at",
              "asura_yaw_deg", "defender_at", "defender_yaw_deg", "defender_scale", "camera_move", "sun", "look",
-             "strike_frames", "fx", "layers", "attacker_asset", "material_index_pass"}
+             "strike_frames", "fx", "layers", "attacker_asset", "material_index_pass", "defender_asset",
+             "attacker_action", "defender_action"}
     unknown = set(cfg) - known
     if unknown:
         raise ValueError(f"scene_build: unknown keys {sorted(unknown)}")
@@ -99,6 +104,23 @@ def apply_config(cfg: dict) -> None:
     ATTACKER_ASSET = cfg.get("attacker_asset", ATTACKER_ASSET)
     if ATTACKER_ASSET not in ("asura_showcase_v1", "asura_v2"):
         raise ValueError(f"this engine builds asura_showcase_v1 or asura_v2, not {ATTACKER_ASSET}")
+    DEFENDER_ASSET = cfg.get("defender_asset", DEFENDER_ASSET)
+    ATTACKER_ACTION = cfg.get("attacker_action", ATTACKER_ACTION)
+    DEFENDER_ACTION = cfg.get("defender_action", DEFENDER_ACTION)
+    check_cast()
+
+
+def check_cast() -> None:
+    """The engine's supported combinations (the director's engine_issues mirror these)."""
+    combos = {("ascetic_defender_v1", "mace_slam_v1", "defender_guard_v1"),
+              ("ascetic_defender_v2", "mace_slam_v1", "defender_guard_v1"),
+              ("ascetic_defender_v2", "mace_strike_blocked_v1", "trident_parry_v1")}
+    if (DEFENDER_ASSET, ATTACKER_ACTION, DEFENDER_ACTION) not in combos:
+        raise ValueError(f"this engine cannot build {DEFENDER_ASSET} with {ATTACKER_ACTION} x {DEFENDER_ACTION}")
+
+
+def parry() -> bool:
+    return DEFENDER_ACTION == "trident_parry_v1"
 LOOK = {"sun": 3.2, "fill": 220.0, "firekey": 700.0, "coolrim": 1500.0, "fire": 420.0, "sanctum": 90.0,
         "world": 0.15, "haze": 0.005, "exposure": -0.7, "look": "AgX - High Contrast",
         "fire_emission": 1.8, "door_emission": 0.3, "fill_color": (0.40, 0.55, 1.0), "skin": (0.19, 0.022, 0.017), "skin_dark": (0.065, 0.008, 0.006)}
@@ -750,6 +772,395 @@ def build_defender(m):
     return obj
 
 
+# --- the rigged defender (D3: ascetic_defender_v2 + trident_v2) ------------------------------------------------
+# The v1 body, dress and hair rebuilt in a rest pose (arms hanging) on a 16-bone rig with the M2-B topology and the
+# ascetic's proportions; the trident is its own object (sc_trident, pass 10) rigid to the `trident` bone, with a
+# thicker shaft (0.035 m: v1's 0.022 m is ~4-5 px at 768x448). The 1.08 scale lives on the rig object. Hands stay on
+# the shaft because the defender is keyed on every frame from interpolated targets (two-handed grip).
+
+DEF_SHOULDER_X, DEF_SHOULDER_Z, DEF_UPPER, DEF_FORE, DEF_HAND = 0.24, 1.62, 0.32, 0.26, 0.05
+TRIDENT_LEN = (Vector(TRIDENT["top"]) - Vector(TRIDENT["butt"])).length          # 2.369 m, as v1
+TRIDENT_GRIP_U, TRIDENT_OFF_U = 0.40, 0.66                                         # v1 hand positions on the shaft
+TRIDENT_GRIP_TO_TOP = (1.0 - TRIDENT_GRIP_U) * TRIDENT_LEN
+TRIDENT_SHAFT_R = 0.035
+DEF_LEGS = {1: {"hip": (0.12, 0.0, 0.95), "knee": (0.17, -0.30, 0.52), "ankle": (0.19, -0.42, 0.10)},
+            -1: {"hip": (-0.12, 0.0, 0.95), "knee": (-0.18, 0.22, 0.50), "ankle": (-0.22, 0.48, 0.10)}}
+
+
+def _def_bones() -> list:
+    x, z = DEF_SHOULDER_X, DEF_SHOULDER_Z
+    elbow_z, wrist_z = z - DEF_UPPER, z - DEF_UPPER - DEF_FORE
+    grip_z = wrist_z - DEF_HAND
+    out = [("root", (0, 0, 0), (0, 0, 0.4), None, False),
+           ("pelvis", (0, 0, 0.95), (0, 0, 1.15), "root", False),
+           ("spine", (0, 0, 1.15), (0, 0, 1.40), "pelvis", True),
+           ("chest", (0, 0, 1.40), (0, 0, 1.80), "spine", True),
+           ("head", (0, 0, 1.80), (0, 0, 2.08), "chest", True)]
+    for s, side in ((1, "L"), (-1, "R")):
+        out += [(f"upper_arm.{side}", (s * x, 0, z), (s * x, 0, elbow_z), "chest", False),
+                (f"forearm.{side}", (s * x, 0, elbow_z), (s * x, 0, wrist_z), f"upper_arm.{side}", True),
+                (f"hand.{side}", (s * x, 0, wrist_z), (s * x, 0, grip_z), f"forearm.{side}", True)]
+        if side == "L":
+            out.append(("trident", (x, 0, grip_z), (x, -TRIDENT_GRIP_TO_TOP, grip_z), "hand.L", True))
+    for s, side in ((1, "L"), (-1, "R")):
+        j = DEF_LEGS[s]
+        out += [(f"thigh.{side}", j["hip"], j["knee"], "pelvis", False),
+                (f"shin.{side}", j["knee"], j["ankle"], f"thigh.{side}", True)]
+    return out
+
+
+def _v1_guard() -> dict:
+    butt, top = Vector(TRIDENT["butt"]), Vector(TRIDENT["top"])
+    return {"chest": [0.0, 0.0], "grip": list(butt.lerp(top, TRIDENT_GRIP_U)), "weapon_dir": list(top - butt)}
+
+
+# Defender poses (rig space, facing -Y). d_guard reproduces v1's baked guard exactly (same IK, same poles).
+# d_block is a hanging guard: hands high, shaft slanting down toward the attacker (~30 deg), so the mace, coming down
+# from the upper left, crosses it at ~70 deg in the image; d_push drives the shaft up-forward after the bind.
+DEF_POSES = {
+    "d_guard": _v1_guard(),
+    "d_lift": {"chest": [-3.0, 10.0], "grip": [0.10, 0.10, 1.52], "weapon_dir": [-0.03, -0.25, 0.97]},
+    "d_block": {"chest": [5.0, 20.0], "grip": [0.22, 0.12, 2.00], "weapon_dir": [-0.05, -0.85, -0.50]},
+    "d_push": {"chest": [8.0, 22.0], "grip": [0.21, 0.04, 2.00], "weapon_dir": [-0.05, -0.85, -0.50]},
+    "d_ready": {"chest": [4.0, 15.0], "grip": [0.20, 0.06, 1.92], "weapon_dir": [-0.05, -0.85, -0.30]},
+}
+DEF_PROFILE = strike.RigProfile(bones=_def_bones(), poses=DEF_POSES, poles={"L": [0.8, 0.3, -0.6], "R": [-0.8, 0.3, -0.6]},
+                                upper_arm=DEF_UPPER, forearm=DEF_FORE, hand=DEF_HAND, weapon_bone="trident",
+                                weapon_length=TRIDENT_GRIP_TO_TOP, weapon_side="L",
+                                off_hand_on_weapon=(TRIDENT_OFF_U - TRIDENT_GRIP_U) * TRIDENT_LEN)
+DEF_STATIONARY_BONES = ["root", "pelvis", "thigh.L", "thigh.R", "shin.L", "shin.R"]
+
+
+def _defender_core() -> list[dict]:
+    e, b = ch.ell, ch.ball
+    core = [e((0, 0, 1.0), (0.20, 0.15, 0.13)), e((0, 0, 1.18), (0.18, 0.13, 0.12)),
+            e((0, -0.04, 1.30), (0.17, 0.12, 0.13)), e((0, 0, 1.50), (0.27, 0.17, 0.20)),
+            e((0, 0.07, 1.52), (0.22, 0.08, 0.18)),
+            e((0, 0.0, 1.72), (0.07, 0.07, 0.07)), e((0, 0.01, 1.90), (0.11, 0.125, 0.13)),
+            e((0, -0.05, 1.82), (0.085, 0.08, 0.06)), e((0, -0.125, 1.87), (0.022, 0.03, 0.035)),
+            e((0, -0.095, 1.93), (0.09, 0.03, 0.025)), e((0, -0.115, 1.835), (0.03, 0.015, 0.012))]
+    for s in (1, -1):
+        core += [b((s * 0.042, -0.105, 1.913), 0.022, negative=True), e((s * 0.06, -0.085, 1.87), (0.04, 0.035, 0.03))]
+        core += [e((s * 0.11, -0.11, 1.56), (0.12, 0.065, 0.085)), e((s * 0.24, 0.0, 1.62), (0.105, 0.10, 0.09)),
+                 e((s * 0.12, 0.04, 1.69), (0.11, 0.08, 0.05), rot_deg=(0, s * 18, 0))]
+    return core
+
+
+def build_trident_v2(m, rig, grip: Vector):
+    """sc_trident in rest space along the `trident` bone (-Y from the grip), rigid to it; v1 proportions, the shaft
+    and prongs ~1.5x thicker."""
+    rigid = ch.rigid
+    d = Vector((0.0, -1.0, 0.0))
+    butt = grip - d * (TRIDENT_GRIP_U * TRIDENT_LEN)
+    top = grip + d * TRIDENT_GRIP_TO_TOP
+    side_v = Vector((1.0, 0.0, 0.0))
+    tri = [ch.tube("sc_tri2_shaft", [tuple(butt), tuple(top)], [TRIDENT_SHAFT_R, TRIDENT_SHAFT_R], m["steel"], ring=14),
+           ch.tube("sc_tri2_bar", [tuple(top - side_v * 0.16), tuple(top + side_v * 0.16)], [0.024, 0.024],
+                   m["steel"], ring=10),
+           ch.tube("sc_tri2_mid", [tuple(top), tuple(top + d * 0.42)], [0.03, 0.0], m["steel"], ring=12),
+           ch.tube("sc_tri2_butt", [tuple(butt), tuple(butt - d * 0.05)], [0.045, 0.0], m["steel"], ring=12)]
+    for s in (1, -1):
+        p0 = top + side_v * s * 0.16
+        tri.append(ch.tube(f"sc_tri2_side{s}", [tuple(p0), tuple(p0 + side_v * s * 0.06 + d * 0.14),
+                                                  tuple(p0 + side_v * s * 0.02 + d * 0.32)], [0.026, 0.018, 0.0],
+                           m["steel"], ring=12))
+    obj = temple.join([rigid(o, "trident") for o in tri], "sc_trident")
+    temple.set_origin(obj, (0.0, 0.0, 0.0))
+    ch.bind(obj, rig)
+    temple.tag(obj, "sc_trident", 10)
+    return obj
+
+
+def build_defender_v2(m, rig):
+    """ascetic_defender_v2: v1's body, dress and hair in a rest pose, skinned to `rig`; the trident separate."""
+    e, b, rigid = ch.ell, ch.ball, ch.rigid
+    core = _defender_core()
+    fit = ch.metaball_mesh("sc_def_fit", core, m["ash_skin"], resolution=0.012)
+    els = list(core)
+    for s in (1, -1):
+        j = DEF_LEGS[s]
+        els += ch.limb(j["hip"], j["knee"], 0.11, 0.08) + ch.limb(j["knee"], j["ankle"], 0.07, 0.048)
+        els += [e((j["ankle"][0], j["ankle"][1] - 0.08, 0.04), (0.055, 0.12, 0.04))]
+    body = ch.metaball_mesh("sc_def_body", els, m["ash_skin"], resolution=0.012)
+    ch.assign_weights(body, ch.chain_weights(ch.vertex_coords(body)[:, 2], [(1.22, 1.45, "pelvis", "chest")]))
+    parts = [body]
+    x, z = DEF_SHOULDER_X, DEF_SHOULDER_Z
+    elbow_z, wrist_z = z - DEF_UPPER, z - DEF_UPPER - DEF_FORE
+    grip_z = wrist_z - DEF_HAND
+    for s, side in ((1, "L"), (-1, "R")):
+        shoulder, elbow, hand = Vector((s * x, 0, z)), Vector((s * x, 0, elbow_z)), Vector((s * x, 0, grip_z))
+        arm = ch.metaball_mesh(f"sc_def_arm{side}", ch.limb(shoulder, elbow, 0.072, 0.056) +
+                               ch.limb(elbow, hand, 0.056, 0.04) + [b(tuple(hand), 0.045)], m["ash_skin"],
+                               resolution=0.010)
+        ch.assign_weights(arm, ch.chain_weights(ch.vertex_coords(arm)[:, 2],
+                                                [(grip_z + 0.04, grip_z + 0.07, f"hand.{side}", f"forearm.{side}"),
+                                                 (elbow_z - 0.03, elbow_z + 0.04, f"forearm.{side}",
+                                                  f"upper_arm.{side}")]))
+        parts.append(arm)
+    grip = Vector((x, 0.0, grip_z))
+    off = grip + Vector((0.0, -1.0, 0.0)) * DEF_PROFILE.off_hand_on_weapon
+    for k, p in enumerate((grip, off)):                       # closed fists around the shaft, rigid to the trident
+        parts.append(rigid(ch.metaball_mesh(f"sc_def_fist{k}", [e(tuple(p), (0.05, 0.06, 0.055))], m["ash_skin"],
+                                            resolution=0.008), "trident"))
+
+    dress = []
+    dhoti = [e((0, 0, 1.0), (0.235, 0.19, 0.16))]
+    for s in (1, -1):
+        j = DEF_LEGS[s]
+        knee, ank = Vector(j["knee"]), Vector(j["ankle"])
+        dhoti += ch.limb(j["hip"], j["knee"], 0.145, 0.125) + ch.limb(knee, knee.lerp(ank, 0.32), 0.125, 0.115)
+    dress.append(ch.metaball_mesh("sc_dhoti", dhoti, m["white_cloth"], resolution=0.012))
+    dress.append(ch.cloth_panel("sc_pleats", (0, -0.17, 1.08), (0.0, -0.27, 0.40), 0.24, 0.34, m["white_cloth"],
+                                folds=5, depth=0.016))
+    dress.append(ch.tube("sc_sash", ring_path(dress[0], 1.12, 0.02, n=20), [0.04] * 21, m["sash"], ring=10, flat=0.5))
+    for o in dress:
+        rigid(o, "pelvis")
+    sh = [hit_front(fit, xx, zz, 0.02) for xx, zz in ((0.18, 1.62), (0.08, 1.50), (-0.06, 1.36), (-0.16, 1.20))]
+    shawl = ch.tube("sc_shawl", [(0.22, 0.05, 1.71)] + sh + [(-0.22, 0.02, 1.12)], [0.085] * 6, m["shawl"],
+                    ring=10, flat=0.25, up=(0.0, -1.0, 0.0))
+    ch.assign_weights(shawl, ch.chain_weights(ch.vertex_coords(shawl)[:, 2], [(1.22, 1.45, "pelvis", "chest")]))
+    beads = [hit_front(fit, 0.11 * math.cos(a), 1.70 - 0.16 * math.sin(a), 0.012) for a in np.linspace(0.15, 2.99, 9)]
+    upper = [ch.tube("sc_beads", [(0.10, 0.02, 1.72)] + beads + [(-0.10, 0.02, 1.72)], [0.016] * 11, m["beads"], ring=8)]
+    for s in (1, -1):
+        upper.append(ch.metaball_mesh(f"sc_def_eye{s}", [e((s * 0.042, -0.10, 1.913), (0.014, 0.006, 0.008))],
+                                      m["hair"], resolution=0.003, smooth_iters=0))
+    upper.append(ch.metaball_mesh("sc_jata", [e((0, 0.04, 2.03), (0.115, 0.11, 0.075)),
+                                              e((0, 0.05, 2.09), (0.09, 0.085, 0.05)),
+                                              e((0.03, 0.08, 2.0), (0.07, 0.08, 0.06)),
+                                              e((0, 0.06, 1.96), (0.12, 0.10, 0.05))], m["hair"], resolution=0.008))
+    rng = random.Random(9)
+    for k in range(9):
+        a = -0.5 + k / 8.0
+        upper.append(ch.tube(f"sc_dlock{k}", [(a * 0.20, 0.07, 1.98), (a * 0.26, 0.15, 1.82),
+                                              (a * 0.30 + rng.uniform(-0.02, 0.02), 0.17, 1.62),
+                                              (a * 0.32, 0.15 + rng.uniform(0, 0.04), 1.44 + rng.uniform(0, 0.06))],
+                             [0.03, 0.026, 0.018, 0.0], m["hair"], ring=8))
+    for o in upper:
+        rigid(o, "chest")
+    bpy.data.objects.remove(fit, do_unlink=True)
+    obj = temple.join(parts + dress + [shawl] + upper, "sc_defender")
+    temple.set_origin(obj, (0.0, 0.0, 0.0))
+    SKINNING["sc_defender"] = ch.weight_stats(obj)
+    ch.bind(obj, rig)
+    temple.tag(obj, "sc_defender", 2)
+    return obj, build_trident_v2(m, rig, grip)
+
+
+# --- the parry (D3: mace_strike_blocked_v1 x trident_parry_v1) ------------------------------------------------
+# The defender's poses are authored; the attacker's contact pose is DERIVED from the defender's block so that the mace
+# head touches the trident shaft on the CONTACT frame by construction (for any admitted placement): the head centre
+# sits on the shaft's upward normal at PARRY_CONTACT_U along the shaft, pushed out until its nearest vertex is exactly
+# one shaft radius from the axis. Both actors then hold the bind for one frame and part (rebound / push).
+
+PARRY_RAISE_START = 9             # Blender frame: the defender leaves the guard as the wind-up begins (GUARD_END = 8)
+PARRY_ARRIVE_BEFORE = 2           # the block is in place this many frames before contact (braced, not lucky)
+PARRY_LIFT_AT = 17                # Blender frame: trident pulled up and back (clear of the wind-up), then brought over
+PARRY_BIND = 3                    # frames the weapons stay in contact after CONTACT (a readable clash, like the slam's
+                                  # floor hold; the head arrives at ~1.5 head widths/frame)
+PARRY_REBOUND_AFTER = 5           # then both part over this many frames (rebound / push)
+PARRY_CONTACT_U = 1.10            # contact point: metres along the shaft from the weapon grip (rig units)
+PARRY_AIM_FROM = (0.88, -0.45, 2.45)  # attacker rig space: the mace points from here to the head (grip high, overhead blow)
+PARRY_SHAFT_SEGMENT = (-TRIDENT_GRIP_U * TRIDENT_LEN, TRIDENT_GRIP_TO_TOP)    # along the shaft from the grip (rig units)
+
+
+def parry_events(strike_frames: int) -> dict:
+    """Blender frames of the parry pair (output frame = Blender frame - 1)."""
+    contact = strike.APEX_FRAME + strike_frames
+    strike.choreography_frames(strike_frames)                  # same validity range as the slam
+    bind_end = contact + PARRY_BIND
+    return {"apex": strike.APEX_FRAME, "contact": contact, "raise": PARRY_RAISE_START, "lift": PARRY_LIFT_AT,
+            "arrive": contact - PARRY_ARRIVE_BEFORE, "bind_end": bind_end,
+            "rebound": min(bind_end + PARRY_REBOUND_AFTER, FRAMES - 5), "hold_end": strike.HOLD_END}
+
+
+def blocked_keys(strike_frames: int) -> dict:
+    ev = parry_events(strike_frames)
+    c = ev["contact"]
+    return {1: ("guard", "BEZIER", "AUTO"), 8: ("guard", "BEZIER", "AUTO"), strike.APEX_FRAME: ("apex", "QUAD", "EASE_IN"),
+            c: ("blocked", "CONSTANT", "AUTO"), ev["bind_end"]: ("blocked", "BEZIER", "AUTO"),
+            ev["rebound"]: ("rebound", "BEZIER", "AUTO"), 49: ("rechamber", "BEZIER", "AUTO")}
+
+
+def _blend_pose(a: dict, b: dict, t: float, ease: str = "smooth") -> dict:
+    """Blend of two two-handed poses (smoothstep, or ease-out: a fast start), interpolating the point midway between
+    the hands (not the grip) so neither hand swings out of reach while the shaft turns."""
+    w = t * t * (3.0 - 2.0 * t) if ease == "smooth" else 1.0 - (1.0 - t) ** 2
+    h = DEF_PROFILE.off_hand_on_weapon / 2.0
+    da, db = Vector(a["weapon_dir"]).normalized(), Vector(b["weapon_dir"]).normalized()
+    d = da.lerp(db, w).normalized()
+    mid = (Vector(a["grip"]) + da * h).lerp(Vector(b["grip"]) + db * h, w)
+    return {"chest": [a["chest"][i] * (1 - w) + b["chest"][i] * w for i in range(2)],
+            "grip": list(mid - d * h), "weapon_dir": list(d)}
+
+
+def defender_parry_poses(strike_frames: int) -> dict[int, dict]:
+    """One interpolated target pose per Blender frame (keys on every frame keep both hands on the shaft)."""
+    ev = parry_events(strike_frames)
+    c = ev["contact"]
+    segs = [(1, ev["raise"], "d_guard", "d_guard", "smooth"), (ev["raise"], ev["lift"], "d_guard", "d_lift", "smooth"),
+            (ev["lift"], ev["arrive"], "d_lift", "d_block", "smooth"),
+            (ev["arrive"], ev["bind_end"] + 1, "d_block", "d_block", "smooth"),  # pushes once the mace has left
+            (ev["bind_end"] + 1, ev["rebound"], "d_block", "d_push", "smooth"),
+            (ev["rebound"], FRAMES, "d_push", "d_ready", "smooth")]
+    out = {}
+    for a, b, pa, pb, ease in segs:
+        for f in range(a, b + 1):
+            out[f] = _blend_pose(DEF_POSES[pa], DEF_POSES[pb], (f - a) / (b - a) if b > a else 0.0, ease)
+    return out
+
+
+def key_defender(rig, poses: dict[int, dict]) -> dict:
+    prof = strike.RigProfile(**{**DEF_PROFILE.__dict__, "poses": {f"df{f}": p for f, p in poses.items()}})
+    keys = {f: (f"df{f}", "LINEAR", "AUTO") for f in poses}
+    reached = strike.key_poses(rig, keys, prof)
+    return {k: v for k, v in reached.items() if k in {f"df{f}" for f in (1, PARRY_RAISE_START, FRAMES)}} | {
+        "per_frame_trident_tip": {str(f): reached[f"df{f}"]["trident_tip"] for f in sorted(poses)}}
+
+
+def world_of(at, yaw_deg, scale=1.0) -> Matrix:
+    return (Matrix.Translation(Vector(at)) @ Matrix.Rotation(math.radians(yaw_deg), 4, "Z") @
+            Matrix.Diagonal((scale, scale, scale, 1.0)))
+
+
+def shaft_world(def_rig, pose: dict) -> tuple[Vector, Vector, float]:
+    """(grip, unit direction, world scale) of the trident shaft for a defender pose."""
+    P = strike.solve_pose(def_rig, pose, DEF_PROFILE)["trident"]
+    W = world_of(DEFENDER_AT, DEFENDER_YAW_DEG, DEFENDER_SCALE)
+    return W @ P.translation, (W.to_3x3() @ P.to_3x3().col[1]).normalized(), DEFENDER_SCALE
+
+
+def _seg_dist(points: np.ndarray, a: Vector, d: Vector, lo: float, hi: float) -> np.ndarray:
+    rel = points - np.array(a)
+    t = np.clip(rel @ np.array(d), lo, hi)
+    return np.linalg.norm(rel - np.outer(t, np.array(d)), axis=1)
+
+
+def _head_rest_vertices(head_obj) -> np.ndarray:
+    """Mesh vertices in rig rest space (the object is parented to the rig with an identity parent inverse)."""
+    co = ch.vertex_coords(head_obj)
+    B = np.array(head_obj.matrix_basis)
+    return (np.c_[co, np.ones(len(co))] @ B.T)[:, :3]
+
+
+def solve_blocked_pose(asura_rig, head_obj, def_rig) -> tuple[dict, dict, dict, dict]:
+    """The attacker's contact pose (mace head touching the shaft), rebound and re-chamber poses (attacker rig space)."""
+    grip, sdir, k = shaft_world(def_rig, DEF_POSES["d_block"])
+    pc = grip + sdir * (PARRY_CONTACT_U * k)
+    up = Vector((0.0, 0.0, 1.0))
+    n = (up - sdir * up.dot(sdir)).normalized()
+    r_w = TRIDENT_SHAFT_R * k
+    lo, hi = PARRY_SHAFT_SEGMENT[0] * k, PARRY_SHAFT_SEGMENT[1] * k
+    Wa = world_of(ROOT_AT, ASURA_YAW_DEG)
+    Wa_inv = Wa.inverted()
+    rest_mace = asura_rig.data.bones["mace"].matrix_local
+    verts = _head_rest_vertices(head_obj)
+    vh = np.c_[verts, np.ones(len(verts))]
+    centre = pc + n * (strike.MACE_HEAD_R + r_w)
+    aim_from = Vector(PARRY_AIM_FROM)
+    for _ in range(6):
+        tip = Wa_inv @ centre
+        mdir = (tip - aim_from).normalized()
+        pose = {"chest": [10.0, -6.0], "mace_tip": list(tip), "mace_dir": list(mdir), "off_grip": [-0.70, 0.10, 1.40]}
+        P = strike.solve_pose(asura_rig, pose)
+        M = np.array(Wa @ P["mace"] @ rest_mace.inverted())
+        world = (vh @ M.T)[:, :3]
+        gap = float((_seg_dist(world, grip, sdir, lo, hi) - r_w).min())
+        if abs(gap) < 2e-4:
+            break
+        centre = centre - n * gap
+    grip_c = tip - mdir * strike.MACE_LENGTH
+    rebound = {"chest": [2.0, -4.0], "grip": list(grip_c + Vector((-0.05, 0.10, 0.22))),
+               "mace_dir": list((mdir + Vector((-0.05, 0.10, 0.65))).normalized()), "off_grip": [-0.62, -0.20, 1.20]}
+    rechamber = {"chest": [3.0, 2.0], "grip": [0.80, 0.10, 1.75], "mace_dir": [0.30, 0.15, 0.94],
+                 "off_grip": [-0.62, -0.20, 1.20]}
+    info = {"shaft_grip_world": [round(v, 4) for v in grip], "shaft_dir_world": [round(v, 4) for v in sdir],
+            "contact_u_m": PARRY_CONTACT_U, "normal_world": [round(v, 4) for v in n],
+            "head_centre_world": [round(v, 4) for v in centre], "solve_gap_m": round(gap, 5),
+            "contact_point_world": [round(v, 4) for v in pc + n * r_w]}
+    return pose, rebound, rechamber, info
+
+
+def _kd(points):
+    from mathutils.kdtree import KDTree
+    tree = KDTree(len(points))
+    for j, p in enumerate(points):
+        tree.insert(p, j)
+    tree.balance()
+    return tree
+
+
+def contact_series(scene, asura_rig, head_obj, def_rig, defender_obj, trident_obj, attacker_obj) -> dict:
+    """Per output frame: min distance (m) from the evaluated mace head to the trident shaft surface (< 0 =
+    interpenetration), the nearest shaft parameter, mace head to the defender's body, and trident to the attacker's
+    body (vertex-to-vertex, so ~1 cm resolution)."""
+    out = {"head_to_shaft_m": [], "head_to_defender_m": [], "trident_to_attacker_m": [], "shaft_u_m": []}
+    k = DEFENDER_SCALE
+    lo, hi = PARRY_SHAFT_SEGMENT[0] * k, PARRY_SHAFT_SEGMENT[1] * k
+    for f in range(scene.frame_start, scene.frame_end + 1):
+        scene.frame_set(f)
+        dg = bpy.context.evaluated_depsgraph_get()
+        pts = []
+        for ob in (head_obj, defender_obj, trident_obj, attacker_obj):
+            ev = ob.evaluated_get(dg)
+            me = ev.to_mesh()
+            co = np.empty(len(me.vertices) * 3)
+            me.vertices.foreach_get("co", co)
+            M = np.array(ob.matrix_world)
+            pts.append((np.c_[co.reshape(-1, 3), np.ones(len(me.vertices))] @ M.T)[:, :3])
+            ev.to_mesh_clear()
+        pb = def_rig.pose.bones["trident"]
+        Mt = def_rig.matrix_world @ pb.matrix
+        g, d = Mt.translation, (Mt.to_3x3().col[1]).normalized()
+        dist = _seg_dist(pts[0], g, d, lo, hi)
+        i = int(dist.argmin())
+        out["head_to_shaft_m"].append(round(float(dist[i] - TRIDENT_SHAFT_R * k), 4))
+        out["shaft_u_m"].append(round(float((pts[0][i] - np.array(g)) @ np.array(d)) / k, 3))
+        tree = _kd(pts[1])
+        out["head_to_defender_m"].append(round(min(tree.find(Vector(p))[2] for p in pts[0][::4]), 4))
+        tree = _kd(pts[2])
+        out["trident_to_attacker_m"].append(round(min(tree.find(Vector(p))[2] for p in pts[3][::6]), 4))
+    return out
+
+
+def visible_fraction(scene, cam, obj, max_vertices: int = 800) -> list[float]:
+    """Per output frame: the fraction of the object's (subsampled, evaluated) vertices whose camera ray first hits the
+    object itself - < 1 where another object occludes it (back-facing vertices hit its own front, so count as seen)."""
+    out = []
+    for f in range(scene.frame_start, scene.frame_end + 1):
+        scene.frame_set(f)
+        dg = bpy.context.evaluated_depsgraph_get()
+        ev = obj.evaluated_get(dg)
+        me = ev.to_mesh()
+        step = max(1, len(me.vertices) // max_vertices)
+        pts = [ev.matrix_world @ v.co for v in list(me.vertices)[::step]]
+        ev.to_mesh_clear()
+        eye = cam.matrix_world.translation
+        seen = 0
+        for p in pts:
+            d = p - eye
+            hit, _loc, _n, _i, hob, _m = scene.ray_cast(dg, eye, d.normalized(), distance=d.length + 0.05)
+            seen += bool(hit and hob is not None and hob.original == obj)
+        out.append(round(seen / max(len(pts), 1), 3))
+    return out
+
+
+def parry_timeline_parts(strike_frames: int, att_role: str, def_role: str) -> tuple[list, list]:
+    """Defender phases and the contact interval, in the compiler's format (output-frame times)."""
+    ev = parry_events(strike_frames)
+    c = ev["contact"]
+    phases = [{"id": "def_guard", "kind": "idle", "actor": def_role, "start": "0", "end": strike.src_time(ev["raise"])},
+              {"id": "def_raise", "kind": "defense", "actor": def_role, "start": strike.src_time(ev["raise"]),
+               "end": strike.src_time(c)},
+              {"id": "def_block", "kind": "contact", "actor": def_role, "start": strike.src_time(c),
+               "end": strike.src_time(ev["hold_end"])},
+              {"id": "def_recovery", "kind": "recovery", "actor": def_role, "start": strike.src_time(ev["hold_end"]),
+               "end": strike.src_time(FRAMES)}]
+    contacts = [{"id": "mace_on_trident", "participants": [f"{att_role}.mace", f"{def_role}.trident"],
+                 "start": strike.src_time(c), "end": strike.src_time(c), "contact_points": [f"{att_role}.mace.head"],
+                 "required": True, "event": "strike.CONTACT"}]
+    return phases, contacts
+
+
 # --- environment upgrades --------------------------------------------------------------------------------------
 
 def finish_environment(m, finial):
@@ -880,7 +1291,15 @@ def lighting(scene):
 
 # --- deterministic impact effects ------------------------------------------------------------------------------
 
+def contact_point() -> list[float]:
+    """The 3D contact: on the floor for the slam (z = 0), on the trident shaft for the parry."""
+    return list(CONTACT["contact_point_world"]) if CONTACT else impact_point()
+
+
 def impact_point() -> list[float]:
+    if CONTACT:                                          # parry: ground effects (only if requested) below the clash
+        p = CONTACT["contact_point_world"]
+        return [p[0], p[1], 0.0]
     tip = Vector(strike.POSES["contact"]["mace_tip"])
     p = Matrix.Rotation(math.radians(ASURA_YAW_DEG), 3, "Z") @ Vector((tip.x, tip.y, 0.0))
     return [round(ROOT_AT[0] + p.x, 4), round(ROOT_AT[1] + p.y, 4), 0.0]
@@ -1031,6 +1450,17 @@ def build_impact_fx(scene, start_frame: int, m, seed: int | None = None):
     crack.data.materials.append(crack_mat)
     crack.rotation_euler = (0.0, 0.0, math.radians(17))
     add(crack, "crack")
+    cpt = Vector(contact_point())
+    frame = Matrix.Identity(3)
+    if CONTACT:                                          # weapon-on-weapon: sparks spray off the clash, local Z = the
+        n = Vector(CONTACT["normal_world"])              # shaft normal toward the mace, more of them, faster
+        frame = n.to_track_quat("Z", "Y").to_matrix()
+        for i in range(16):
+            bpy.ops.mesh.primitive_cylinder_add(radius=0.006, depth=1.0, vertices=6, location=tuple(cpt))
+            o = bpy.context.active_object
+            o.name = f"fx_spark_{12 + i:02d}"
+            o.data.materials.append(spark_mat)
+            add(o, "spark", ang=rng.uniform(0, 2 * math.pi), vh=rng.uniform(2.0, 4.5), vz=rng.uniform(0.5, 2.5))
     keep_kinds = {k for comp in FX["components"] for k in FX_KINDS[comp]}   # all objects are created first so the
     for o, kind, _kw in [x for x in objs if x[1] not in keep_kinds]:          # random draws (seeded) never shift
         bpy.data.objects.remove(o, do_unlink=True)
@@ -1071,10 +1501,15 @@ def build_impact_fx(scene, start_frame: int, m, seed: int | None = None):
                 if t > life:
                     o.scale = (0.0, 0.0, 0.0)
                 else:
-                    vel = Vector((kw["vh"] * math.cos(kw["ang"]), kw["vh"] * math.sin(kw["ang"]), kw["vz"] - 9.8 * t))
-                    pos = Vector((px, py, 0.1)) + Vector((kw["vh"] * t * math.cos(kw["ang"]),
-                                                         kw["vh"] * t * math.sin(kw["ang"]),
-                                                         kw["vz"] * t - 4.9 * t * t))
+                    if CONTACT:
+                        v0 = frame @ Vector((kw["vh"] * math.cos(kw["ang"]), kw["vh"] * math.sin(kw["ang"]), kw["vz"]))
+                        vel = v0 + Vector((0.0, 0.0, -9.8 * t))
+                        pos = cpt + v0 * t + Vector((0.0, 0.0, -4.9 * t * t))
+                    else:
+                        vel = Vector((kw["vh"] * math.cos(kw["ang"]), kw["vh"] * math.sin(kw["ang"]), kw["vz"] - 9.8 * t))
+                        pos = Vector((px, py, 0.1)) + Vector((kw["vh"] * t * math.cos(kw["ang"]),
+                                                             kw["vh"] * t * math.sin(kw["ang"]),
+                                                             kw["vz"] * t - 4.9 * t * t))
                     o.location = tuple(pos)
                     o.rotation_euler = vel.to_track_quat("Z", "Y").to_euler()
                     fade = 1.0 - t / life
@@ -1094,7 +1529,8 @@ def build_impact_fx(scene, start_frame: int, m, seed: int | None = None):
 
     flash = bpy.data.collections.new("fx_flash")
     scene.collection.children.link(flash)
-    light = lk.point_light(scene, "fx_flash_light", (px, py, 0.4), 0.0, (1.0, 0.62, 0.32), radius=0.3, collection=flash)
+    at = tuple(cpt) if CONTACT else (px, py, 0.4)
+    light = lk.point_light(scene, "fx_flash_light", at, 0.0, (1.0, 0.62, 0.32), radius=0.3, collection=flash)
     for f in range(scene.frame_start, scene.frame_end + 1):
         k = f - start_frame
         light.data.energy = float(FX["flash_energy_w"][k]) if 0 <= k < len(FX["flash_energy_w"]) else 0.0
@@ -1143,6 +1579,9 @@ def layers_manifest() -> dict:
 
 def build(out_path: str, spec_path: str | None) -> dict:
     keys, events, phases = strike.choreography_frames(STRIKE_FRAMES)
+    if parry():                                          # the blocked strike: same guard / wind-up / apex, contact on
+        keys = blocked_keys(STRIKE_FRAMES)               # the trident, a rebound instead of the floor hold
+        phases = [("rebound", "recoil", a, b) if i == "impact" else (i, k, a, b) for i, k, a, b in phases]
     scene = temple.setup_scene(RES)
     base = temple.make_materials()
     m = materials()
@@ -1153,14 +1592,41 @@ def build(out_path: str, spec_path: str | None) -> dict:
     finish_environment(m, finial)
     upgrade_temple(m, scene)
     rig = strike.build_rig("sc_asura_rig")
-    build_asura(m, rig)
-    reached = strike.key_poses(rig, keys)
-    rig.location = ROOT_AT
-    rig.rotation_euler = (0.0, 0.0, math.radians(ASURA_YAW_DEG))
-    defender = build_defender(m)
-    defender.location = DEFENDER_AT
-    defender.rotation_euler = (0.0, 0.0, math.radians(DEFENDER_YAW_DEG))
-    temple.tag(defender, "sc_defender", 2)
+    asura_objs = build_asura(m, rig)
+    defender_info: dict = {"motion": "static (guard)", "at": DEFENDER_AT, "yaw_deg": DEFENDER_YAW_DEG}
+    if DEFENDER_ASSET == "ascetic_defender_v1":
+        reached = strike.key_poses(rig, keys)
+        rig.location = ROOT_AT
+        rig.rotation_euler = (0.0, 0.0, math.radians(ASURA_YAW_DEG))
+        defender = build_defender(m)
+        defender.location = DEFENDER_AT
+        defender.rotation_euler = (0.0, 0.0, math.radians(DEFENDER_YAW_DEG))
+        temple.tag(defender, "sc_defender", 2)
+    else:
+        drig = strike.build_rig("sc_defender_rig", DEF_PROFILE)
+        defender, trident = build_defender_v2(m, drig)
+        dposes = defender_parry_poses(STRIKE_FRAMES) if parry() else {1: DEF_POSES["d_guard"]}
+        def_reached = key_defender(drig, dposes)
+        drig.location = DEFENDER_AT
+        drig.rotation_euler = (0.0, 0.0, math.radians(DEFENDER_YAW_DEG))
+        drig.scale = (DEFENDER_SCALE,) * 3
+        if parry():
+            blocked, rebound, rechamber, info = solve_blocked_pose(rig, asura_objs[-1], drig)
+            CONTACT.update(info)
+            prof = strike.RigProfile(**{**strike.ASURA.__dict__, "poses": {
+                **strike.POSES, "blocked": blocked, "rebound": rebound, "rechamber": rechamber}})
+            reached = strike.key_poses(rig, keys, prof)
+        else:
+            reached = strike.key_poses(rig, keys)
+        rig.location = ROOT_AT
+        rig.rotation_euler = (0.0, 0.0, math.radians(ASURA_YAW_DEG))
+        defender_info = {"motion": "rigged (trident_parry_v1)" if parry() else "rigged, held guard",
+                         "asset": DEFENDER_ASSET, "action": DEFENDER_ACTION, "rig": "sc_defender_rig",
+                         "at": DEFENDER_AT, "yaw_deg": DEFENDER_YAW_DEG, "scale": DEFENDER_SCALE,
+                         "reached_rig_space": def_reached,
+                         "events_blender_frame": parry_events(STRIKE_FRAMES) if parry() else {}}
+        if parry():
+            CONTACT["series"] = contact_series(scene, rig, asura_objs[-1], drig, defender, trident, asura_objs[0])
     lighting(scene)
     impact_frame = events["contact"]
     build_impact_fx(scene, impact_frame, m)
@@ -1186,6 +1652,8 @@ def build(out_path: str, spec_path: str | None) -> dict:
     oc_import_camera.apply(SimpleNamespace(samples=npz, time_key="t", intrinsics=motion_path, camera_name=cam.name,
                                            frame_start=scene.frame_start, set_scene_camera=True, save=out_path))
     clearance = camscene.clearance_per_frame(scene, cam, FRAMES)
+    visibility = ({o: visible_fraction(scene, cam, bpy.data.objects[o]) for o in ("sc_mace_head", "sc_trident")}
+                  if parry() else None)
     scene.frame_set(1)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(out_path))
 
@@ -1197,12 +1665,35 @@ def build(out_path: str, spec_path: str | None) -> dict:
                  "orbit_deg": CAMERA_MOVE["azimuth_deg"][1] - CAMERA_MOVE["azimuth_deg"][0]}
     timeline = strike.action_timeline(phases, STRIKE_FRAMES)
     timeline.update(id=TIMELINE_ID, actors=dict(TIMELINE_ACTORS))
-    timeline["phases"].append({"id": "defender_hold", "kind": "defense", "actor": "defender",
-                               "start": "0", "end": strike.src_time(FRAMES)})
+    # actor roles are the compiler's (semantic ids, e.g. "shiva"): find them by engine object, not by name
+    role_of = {oc_id: role for role, oc_id in TIMELINE_ACTORS.items()}
+    for ph in timeline["phases"]:
+        ph["actor"] = role_of.get("sc_asura", ph["actor"])
+    if parry():
+        def_phases, contacts = parry_timeline_parts(STRIKE_FRAMES, role_of.get("sc_asura", "asura"),
+                                                    role_of.get("sc_defender", "defender"))
+        timeline["phases"] += def_phases
+        timeline["contacts"] = contacts
+    else:
+        timeline["phases"].append({"id": "defender_hold", "kind": "defense",
+                                   "actor": role_of.get("sc_defender", "defender"),
+                                   "start": "0", "end": strike.src_time(FRAMES)})
     if spec_path:
         common.write_json(os.path.join(os.path.dirname(os.path.abspath(spec_path)), "action_timeline.json"), timeline)
-        common.write_json(spec_path, spec_dict(timeline, reached, keys, events, clearance, move_info,
-                                               impact_frame - scene.frame_start))
+        spec = spec_dict(timeline, reached, keys, events, clearance, move_info, impact_frame - scene.frame_start)
+        if DEFENDER_ASSET != "ascetic_defender_v1":
+            spec["choreography"]["sc_defender"] = defender_info
+            spec["tracking"]["defender_joints"] = {
+                "rig": "sc_defender_rig", "weapon_bone": "trident", "weapon_object": "sc_trident",
+                "body_object": "sc_defender", "stationary_bones": DEF_STATIONARY_BONES,
+                "max_projection_err_px": 3.0, "max_stationary_m": 0.001}
+        if parry():
+            spec["tracking"]["visibility"] = visibility
+            spec["choreography"]["contact"] = dict(CONTACT, frame_output=impact_frame - scene.frame_start,
+                                                   attacker_action=ATTACKER_ACTION, defender_action=DEFENDER_ACTION)
+            spec["choreography"]["sc_asura"]["source"] = ("build_temple_strike_scene POSES (guard/apex/recovery) + "
+                                                          "blocked/rebound poses solved against the trident")
+        common.write_json(spec_path, spec)
     print(f"[oc] SHOWCASE v1 scene saved: {out_path} ({move_info})")
     return {"clearance": clearance, "move": move_info}
 
