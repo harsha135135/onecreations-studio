@@ -165,3 +165,19 @@ future milestones that add registry entries and builders. They do not change the
 - **Open (D3 doc §16):** `contact_timing` measures the raw weapon head. For a mid-air contact whose weapons are both
   policy-protected, d3_run1 shows it failing while the generated hand is on time; changing it needs a new
   pre-registered run.
+
+## D3(b) clarification (2026-10-07): QC follows ownership
+
+- A shot's QC judges each component by what owns it. LTX owns the actors (appearance, body and hand motion, reaction
+  timing). Blender owns protected weapon geometry, the exact contact, holdouts and contact effects.
+- Contact shots use QC profile `showcase_class_contact_v2`, selected by the contact action. Every other shot keeps
+  `showcase_class_preflight_v1`, so earlier compiled shots are unchanged.
+- In that profile:
+  - checks on raw renders of a replaced component are `on_fail: diagnostic`: recorded, never decisive;
+  - the actors are judged by `parry_contact_timing_v2` / `defender_reaction_timing` (generated hand vs authored
+    grip);
+  - the delivered hybrid is judged by attachment and layer-contact checks.
+- An evaluator error is a recorded failed check. A declared check without an evaluator is a configuration error and
+  raises.
+- D3(b) (`d3b_run1`) failed on the attacker's weapon hand at the bind; see its measurement doc §32 for the open
+  options.

@@ -1,0 +1,334 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load LTX-2.5 22B distilled (INT8 ConvRot)"
+    },
+    "inputs": {
+      "unet_name": "ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "16": {
+    "class_type": "LTXICLoRALoaderModelOnly",
+    "_meta": {
+      "title": "Union control IC-LoRA (official 2.5 Union workflow uses this 2.3 adapter)"
+    },
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "lora_name": "ltx-2.3-22b-ic-lora-union-control-ref0.5.safetensors",
+      "strength_model": 1
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load Gemma4-12B text encoder (INT8 ConvRot)"
+    },
+    "inputs": {
+      "clip_name": "gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load video VAE"
+    },
+    "inputs": {
+      "vae_name": "ltx-2.5-video-vae-bf16.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive prompt (neutral: environment, style, subjects, lighting; no motion direction/timing)"
+    },
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "Cinematic dark fantasy film still: an ancient Indian stone temple courtyard at dusk, massive carved sandstone pillars and stone beams, a stepped shrine tower with a glowing lamp-lit doorway, bronze fire braziers, worn cracked flagstones, warm low sunlight from behind with long shadows and soft atmospheric haze. A huge muscular dark-crimson-skinned asura demon with long curved ivory horns, small tusks, glowing amber eyes and a black mane wears a black iron breastplate and heavy layered spiked iron pauldrons tied with leather shoulder straps, a bronze medallion, a leather belt, a dark loincloth with iron tassets, iron knee guards and greaves, and holds a heavy golden spiked mace. Facing him, a lean ash-blue-skinned ascetic with dark matted hair tied in a bun, a white dhoti and a pale shawl holds a steel trident in a guarding stance. Highly detailed skin, metal and stone textures, dramatic cinematic lighting, subtle film grain."
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative prompt (official default: empty)"
+    },
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": ""
+    }
+  },
+  "6": {
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "Frame-rate conditioning"
+    },
+    "inputs": {
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "frame_rate": 24
+    }
+  },
+  "17": {
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "First frame (Blender M2-B beauty render, frame 1; render_reference.py)"
+    },
+    "inputs": {
+      "image": "first_frame.png"
+    }
+  },
+  "18": {
+    "class_type": "LoadVideo",
+    "_meta": {
+      "title": "Depth control (make_controls.py: per-clip min-max, lossless full-range)"
+    },
+    "inputs": {
+      "file": "depth_control.mp4"
+    }
+  },
+  "19": {
+    "class_type": "GetVideoComponents",
+    "_meta": {
+      "title": "Depth frames"
+    },
+    "inputs": {
+      "video": [
+        "18",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "EmptyLTXVLatentVideo",
+    "_meta": {
+      "title": "SHOWCASE v1 768x448x49 (not an admission run)"
+    },
+    "inputs": {
+      "width": 768,
+      "height": 448,
+      "length": 49,
+      "batch_size": 1
+    }
+  },
+  "20": {
+    "class_type": "LTXVImgToVideoInplace",
+    "_meta": {
+      "title": "First-frame conditioning (official strength 1)"
+    },
+    "inputs": {
+      "vae": [
+        "3",
+        0
+      ],
+      "image": [
+        "17",
+        0
+      ],
+      "latent": [
+        "7",
+        0
+      ],
+      "strength": 1,
+      "bypass": false
+    }
+  },
+  "21": {
+    "class_type": "LTXAddVideoICLoRAGuide",
+    "_meta": {
+      "title": "Union control guide (official settings)"
+    },
+    "inputs": {
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "6",
+        1
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "latent": [
+        "20",
+        0
+      ],
+      "image": [
+        "19",
+        0
+      ],
+      "frame_idx": 0,
+      "strength": 1,
+      "latent_downscale_factor": [
+        "16",
+        1
+      ],
+      "crop": "disabled",
+      "use_tiled_encode": false,
+      "tile_size": 256,
+      "tile_overlap": 64
+    }
+  },
+  "8": {
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "Seed (comfy_run --seed 8/noise_seed=BASE)"
+    },
+    "inputs": {
+      "noise_seed": 1000
+    }
+  },
+  "9": {
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "Official sampler"
+    },
+    "inputs": {
+      "sampler_name": "euler_ancestral"
+    }
+  },
+  "10": {
+    "class_type": "ManualSigmas",
+    "_meta": {
+      "title": "Official distilled 8-step schedule"
+    },
+    "inputs": {
+      "sigmas": "1.0, 0.99375, 0.9875, 0.98125, 0.975, 0.909375, 0.725, 0.421875, 0.0"
+    }
+  },
+  "11": {
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "Official cfg 1"
+    },
+    "inputs": {
+      "model": [
+        "16",
+        0
+      ],
+      "positive": [
+        "21",
+        0
+      ],
+      "negative": [
+        "21",
+        1
+      ],
+      "cfg": 1
+    }
+  },
+  "12": {
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "Denoise (stage 1 only)"
+    },
+    "inputs": {
+      "noise": [
+        "8",
+        0
+      ],
+      "guider": [
+        "11",
+        0
+      ],
+      "sampler": [
+        "9",
+        0
+      ],
+      "sigmas": [
+        "10",
+        0
+      ],
+      "latent_image": [
+        "21",
+        2
+      ]
+    }
+  },
+  "22": {
+    "class_type": "LTXVCropGuides",
+    "_meta": {
+      "title": "Remove guide frames"
+    },
+    "inputs": {
+      "positive": [
+        "21",
+        0
+      ],
+      "negative": [
+        "21",
+        1
+      ],
+      "latent": [
+        "12",
+        0
+      ]
+    }
+  },
+  "13": {
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "Official tiled decode settings"
+    },
+    "inputs": {
+      "samples": [
+        "22",
+        2
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "tile_size": 512,
+      "overlap": 64,
+      "temporal_size": 128,
+      "temporal_overlap": 32
+    }
+  },
+  "14": {
+    "class_type": "CreateVideo",
+    "_meta": {
+      "title": "Video (no audio)"
+    },
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "fps": 24
+    }
+  },
+  "15": {
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "Save mp4"
+    },
+    "inputs": {
+      "video": [
+        "14",
+        0
+      ],
+      "filename_prefix": "attempt1/raw",
+      "format": "mp4"
+    }
+  }
+}

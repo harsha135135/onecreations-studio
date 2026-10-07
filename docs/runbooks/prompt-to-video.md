@@ -72,3 +72,10 @@ REPAIR (`mace_protect`, `trident_protect`, ~6 min together). A guard-only prompt
 There is no earlier parry generation to rehearse with, so use the run's own Blender reference as the stand-in:
 `uv run python tools/director/rehearse.py "PROMPT" --raw reference --run-id rehearsal_x` (proves wiring and delivery,
 not the QC thresholds).
+
+## QC profiles
+
+- Parry shots compile with `qc_profile = showcase_class_contact_v2` (D3(b)). Raw weapon checks there are diagnostics.
+  The run stops on `parry_contact_timing_v2` or `defender_reaction_timing`, the generated hands vs the authored grips.
+- `qc/post_generation.json` lists `diagnostic_failures` separately from `fail_for`.
+- Every other shot uses `showcase_class_preflight_v1`, unchanged since D2.

@@ -1,0 +1,604 @@
+{
+ "checks": {
+  "video_valid": {
+   "passed": true,
+   "frames": 49,
+   "size": [
+    768,
+    448
+   ],
+   "blank_frames": [],
+   "abrupt_frames": [],
+   "median_frame_diff": 5.95,
+   "on_fail": "regenerate"
+  },
+  "subject_framing": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.947,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.898,
+     "offset_px": 2.0
+    },
+    "24": {
+     "ncc": 0.818,
+     "offset_px": 2.8
+    },
+    "36": {
+     "ncc": 0.795,
+     "offset_px": 2.0
+    },
+    "48": {
+     "ncc": 0.741,
+     "offset_px": 2.0
+    }
+   },
+   "on_fail": "fail"
+  },
+  "raw_mace_contact": {
+   "passed": false,
+   "contact_frame": 29,
+   "observed_onset": null,
+   "offset_frames": null,
+   "best_ncc": 0.454,
+   "per_frame_ncc": {
+    "25": 0.337,
+    "26": 0.422,
+    "27": 0.453,
+    "28": 0.453,
+    "29": 0.442,
+    "30": 0.454,
+    "31": 0.452,
+    "32": 0.424,
+    "33": 0.333
+   },
+   "per_frame_offset_px": {
+    "25": 30.6,
+    "26": 30.6,
+    "27": 29.8,
+    "28": 26.2,
+    "29": 22.2,
+    "30": 24.8,
+    "31": 25.5,
+    "32": 27.6,
+    "33": 30.6
+   },
+   "on_fail": "diagnostic",
+   "object": "sc_mace_head"
+  },
+  "apex_presence": {
+   "passed": true,
+   "apex_frame": 23,
+   "ncc": 0.546,
+   "offset_px": 4.5,
+   "on_fail": "fail",
+   "object": "sc_mace_head"
+  },
+  "weapon_integrity": {
+   "passed": false,
+   "failed_frames": [
+    24,
+    26,
+    28,
+    29
+   ],
+   "per_frame_ncc": {
+    "23": {
+     "ncc": 0.546,
+     "offset_px": 4.5
+    },
+    "24": {
+     "ncc": 0.521,
+     "offset_px": 12.5
+    },
+    "25": {
+     "ncc": 0.559,
+     "offset_px": 6.1
+    },
+    "26": {
+     "ncc": 0.27,
+     "offset_px": 16.4
+    },
+    "27": {
+     "ncc": 0.806,
+     "offset_px": 3.6
+    },
+    "28": {
+     "ncc": 0.468,
+     "offset_px": 11.0
+    },
+    "29": {
+     "ncc": 0.442,
+     "offset_px": 22.2
+    }
+   },
+   "meaning": "raw generated weapon unreliable in these frames",
+   "on_fail": "repair",
+   "object": "sc_mace_head"
+  },
+  "camera_progression": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.995,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.933,
+     "offset_px": 0.0
+    },
+    "24": {
+     "ncc": 0.886,
+     "offset_px": 4.0
+    },
+    "36": {
+     "ncc": 0.82,
+     "offset_px": 4.0
+    },
+    "48": {
+     "ncc": 0.798,
+     "offset_px": 4.0
+    }
+   },
+   "note": "background registered to the authored move (image space)",
+   "on_fail": "fail"
+  },
+  "output_integrity": {
+   "passed": true,
+   "hole_frames": [],
+   "on_fail": "regenerate"
+  },
+  "defender_framing": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.978,
+     "offset_px": 2.0
+    },
+    "12": {
+     "ncc": 0.734,
+     "offset_px": 0.0
+    },
+    "24": {
+     "ncc": 0.8,
+     "offset_px": 0.0
+    },
+    "29": {
+     "ncc": 0.773,
+     "offset_px": 2.0
+    },
+    "36": {
+     "ncc": 0.742,
+     "offset_px": 2.0
+    },
+    "48": {
+     "ncc": 0.756,
+     "offset_px": 0.0
+    }
+   },
+   "on_fail": "fail",
+   "object": "sc_defender"
+  },
+  "trident_integrity": {
+   "passed": false,
+   "failed_frames": [
+    12,
+    22,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43
+   ],
+   "per_frame_ncc": {
+    "8": 0.691,
+    "9": 0.597,
+    "10": 0.547,
+    "11": 0.429,
+    "12": 0.27,
+    "13": 0.519,
+    "14": 0.443,
+    "15": 0.405,
+    "16": 0.525,
+    "17": 0.579,
+    "18": 0.673,
+    "19": 0.663,
+    "20": 0.557,
+    "21": 0.402,
+    "22": 0.373,
+    "23": 0.522,
+    "24": 0.416,
+    "25": 0.52,
+    "26": 0.37,
+    "27": 0.327,
+    "28": 0.341,
+    "29": 0.286,
+    "30": 0.313,
+    "31": 0.327,
+    "32": 0.349,
+    "33": 0.359,
+    "34": 0.4,
+    "35": 0.38,
+    "36": 0.355,
+    "37": 0.351,
+    "38": 0.342,
+    "39": 0.309,
+    "40": 0.268,
+    "41": 0.296,
+    "42": 0.334,
+    "43": 0.377,
+    "44": 0.424,
+    "45": 0.484,
+    "46": 0.478,
+    "47": 0.441,
+    "48": 0.419
+   },
+   "meaning": "raw generated weapon unreliable in these frames",
+   "on_fail": "repair",
+   "object": "sc_trident"
+  },
+  "parry_contact_timing_v2": {
+   "passed": false,
+   "window": [
+    27,
+    32
+   ],
+   "spatial": {
+    "passed": false,
+    "median_offset_px": 13.2
+   },
+   "trajectory": {
+    "passed": false,
+    "settled_from": 29,
+    "max_settled_offset_px": 26.4,
+    "max_window_offset_px": 26.4,
+    "median_ncc": 0.498
+   },
+   "temporal": {
+    "passed": false,
+    "best_lag_frames": 4,
+    "lag_mean_ncc": {
+     "-4": 0.4375,
+     "-3": 0.4363,
+     "-2": 0.4686,
+     "-1": 0.4743,
+     "0": 0.5152,
+     "1": 0.5251,
+     "2": 0.5704,
+     "3": 0.5692,
+     "4": 0.5806
+    }
+   },
+   "frames": {
+    "27": {
+     "ncc": 0.658,
+     "offset_px": 23.3,
+     "grip_px": [
+      365.1,
+      165.1
+     ]
+    },
+    "28": {
+     "ncc": 0.546,
+     "offset_px": 13.4,
+     "grip_px": [
+      363.5,
+      131.3
+     ]
+    },
+    "29": {
+     "ncc": 0.448,
+     "offset_px": 13.0,
+     "grip_px": [
+      333.5,
+      109.6
+     ]
+    },
+    "30": {
+     "ncc": 0.442,
+     "offset_px": 8.1,
+     "grip_px": [
+      333.3,
+      109.0
+     ]
+    },
+    "31": {
+     "ncc": 0.514,
+     "offset_px": 6.7,
+     "grip_px": [
+      333.2,
+      108.5
+     ]
+    },
+    "32": {
+     "ncc": 0.483,
+     "offset_px": 26.4,
+     "grip_px": [
+      333.0,
+      108.0
+     ]
+    }
+   },
+   "on_fail": "fail"
+  },
+  "defender_reaction_timing": {
+   "passed": true,
+   "window": [
+    8,
+    32
+   ],
+   "spatial": {
+    "passed": true,
+    "median_offset_px": 3.0
+   },
+   "trajectory": {
+    "passed": true,
+    "settled_from": 27,
+    "max_settled_offset_px": 5.0,
+    "max_window_offset_px": 13.4,
+    "median_ncc": 0.826
+   },
+   "temporal": {
+    "passed": true,
+    "best_lag_frames": 0,
+    "lag_mean_ncc": {
+     "-4": 0.8082,
+     "-3": 0.8143,
+     "-2": 0.8123,
+     "-1": 0.8171,
+     "0": 0.823,
+     "1": 0.8189,
+     "2": 0.8135,
+     "3": 0.8106,
+     "4": 0.8091
+    }
+   },
+   "frames": {
+    "8": {
+     "ncc": 0.985,
+     "offset_px": 0.0,
+     "grip_px": [
+      481.1,
+      235.7
+     ]
+    },
+    "9": {
+     "ncc": 0.98,
+     "offset_px": 0.0,
+     "grip_px": [
+      482.4,
+      234.7
+     ]
+    },
+    "10": {
+     "ncc": 0.956,
+     "offset_px": 1.4,
+     "grip_px": [
+      484.4,
+      231.7
+     ]
+    },
+    "11": {
+     "ncc": 0.908,
+     "offset_px": 2.2,
+     "grip_px": [
+      486.8,
+      227.4
+     ]
+    },
+    "12": {
+     "ncc": 0.865,
+     "offset_px": 2.8,
+     "grip_px": [
+      489.6,
+      222.2
+     ]
+    },
+    "13": {
+     "ncc": 0.841,
+     "offset_px": 2.8,
+     "grip_px": [
+      492.3,
+      216.9
+     ]
+    },
+    "14": {
+     "ncc": 0.805,
+     "offset_px": 3.2,
+     "grip_px": [
+      494.9,
+      212.1
+     ]
+    },
+    "15": {
+     "ncc": 0.77,
+     "offset_px": 3.2,
+     "grip_px": [
+      497.1,
+      208.6
+     ]
+    },
+    "16": {
+     "ncc": 0.747,
+     "offset_px": 4.0,
+     "grip_px": [
+      498.6,
+      207.3
+     ]
+    },
+    "17": {
+     "ncc": 0.751,
+     "offset_px": 3.2,
+     "grip_px": [
+      500.1,
+      207.1
+     ]
+    },
+    "18": {
+     "ncc": 0.749,
+     "offset_px": 5.0,
+     "grip_px": [
+      502.6,
+      206.3
+     ]
+    },
+    "19": {
+     "ncc": 0.755,
+     "offset_px": 11.2,
+     "grip_px": [
+      506.2,
+      204.5
+     ]
+    },
+    "20": {
+     "ncc": 0.759,
+     "offset_px": 8.5,
+     "grip_px": [
+      511.2,
+      200.7
+     ]
+    },
+    "21": {
+     "ncc": 0.656,
+     "offset_px": 13.4,
+     "grip_px": [
+      516.8,
+      193.3
+     ]
+    },
+    "22": {
+     "ncc": 0.563,
+     "offset_px": 2.2,
+     "grip_px": [
+      520.9,
+      182.9
+     ]
+    },
+    "23": {
+     "ncc": 0.806,
+     "offset_px": 1.0,
+     "grip_px": [
+      522.0,
+      172.9
+     ]
+    },
+    "24": {
+     "ncc": 0.804,
+     "offset_px": 2.2,
+     "grip_px": [
+      521.6,
+      165.8
+     ]
+    },
+    "25": {
+     "ncc": 0.831,
+     "offset_px": 3.0,
+     "grip_px": [
+      521.0,
+      161.4
+     ]
+    },
+    "26": {
+     "ncc": 0.906,
+     "offset_px": 3.0,
+     "grip_px": [
+      520.9,
+      158.9
+     ]
+    },
+    "27": {
+     "ncc": 0.906,
+     "offset_px": 3.0,
+     "grip_px": [
+      521.6,
+      157.8
+     ]
+    },
+    "28": {
+     "ncc": 0.899,
+     "offset_px": 3.0,
+     "grip_px": [
+      522.8,
+      157.5
+     ]
+    },
+    "29": {
+     "ncc": 0.86,
+     "offset_px": 2.0,
+     "grip_px": [
+      524.0,
+      157.2
+     ]
+    },
+    "30": {
+     "ncc": 0.833,
+     "offset_px": 2.8,
+     "grip_px": [
+      525.2,
+      156.8
+     ]
+    },
+    "31": {
+     "ncc": 0.826,
+     "offset_px": 5.0,
+     "grip_px": [
+      526.3,
+      156.5
+     ]
+    },
+    "32": {
+     "ncc": 0.814,
+     "offset_px": 4.1,
+     "grip_px": [
+      527.4,
+      156.2
+     ]
+    }
+   },
+   "on_fail": "fail"
+  }
+ },
+ "decision": {
+  "status": "fail",
+  "repairs": [
+   {
+    "object": "MACE",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC",
+    "qc_evidence": [
+     "weapon_integrity"
+    ]
+   },
+   {
+    "object": "TRIDENT",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC",
+    "qc_evidence": [
+     "trident_integrity"
+    ]
+   }
+  ],
+  "regenerate_for": [],
+  "fail_for": [
+   "parry_contact_timing_v2"
+  ],
+  "diagnostic_failures": [
+   "raw_mace_contact"
+  ]
+ }
+}
