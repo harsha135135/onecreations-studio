@@ -61,3 +61,14 @@ POST_GENERATION_QC → REPAIR → VFX → COMPOSITE → GRADE → FINAL_QC → D
 `uv run python tools/director/rehearse.py "PROMPT" --raw <earlier raw.mp4>` runs every stage except LTX, which copies
 an existing raw generation of the same shot class. Use it to prove the deterministic stages before spending a
 generation. A rehearsal run directory is named `rehearsal_*` and is never a result.
+
+## Parry shots (D3)
+
+A block or parry word ("parries", "blocks", "deflects") selects `trident_parry_v1` for the defender, the rigged
+`ascetic_defender_v2` with `trident_v2`, and `mace_strike_blocked_v1` for the attacker (contact on the trident at
+`strike.CONTACT`). Default effects: sparks and the clash flash at the 3D contact. Two protected layers are rendered in
+REPAIR (`mace_protect`, `trident_protect`, ~6 min together). A guard-only prompt still stages D2's cast and actions.
+
+There is no earlier parry generation to rehearse with, so use the run's own Blender reference as the stand-in:
+`uv run python tools/director/rehearse.py "PROMPT" --raw reference --run-id rehearsal_x` (proves wiring and delivery,
+not the QC thresholds).

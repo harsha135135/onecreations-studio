@@ -149,3 +149,19 @@ future milestones that add registry entries and builders. They do not change the
 - A capability is claimed only for the stages actually orchestrated. In D1 that is prompt → validated spec →
   compiled configuration → Blender scene, controls, first frame, masks and preflight QC. LTX, repair, compositing
   and grade exist as proven stages but are not orchestrated yet.
+
+## D3 clarification (2026-10-07)
+
+- **Contacts between actors (§6):** an action may declare a weapon-on-weapon `contact` with a `partner_action`; the
+  partner syncs its timing parameters, validation requires one shared CONTACT frame (`SPEC_SYNC_CONTACT`), and the
+  CompiledShot's ActionTimeline carries the contact interval. The engine solves the attacker's contact pose against
+  the defender's authored block, so the contact holds by construction.
+- **Variants chosen by capability:** when the requested action needs a rig the named character lacks, the director
+  picks the registered rigged variant of the same character (ascetic_defender_v1 → v2) and records why.
+- **P6 (§8):** a weapon that takes part in an authored contact gets protected geometry (`contact_weapon_v1`); P1 is
+  checked first.
+- **QC (§10):** checks for a contact are declared only for shots with a contact, so earlier compiled shots are
+  unchanged; a declared check with no evaluator now raises.
+- **Open (D3 doc §16):** `contact_timing` measures the raw weapon head. For a mid-air contact whose weapons are both
+  policy-protected, d3_run1 shows it failing while the generated hand is on time; changing it needs a new
+  pre-registered run.

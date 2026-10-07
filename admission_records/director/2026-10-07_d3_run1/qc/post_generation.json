@@ -1,0 +1,284 @@
+{
+ "checks": {
+  "video_valid": {
+   "passed": true,
+   "frames": 49,
+   "size": [
+    768,
+    448
+   ],
+   "blank_frames": [],
+   "abrupt_frames": [],
+   "median_frame_diff": 5.98,
+   "on_fail": "regenerate"
+  },
+  "subject_framing": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.947,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.898,
+     "offset_px": 2.0
+    },
+    "24": {
+     "ncc": 0.818,
+     "offset_px": 2.8
+    },
+    "36": {
+     "ncc": 0.793,
+     "offset_px": 2.0
+    },
+    "48": {
+     "ncc": 0.74,
+     "offset_px": 2.0
+    }
+   },
+   "on_fail": "fail"
+  },
+  "contact_timing": {
+   "passed": false,
+   "contact_frame": 29,
+   "observed_onset": null,
+   "offset_frames": null,
+   "best_ncc": 0.433,
+   "per_frame_ncc": {
+    "25": 0.342,
+    "26": 0.414,
+    "27": 0.433,
+    "28": 0.428,
+    "29": 0.418,
+    "30": 0.425,
+    "31": 0.433,
+    "32": 0.421,
+    "33": 0.332
+   },
+   "per_frame_offset_px": {
+    "25": 30.0,
+    "26": 30.6,
+    "27": 30.5,
+    "28": 31.2,
+    "29": 24.2,
+    "30": 26.2,
+    "31": 26.9,
+    "32": 26.9,
+    "33": 30.0
+   },
+   "on_fail": "fail",
+   "object": "sc_mace_head"
+  },
+  "apex_presence": {
+   "passed": true,
+   "apex_frame": 23,
+   "ncc": 0.563,
+   "offset_px": 4.1,
+   "on_fail": "fail",
+   "object": "sc_mace_head"
+  },
+  "weapon_integrity": {
+   "passed": false,
+   "failed_frames": [
+    24,
+    26,
+    28,
+    29
+   ],
+   "per_frame_ncc": {
+    "23": {
+     "ncc": 0.563,
+     "offset_px": 4.1
+    },
+    "24": {
+     "ncc": 0.513,
+     "offset_px": 11.7
+    },
+    "25": {
+     "ncc": 0.563,
+     "offset_px": 7.1
+    },
+    "26": {
+     "ncc": 0.3,
+     "offset_px": 15.6
+    },
+    "27": {
+     "ncc": 0.805,
+     "offset_px": 4.2
+    },
+    "28": {
+     "ncc": 0.519,
+     "offset_px": 14.0
+    },
+    "29": {
+     "ncc": 0.418,
+     "offset_px": 24.2
+    }
+   },
+   "meaning": "raw generated weapon unreliable in these frames",
+   "on_fail": "repair",
+   "object": "sc_mace_head"
+  },
+  "camera_progression": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.995,
+     "offset_px": 0.0
+    },
+    "12": {
+     "ncc": 0.93,
+     "offset_px": 0.0
+    },
+    "24": {
+     "ncc": 0.885,
+     "offset_px": 4.0
+    },
+    "36": {
+     "ncc": 0.818,
+     "offset_px": 4.0
+    },
+    "48": {
+     "ncc": 0.793,
+     "offset_px": 4.0
+    }
+   },
+   "note": "background registered to the authored move (image space)",
+   "on_fail": "fail"
+  },
+  "output_integrity": {
+   "passed": true,
+   "hole_frames": [],
+   "on_fail": "regenerate"
+  },
+  "defender_framing": {
+   "passed": true,
+   "frames": {
+    "0": {
+     "ncc": 0.978,
+     "offset_px": 2.0
+    },
+    "12": {
+     "ncc": 0.693,
+     "offset_px": 0.0
+    },
+    "24": {
+     "ncc": 0.801,
+     "offset_px": 0.0
+    },
+    "29": {
+     "ncc": 0.785,
+     "offset_px": 2.0
+    },
+    "36": {
+     "ncc": 0.729,
+     "offset_px": 2.0
+    },
+    "48": {
+     "ncc": 0.746,
+     "offset_px": 0.0
+    }
+   },
+   "on_fail": "fail",
+   "object": "sc_defender"
+  },
+  "trident_integrity": {
+   "passed": false,
+   "failed_frames": [
+    12,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    47,
+    48
+   ],
+   "per_frame_ncc": {
+    "8": 0.632,
+    "9": 0.596,
+    "10": 0.562,
+    "11": 0.442,
+    "12": 0.305,
+    "13": 0.546,
+    "14": 0.447,
+    "15": 0.416,
+    "16": 0.554,
+    "17": 0.619,
+    "18": 0.672,
+    "19": 0.675,
+    "20": 0.56,
+    "21": 0.489,
+    "22": 0.4,
+    "23": 0.461,
+    "24": 0.459,
+    "25": 0.507,
+    "26": 0.366,
+    "27": 0.32,
+    "28": 0.315,
+    "29": 0.256,
+    "30": 0.262,
+    "31": 0.28,
+    "32": 0.296,
+    "33": 0.306,
+    "34": 0.355,
+    "35": 0.35,
+    "36": 0.316,
+    "37": 0.32,
+    "38": 0.308,
+    "39": 0.269,
+    "40": 0.226,
+    "41": 0.26,
+    "42": 0.293,
+    "43": 0.348,
+    "44": 0.396,
+    "45": 0.452,
+    "46": 0.451,
+    "47": 0.396,
+    "48": 0.374
+   },
+   "meaning": "raw generated weapon unreliable in these frames",
+   "on_fail": "repair",
+   "object": "sc_trident"
+  }
+ },
+ "decision": {
+  "status": "fail",
+  "repairs": [
+   {
+    "object": "MACE",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC",
+    "qc_evidence": [
+     "weapon_integrity"
+    ]
+   },
+   {
+    "object": "TRIDENT",
+    "action": "protected_layer",
+    "reason": "policy (geometry=protected), not QC",
+    "qc_evidence": [
+     "trident_integrity"
+    ]
+   }
+  ],
+  "regenerate_for": [],
+  "fail_for": [
+   "contact_timing"
+  ]
+ }
+}

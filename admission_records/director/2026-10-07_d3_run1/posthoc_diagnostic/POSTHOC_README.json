@@ -1,0 +1,55 @@
+{
+ "label": "POST-HOC DIAGNOSTIC - NOT A D3 RESULT (the pre-registered run stopped at contact_timing)",
+ "raw": "G:\\onecreations\\runs\\d3_run1\\generation\\raw.mp4",
+ "layers_from": "G:\\onecreations\\runs\\rehearsal_d3_1",
+ "repair": {
+  "mace_protect": {
+   "gain": [
+    1.1234,
+    1.1037,
+    1.3926
+   ],
+   "protected_frames": 49,
+   "grip_to_generated_hand_px": {
+    "24": 0.4,
+    "25": 0.4,
+    "26": 1.0,
+    "27": 0.9,
+    "28": 10.1,
+    "29": 0.6,
+    "30": 0.3,
+    "31": 0.5,
+    "32": 0.0,
+    "33": 0.2,
+    "34": 0.4,
+    "35": 0.2
+   }
+  },
+  "trident_protect": {
+   "gain": [
+    1.6,
+    1.6,
+    1.2534
+   ],
+   "protected_frames": 49,
+   "grip_to_generated_hand_px": {
+    "24": null,
+    "25": null,
+    "26": null,
+    "27": null,
+    "28": null,
+    "29": null,
+    "30": null,
+    "31": null,
+    "32": null,
+    "33": null,
+    "34": null,
+    "35": null
+   }
+  }
+ },
+ "effects": {
+  "impact_fx": 29,
+  "impact_flash": 29
+ }
+}

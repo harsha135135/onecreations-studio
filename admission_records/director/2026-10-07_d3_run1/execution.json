@@ -1,0 +1,294 @@
+{
+ "run_id": "d3_run1",
+ "pipeline": "d3.0",
+ "request": "Create a cinematic shot of a horned Asura attacking an ascetic defender with a heavy mace in an ancient ruined temple at dusk. The defender parries the blow with a trident. Use a low orbit and push-in.",
+ "started": "2026-10-07T09:10:20+05:30",
+ "options": {
+  "first_frame_samples": 1024,
+  "reference_samples": 64,
+  "layer_samples": null,
+  "device": "OPTIX",
+  "min_free_ram_gb": 20.0,
+  "technical_retries": 1,
+  "ltx_timeout_s": 3600
+ },
+ "stages": [
+  {
+   "id": "PLAN",
+   "key": "b996ddffa8a2fb7679aab7841ea3057f2d4e2732ccf4289072674039fcfef21d",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "done",
+   "outputs": {
+    "director_plan": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\director_plan.json",
+     "sha256": "14fa1206cfeb400f21b3c4531def8374ff072dee4cbce12a68656d35c42e0762"
+    },
+    "shot_spec": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\shot_spec.json",
+     "sha256": "c671902cf67909938b4f3ca034cfe602365dbe5c1596c313e743752efcf2ebdb"
+    }
+   },
+   "info": {
+    "warnings": []
+   },
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.01
+  },
+  {
+   "id": "VALIDATE",
+   "key": "006b43ca42d9c528b2d8ff78a0a19bab31c019509853342f5c91dcc21c36e326",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "done",
+   "outputs": {},
+   "info": {
+    "issues": []
+   },
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0
+  },
+  {
+   "id": "COMPILE",
+   "key": "4f4063a33204c45d937e511a7387fdf3fe52ae7250ec853008d6b7ad4249b594",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "done",
+   "outputs": {
+    "compiled_shot": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\compiled_shot.json",
+     "sha256": "8856db1d45b65edf3e45a02c7627d942793dc65b2c75b9340e646ad85d428aaa"
+    }
+   },
+   "info": {
+    "events": {
+     "strike.START": 0,
+     "strike.GUARD_END": 7,
+     "strike.APEX": 23,
+     "strike.CONTACT": 29,
+     "strike.HOLD_END": 34,
+     "strike.RECOVERY_START": 34,
+     "strike.END": 48,
+     "parry.START": 0,
+     "parry.GUARD_END": 8,
+     "parry.CONTACT": 29,
+     "parry.HOLD_END": 34,
+     "parry.END": 48
+    }
+   },
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.01
+  },
+  {
+   "id": "BLENDER_BUILD",
+   "key": "ff18f8c63e710a5744d0ad81001414c29d23daa2eedcb81d436906c0875b451c",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "cached",
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0,
+   "outputs": {
+    "blend": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\preflight\\scene.blend",
+     "sha256": "2327f80f3df8a7e1974c893a83ce7da69cafae37ac1551cd4080c4acb66de9ea"
+    },
+    "shot_spec": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\preflight\\shot_spec.json",
+     "sha256": "2d2f4abc0226a217ed2ab408dcaa9e26ca312887779dd40dac02a5e02bd68bba"
+    }
+   },
+   "info": {}
+  },
+  {
+   "id": "CONTROL_RENDER",
+   "key": "24e495ba3bc8138d23fc9278c73cb80af34d6b9563d26677e2e3649412583c99",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "cached",
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0,
+   "outputs": {
+    "export_manifest": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\preflight\\export\\export_manifest.json",
+     "sha256": "d03f06155311bdb9813e0785707ff1523cd2855fc7261222408d81a5515ca747"
+    },
+    "depth_control": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\controls\\depth_control.mp4",
+     "sha256": "1304c747b2e289f40f94011eb230748c4e5b1552442ed12eaa0531501e975f12"
+    },
+    "depth_sidecar": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\controls\\depth_control.json",
+     "sha256": "ed80f62f091556d9be04bafbf509b02087b6f90787372d95cabe9ee80aef1ac1"
+    },
+    "reference": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\preflight\\reference_preview.mp4",
+     "sha256": "5aa067c123af45a6fe8081841c2b7db1b853cc6603450a0ac50738f740dbe52e"
+    },
+    "reference_blur": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\preflight\\reference_motionblur.mp4",
+     "sha256": "36714a1c6f0c86fc7a32e280ee118b575ada5bb739893e04f18b7abd59957f41"
+    }
+   },
+   "info": {}
+  },
+  {
+   "id": "FIRST_FRAME",
+   "key": "ba27ed596a9d112b16f770970b50e29358463c1f7d341dcc9ece2b3a5a19009c",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "cached",
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0,
+   "outputs": {
+    "first_frame": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\controls\\first_frame.png",
+     "sha256": "0680e4dd6107e1893ee642cd9ca6e6380b0fb123af782a83e83f0b15b6ac2664"
+    }
+   },
+   "info": {
+    "samples": 1024
+   }
+  },
+  {
+   "id": "PREFLIGHT_QC",
+   "key": "0e1d9e5aeb5b1cff0ddd1e21053e16b6aa8368fda78897a6485a2e8563e90c6e",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "cached",
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0,
+   "outputs": {
+    "report": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\qc\\preflight.json",
+     "sha256": "b9062fb3911c46ca0c05a9cd0c36ce49bc17d6be07f158f1621f25bdbbba9258"
+    }
+   },
+   "info": {
+    "passed": true,
+    "masks": [
+     "ARCHITECTURE",
+     "ASURA",
+     "BANNERS",
+     "BRAZIERS",
+     "DEFENDER",
+     "GROUND",
+     "MACE",
+     "PILLARS",
+     "RUBBLE",
+     "SHRINE",
+     "TRIDENT",
+     "WALLS"
+    ]
+   }
+  },
+  {
+   "id": "LTX_GENERATE",
+   "key": "b56572c13d2dabff6ded984dda9b0a5c0d537f2e39b08c474acc5443f3369d48",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "cached",
+   "finished": "2026-10-07T09:10:20+05:30",
+   "duration_s": 0.0,
+   "outputs": {
+    "raw": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\generation\\raw.mp4",
+     "sha256": "bf6850bfced4353cb129de1969b544dc62f65e42598988cd932ac489765f744e"
+    },
+    "workflow": {
+     "path": "G:\\onecreations\\runs\\d3_run1\\generation\\workflow_api.json",
+     "sha256": "1d94e6bbc3ea6c991711d0dfba308ff20c5947d78c7e900394ebcdf32f74a6a5"
+    }
+   },
+   "info": {
+    "attempt": 1,
+    "wall_s": 73.4,
+    "comfy_wall_s": 39.437,
+    "phases_s": {
+     "load": 3.797,
+     "other": 1.5,
+     "text_encode": 9.531,
+     "denoise": 20.703,
+     "vae_decode": 3.547,
+     "output": 0.359
+    },
+    "denoise_steps": {
+     "12": {
+      "steps": 8,
+      "first_step_s": 12.938,
+      "median_step_s": 1.0
+     }
+    },
+    "startup_s": 32.094,
+    "telemetry": {
+     "peak_gpu_mem_used_mb": 11943.0,
+     "peak_ram_used_mb": 30452,
+     "min_ram_available_mb": 2057,
+     "peak_swap_used_mb": 63,
+     "peak_proc_tree_rss_mb": 21770,
+     "peak_proc_tree_private_mb": 34989,
+     "baseline_gpu_mem_used_mb": 0.0,
+     "baseline_swap_used_mb": 43,
+     "baseline_commit_total_mb": 10237,
+     "peak_commit_total_mb": 45391,
+     "commit_limit_mb": 60157,
+     "samples": 70,
+     "swap_growth_mb": 20,
+     "peak_commit_pct": 75.5,
+     "pcie_start": "gen1 x16",
+     "pcie_end": "gen4 x16",
+     "pcie_under_load": {
+      "gen4 x16": 14
+     },
+     "min_pcie_gen_under_load": 4,
+     "min_pcie_width_under_load": 16,
+     "expect_pcie": "gen4 x16",
+     "auto_flags": [
+      "gpu_over_target_11000mb"
+     ]
+    },
+    "free_ram_gb_before": 23.11,
+    "backend": "LTX-2.5 22B distilled INT8 ConvRot + Union IC-LoRA (ComfyUI)",
+    "seed": 1000,
+    "steps": 8,
+    "resolution": [
+     768,
+     448
+    ],
+    "frames": 49
+   }
+  },
+  {
+   "id": "POST_GENERATION_QC",
+   "key": "c2e5f096911a05d602757ed3c7356bff8fbdf87d9c19c4c3fb3ab71ed1b9eca7",
+   "started": "2026-10-07T09:10:20+05:30",
+   "status": "failed",
+   "failure": "StageError: post-generation QC: non-repairable failure in contact_timing",
+   "finished": "2026-10-07T09:10:26+05:30",
+   "duration_s": 5.87
+  },
+  {
+   "id": "REPAIR",
+   "status": "not_run"
+  },
+  {
+   "id": "VFX",
+   "status": "not_run"
+  },
+  {
+   "id": "COMPOSITE",
+   "status": "not_run"
+  },
+  {
+   "id": "GRADE",
+   "status": "not_run"
+  },
+  {
+   "id": "FINAL_QC",
+   "status": "not_run"
+  },
+  {
+   "id": "DELIVER",
+   "status": "not_run"
+  }
+ ],
+ "status": "failed",
+ "storage_free_gib_before": 235.29,
+ "free_ram_gb_before": 23.24,
+ "failed_stage": "POST_GENERATION_QC",
+ "failure": "StageError: post-generation QC: non-repairable failure in contact_timing",
+ "finished": "2026-10-07T09:10:26+05:30",
+ "wall_s": 6.0,
+ "storage_free_gib_after": 235.29
+}

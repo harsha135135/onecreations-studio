@@ -257,6 +257,21 @@ def test_thin_weapon_check_uses_only_the_weapon_pixels(reg):
     assert r["failed_frames"] == [30] and r["per_frame_ncc"]["29"] > 0.9 and "7" not in r["per_frame_ncc"]
 
 
+def test_contact_timing_without_onset_fails_instead_of_crashing(reg):
+    """d3_run1: the raw weapon head never came within max_offset_px of its contact position; the check must report a
+    failure (observed_onset None), not raise."""
+    c = _compiled(reg)
+    rng = np.random.default_rng(1)
+    n, h, w = 49, 120, 160
+    idx = np.zeros((n, h, w), np.uint8)
+    idx[:, 50:70, 70:90] = 8
+    ref = rng.integers(0, 255, (n, h, w)).astype(np.float32)
+    raw = rng.integers(0, 255, (n, h, w)).astype(np.float32)          # nothing like the reference anywhere
+    p = {"search_frames": 4, "radius_px": 24, "onset_frac": 0.9, "tol_frames": 2, "max_offset_px": 0, "min_ncc": 0.45}
+    r = video_qc.check_contact_timing(c, ref, raw, idx, 8, p)
+    assert r["passed"] is False and r["observed_onset"] is None and r["offset_frames"] is None
+
+
 def test_undeclared_evaluator_fails_loudly(reg):
     c = _compiled(reg).model_copy(deep=True)
     c.qc = [c.qc[-1].model_copy(update={"id": "made_up", "stage": "post_generation"})]

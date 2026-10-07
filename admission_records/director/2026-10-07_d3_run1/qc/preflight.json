@@ -1,0 +1,145 @@
+{
+ "passed": true,
+ "checks": {
+  "events_resolved": {
+   "passed": true,
+   "events": {
+    "strike.START": 0,
+    "strike.GUARD_END": 7,
+    "strike.APEX": 23,
+    "strike.CONTACT": 29,
+    "strike.HOLD_END": 34,
+    "strike.RECOVERY_START": 34,
+    "strike.END": 48,
+    "parry.START": 0,
+    "parry.GUARD_END": 8,
+    "parry.CONTACT": 29,
+    "parry.HOLD_END": 34,
+    "parry.END": 48
+   }
+  },
+  "timeline_matches_engine": {
+   "passed": true
+  },
+  "weapon_bone_projection": {
+   "passed": true,
+   "max_px": 2.11,
+   "occluded_frames_excluded": {
+    "27": {
+     "visible_frac": 0.38,
+     "px": 5.63
+    }
+   }
+  },
+  "stationary_root": {
+   "passed": true,
+   "max_move_m": 0.0
+  },
+  "camera_contract": {
+   "passed": true,
+   "max_position_err_m": 4.69140244874211e-07,
+   "max_angle_err_deg": 3.8e-05
+  },
+  "camera_clearance": {
+   "passed": true,
+   "min_distance_m": 1.95
+  },
+  "actors_in_frame": {
+   "passed": true,
+   "objects": {
+    "sc_asura": {
+     "min_px": 25705,
+     "touches_border_frames": 0
+    },
+    "sc_defender": {
+     "min_px": 6963,
+     "touches_border_frames": 0
+    }
+   },
+   "frame": [
+    768,
+    448
+   ]
+  },
+  "weapon_visible": {
+   "passed": true,
+   "objects": {
+    "sc_mace_head": {
+     "min_px": 1241,
+     "touches_border_frames": 0
+    }
+   },
+   "frame": [
+    768,
+    448
+   ]
+  },
+  "depth_valid": {
+   "passed": true,
+   "isolated_background_px": 17,
+   "finite_depth_on_objects": true
+  },
+  "first_frame_aligned": {
+   "passed": true,
+   "method": "same .blend, camera and frame as the passes"
+  },
+  "defender_stationary_root": {
+   "passed": true,
+   "max_move_m": 0.0
+  },
+  "defender_weapon_axis": {
+   "passed": true,
+   "max_median_px": 2.14
+  },
+  "contact_geometry": {
+   "passed": true,
+   "gap_at_contact_m": 0.0001,
+   "gap_before_m": 1.428,
+   "min_gap_m": 0.0001,
+   "min_body_clearance_m": 0.213,
+   "contact_frame": 29,
+   "contact_u_m": 1.196
+  },
+  "contact_visible": {
+   "passed": true,
+   "contact_px": [
+    430.0,
+    216.3
+   ],
+   "pixels_near_contact": {
+    "sc_mace_head": 450,
+    "sc_trident": 174
+   },
+   "border_px": 216.3
+  },
+  "defender_weapon_visible": {
+   "passed": true,
+   "objects": {
+    "sc_trident": {
+     "min_px": 1185,
+     "touches_border_frames": 0
+    }
+   },
+   "frame": [
+    768,
+    448
+   ]
+  }
+ },
+ "not_run": [
+  "video_valid",
+  "subject_framing",
+  "contact_timing",
+  "apex_presence",
+  "weapon_integrity",
+  "camera_progression",
+  "output_integrity",
+  "defender_framing",
+  "trident_integrity",
+  "final_valid",
+  "protected_weapon_present",
+  "effects_begin_at_contact",
+  "bounded_repair",
+  "no_holes"
+ ]
+}

@@ -105,12 +105,15 @@ def check_contact_timing(compiled, ref, video, idx, pass_index, p: dict) -> dict
     c = _event(compiled, "strike.CONTACT")
     window = range(max(0, c - p["search_frames"]), min(len(video), c + p["search_frames"] + 1))
     scores = {f: _head_ncc(ref, video, idx, pass_index, c, f, p["radius_px"]) for f in window}
-    best = max(s["ncc"] for s in scores.values() if s)
-    onset = min(f for f, s in scores.items() if s and s["ncc"] >= p["onset_frac"] * best
-                and s["offset_px"] <= p["max_offset_px"])
-    ok = abs(onset - c) <= p["tol_frames"] and best >= p["min_ncc"]
-    return {"passed": bool(ok), "contact_frame": c, "observed_onset": int(onset), "offset_frames": int(onset - c),
-            "best_ncc": best, "per_frame_ncc": {str(f): s["ncc"] if s else None for f, s in scores.items()}}
+    best = max((s["ncc"] for s in scores.values() if s), default=0.0)
+    # D3 fix: no frame reaching the contact position is a failed check, not an evaluator crash (d3_run1)
+    onset = min((f for f, s in scores.items() if s and s["ncc"] >= p["onset_frac"] * best
+                 and s["offset_px"] <= p["max_offset_px"]), default=None)
+    ok = onset is not None and abs(onset - c) <= p["tol_frames"] and best >= p["min_ncc"]
+    return {"passed": bool(ok), "contact_frame": c, "observed_onset": None if onset is None else int(onset),
+            "offset_frames": None if onset is None else int(onset - c), "best_ncc": best,
+            "per_frame_ncc": {str(f): s["ncc"] if s else None for f, s in scores.items()},
+            "per_frame_offset_px": {str(f): s["offset_px"] if s else None for f, s in scores.items()}}
 
 
 def check_apex_presence(compiled, ref, video, idx, pass_index, p: dict) -> dict:
