@@ -18,8 +18,8 @@ parry.
 
 Pre-registration: `admission_records/director/2026-10-07_d3_preregistration.json`, committed and pushed in `83e41ee`
 before the run. Evidence: `admission_records/director/2026-10-07_d3_run1/` (request, plan, spec, compiled shot,
-execution record, QC, LTX monitor record and telemetry, console logs of the run and of the resume, media hashes,
-post-hoc summary), `…/2026-10-07_ascetic_defender_v2_admission.json`, `…/2026-10-07_d3_rehearsal1.json`. Media stays
+execution record, QC, LTX monitor record and telemetry, media hashes,
+post-hoc summary; the console logs of the run and the resume sit beside them locally, gitignored like D2's), `…/2026-10-07_ascetic_defender_v2_admission.json`, `…/2026-10-07_d3_rehearsal1.json`. Media stays
 on `G:\onecreations\runs\d3_run1`, `…\d3_run1_posthoc` and `…\rehearsal_d3_1` (not in Git).
 
 ## 1. Starting state and owner decisions
